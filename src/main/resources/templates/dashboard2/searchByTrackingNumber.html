@@ -2,6 +2,44 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
+<!--<div th:fragment="searchByTrx" th:remove="tag">-->
+<!--    <div class="panel panel-default" style="background: white;">-->
+<!--        <div class="panel-body" id="searchByTrxPanel" style="margin-left: 50px; margin-right: 50px">-->
+<!--            <div class="font-lg bold text-center margin-20" style="margin-bottom: 20px">ট্র্যাকিং নম্বর অনুসন্ধান</div>-->
+<!--            <div class="font-lg text-center margin-20" style="margin-bottom: 20px">ট্র্যাকিং নম্বর লিখুন</div>-->
+
+<!--            <div class="row margin-bottom-20 trx-search" style="margin-bottom: 30px;">-->
+<!--                <form id="searchForm" class="form-inline" style="width: 100%;">-->
+<!--                    <div class="form-group" style="width: 100%; max-width: 800px; margin: 0 auto;">-->
+<!--                        <input type="text" id="search_trx" name="search_trx" class="form-control form-control-lg" placeholder="ট্র্যাকিং নম্বর প্রদান করুন" style="width: 100%;font-size: 14px;">-->
+<!--                    </div>-->
+<!--                </form>-->
+<!--            </div>-->
+
+<!--            <div class="text-center margin-top-20">-->
+<!--                <button id="searchButton" class="btn btn-primary" style="cursor: pointer; height: 35px; width: 140px; font-size: 16px;">সার্চ</button>-->
+<!--            </div>-->
+
+<!--            <div class="margin-top-20" id="grievanceTableContainer" style="display: none;">-->
+<!--                <div class="table-responsive">-->
+<!--                    <table class="table table-bordered table-striped">-->
+<!--                        <thead>-->
+<!--                        <tr>-->
+<!--                            <th>ট্র্যাকিং নম্বর</th>-->
+<!--                            <th>জমাদানের তারিখ</th>-->
+<!--                            <th>অভিযোগের ধরন</th>-->
+<!--                            <th>অবস্থা</th>-->
+<!--                            <th>বিষয়</th>-->
+<!--                            <th>অ্যাকশন</th>-->
+<!--                        </tr>-->
+<!--                        </thead>-->
+<!--                        <tbody id="grievanceTableBody"></tbody>-->
+<!--                    </table>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
+<!--</div>-->
 <div th:fragment="searchByTrx" th:remove="tag">
     <div class="panel panel-default" style="background: white;">
         <div class="panel-body" id="searchByTrxPanel" style="margin-left: 50px; margin-right: 50px">
@@ -11,8 +49,28 @@
             <div class="row margin-bottom-20 trx-search" style="margin-bottom: 30px;">
                 <form id="searchForm" class="form-inline" style="width: 100%;">
                     <div class="form-group" style="width: 100%; max-width: 800px; margin: 0 auto;">
+                        <!-- Search type dropdown -->
+                        <select id="searchType" class="form-control form-control-lg" style="width: 100%; font-size: 14px;">
+                            <option value="tracking_number">ট্র্যাকিং নম্বর</option>
+                            <option value="personal_identification">জাতীয় পরিচয় পত্র / পাসপোর্ট / জন্মসনদ</option>
+                            <option value="phone_number">ফোন নম্বর</option>
+                        </select>
+                    </div>
+
+                    <!-- Hidden dropdown for personal identification types -->
+                    <div class="form-group" id="personalIdTypeDiv" style="width: 100%; max-width: 800px; margin: 20px auto 0; display: none;">
+                        <select id="personalIdType" class="form-control form-control-lg" style="width: 100%; font-size: 14px;">
+                            <option value="nid">জাতীয় পরিচয় পত্র</option>
+                            <option value="passport">পাসপোর্ট</option>
+                            <option value="bcn">জন্মসনদ</option>
+                        </select>
+                    </div>
+
+                    <!-- Search input -->
+                    <div class="form-group" style="width: 100%; max-width: 800px; margin: 20px auto 0;">
                         <input type="text" id="search_trx" name="search_trx" class="form-control form-control-lg" placeholder="ট্র্যাকিং নম্বর প্রদান করুন" style="width: 100%;font-size: 14px;">
                     </div>
+
                 </form>
             </div>
 
@@ -42,14 +100,49 @@
 </div>
 
 <script type="text/javascript" th:fragment="searchByTrxScript">
-    var currentTrackingNumber = "";
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const searchType = document.getElementById("searchType");
+        const personalIdTypeDiv = document.getElementById("personalIdTypeDiv");
+        const searchInput = document.getElementById("search_trx");
+        const personalIdType = document.getElementById("personalIdType");
+
+        searchType.addEventListener("change", function () {
+            let selectedValue = searchType.value;
+
+            if (selectedValue === "personal_identification") {
+                personalIdTypeDiv.style.display = "block";
+                searchInput.placeholder = "জাতীয় পরিচয় পত্র নম্বর প্রদান করুন";
+            } else {
+                personalIdTypeDiv.style.display = "none";
+
+                if (selectedValue === "tracking_number") {
+                    searchInput.placeholder = "ট্র্যাকিং নম্বর প্রদান করুন";
+                } else if (selectedValue === "phone_number") {
+                    searchInput.placeholder = "ফোন নম্বর প্রদান করুন";
+                }
+            }
+        });
+
+        personalIdType.addEventListener("change", function () {
+            let personalIdValue = personalIdType.value;
+
+            if (personalIdValue === "nid") {
+                searchInput.placeholder = "জাতীয় পরিচয় পত্র নম্বর প্রদান করুন";
+            } else if (personalIdValue === "passport") {
+                searchInput.placeholder = "পাসপোর্ট নম্বর প্রদান করুন";
+            } else if (personalIdValue === "bcn") {
+                searchInput.placeholder = "জন্মসনদ নম্বর প্রদান করুন";
+            }
+        });
+    });
 
     document.getElementById("searchButton").addEventListener("click", function() {
-        currentTrackingNumber = document.getElementById("search_trx").value.trim();
+        let currentTrackingNumber = document.getElementById("search_trx").value.trim();
         currentTrackingNumber = convertBanglaToEnglishNumerals(currentTrackingNumber);
 
         if (currentTrackingNumber !== "") {
-            searchByTrackingNumber();
+            searchByTrackingNumber(currentTrackingNumber);
         } else {
             alert("ট্র্যাকিং নম্বর প্রদান করুন");
         }
@@ -62,7 +155,7 @@
         }
     });
 
-    function searchByTrackingNumber() {
+    function searchByTrackingNumber(currentTrackingNumber) {
         $.ajax({
             url: `/api/search/trx/${currentTrackingNumber}`,
             type: "GET",
@@ -82,17 +175,17 @@
 
     function displayGrievanceTable(grievances) {
         console.log(grievances)
-        var tableBody = document.getElementById("grievanceTableBody");
+        const tableBody = document.getElementById("grievanceTableBody");
         tableBody.innerHTML = '';
 
         grievances.forEach(function(grievance) {
-            var row = document.createElement("tr");
+            let row = document.createElement("tr");
 
-            var trackingNumberCell = document.createElement("td");
+            let trackingNumberCell = document.createElement("td");
             trackingNumberCell.textContent = grievance.trackingNumber.toBanglaNumber();
             row.appendChild(trackingNumberCell);
 
-            var submissionDateCell = document.createElement("td");
+            let submissionDateCell = document.createElement("td");
             let date = new Date(grievance.submissionDate);
             let year = date.getFullYear().toString().toBanglaNumber();
             let month = (date.getMonth() + 1).toString().toBanglaNumber();
@@ -106,20 +199,20 @@
             submissionDateCell.textContent = `${day}-${month}-${year}`;
             row.appendChild(submissionDateCell);
 
-            var complaintTypeCell = document.createElement("td");
+            let complaintTypeCell = document.createElement("td");
             complaintTypeCell.textContent = convertServiceTypeToBangla(grievance.grievanceType);
             row.appendChild(complaintTypeCell);
 
-            var statusCell = document.createElement("td");
+            let statusCell = document.createElement("td");
             statusCell.textContent = convertGrievanceStatusToBangla(grievance.grievanceCurrentStatus);
             row.appendChild(statusCell);
 
-            var subjectCell = document.createElement("td");
+            let subjectCell = document.createElement("td");
             subjectCell.textContent = grievance.subject;
             row.appendChild(subjectCell);
 
-            var actionCell = document.createElement("td");
-            var viewButton = document.createElement("button");
+            let actionCell = document.createElement("td");
+            let viewButton = document.createElement("button");
             viewButton.textContent = "দেখুন";
             viewButton.className = "btn btn-primary";
             viewButton.style.cursor = "pointer";

@@ -20,6 +20,8 @@
 out/
 classes/
 
+catalina.out
+
 ### NetBeans ###
 nbproject/private/
 build/
