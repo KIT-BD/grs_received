@@ -902,7 +902,7 @@ public class GrievanceController {
 
     @RequestMapping(value = "/api/unseen/count/{inboxType}", method = RequestMethod.GET)
     public UnseenCountDTO getUnseenCount(Authentication authentication, @PathVariable("inboxType") String inboxType){
-       return authentication == null ? UnseenCountDTO.builder().build() : this.grievanceForwardingService.getUnseenCountForUser(authentication, inboxType);
+        return authentication == null ? UnseenCountDTO.builder().build() : this.grievanceForwardingService.getUnseenCountForUser(authentication, inboxType);
     }
 
     @RequestMapping(value = "/api/total/count/{inboxType}", method = RequestMethod.GET)
