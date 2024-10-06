@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -19,6 +20,29 @@ public interface GrievanceRepo extends JpaRepository<Grievance, Long> {
     @Query(value="SELECT coalesce(max(CONVERT(tracking_number ,UNSIGNED INTEGER)),0) FROM complaints c where tracking_number not like '01%' and tracking_number not like '1%'",
     nativeQuery = true)
     public long findMaxTrackingNumber();
+
+
+//    @Query("SELECT g FROM Grievance g WHERE g.trackingNumber = :trx OR g.trackingNumber = CONCAT('0', :trx)")
+//    List<Grievance> findGrievancesByTrackingNumber(@Param("trx") String trx);
+    @Query("SELECT g FROM Grievance g WHERE g.trackingNumber = :trx " +
+            "OR g.trackingNumber = CONCAT('0', :trx) " +
+            "OR g.trackingNumber = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(:trx, '০', '0'), '১', '1'), '২', '2'), '৩', '3'), '৪', '4'), '৫', '5'), '৬', '6'), '৭', '7'), '৮', '8'), '৯', '9') " +
+            "OR g.trackingNumber = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('0', :trx), '০', '0'), '১', '1'), '২', '2'), '৩', '3'), '৪', '4'), '৫', '5'), '৬', '6'), '৭', '7'), '৮', '8'), '৯', '9')")
+    List<Grievance> findGrievancesByTrackingNumber(@Param("trx") String trx);
+
+
+
+    @Query(value = "SELECT * FROM grs_only_3.complaints WHERE complainant_id IN ( " +
+            "SELECT id FROM grs_only_3.complainants " +
+            "WHERE identification_type = :identificationType " +
+            "AND ( " +
+            "    identification_value = :identificationValue " +
+            "    OR REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(identification_value, '০', '0'), '১', '1'), '২', '2'), '৩', '3'), '৪', '4'), '৫', '5'), '৬', '6'), '৭', '7'), '৮', '8'), '৯', '9') = :identificationValue))", nativeQuery = true)
+    List<Grievance> findGrievancesByIdentificationValue(@Param("identificationType") String identificationType, @Param("identificationValue") String identificationValue);
+
+
+    @Query(value = "SELECT * FROM grs_only_3.complaints WHERE complainant_id IN (SELECT id FROM grs_only_3.complainants WHERE mobile_number = :mobile_number)", nativeQuery = true)
+    List<Grievance> findGrievancesByMobileNumber(@Param("mobile_number") String mobile_number);
 
     public Page<Grievance> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
