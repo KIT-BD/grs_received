@@ -2,49 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <body>
 
-<!--<div th:fragment="searchByTrx" th:remove="tag">-->
-<!--    <div class="panel panel-default" style="background: white;">-->
-<!--        <div class="panel-body" id="searchByTrxPanel" style="margin-left: 50px; margin-right: 50px">-->
-<!--            <div class="font-lg bold text-center margin-20" style="margin-bottom: 20px">ট্র্যাকিং নম্বর অনুসন্ধান</div>-->
-<!--            <div class="font-lg text-center margin-20" style="margin-bottom: 20px">ট্র্যাকিং নম্বর লিখুন</div>-->
-
-<!--            <div class="row margin-bottom-20 trx-search" style="margin-bottom: 30px;">-->
-<!--                <form id="searchForm" class="form-inline" style="width: 100%;">-->
-<!--                    <div class="form-group" style="width: 100%; max-width: 800px; margin: 0 auto;">-->
-<!--                        <input type="text" id="search_trx" name="search_trx" class="form-control form-control-lg" placeholder="ট্র্যাকিং নম্বর প্রদান করুন" style="width: 100%;font-size: 14px;">-->
-<!--                    </div>-->
-<!--                </form>-->
-<!--            </div>-->
-
-<!--            <div class="text-center margin-top-20">-->
-<!--                <button id="searchButton" class="btn btn-primary" style="cursor: pointer; height: 35px; width: 140px; font-size: 16px;">সার্চ</button>-->
-<!--            </div>-->
-
-<!--            <div class="margin-top-20" id="grievanceTableContainer" style="display: none;">-->
-<!--                <div class="table-responsive">-->
-<!--                    <table class="table table-bordered table-striped">-->
-<!--                        <thead>-->
-<!--                        <tr>-->
-<!--                            <th>ট্র্যাকিং নম্বর</th>-->
-<!--                            <th>জমাদানের তারিখ</th>-->
-<!--                            <th>অভিযোগের ধরন</th>-->
-<!--                            <th>অবস্থা</th>-->
-<!--                            <th>বিষয়</th>-->
-<!--                            <th>অ্যাকশন</th>-->
-<!--                        </tr>-->
-<!--                        </thead>-->
-<!--                        <tbody id="grievanceTableBody"></tbody>-->
-<!--                    </table>-->
-<!--                </div>-->
-<!--            </div>-->
-<!--        </div>-->
-<!--    </div>-->
-<!--</div>-->
 <div th:fragment="searchByTrx" th:remove="tag">
     <div class="panel panel-default" style="background: white;">
         <div class="panel-body" id="searchByTrxPanel" style="margin-left: 50px; margin-right: 50px">
-            <div class="font-lg bold text-center margin-20" style="margin-bottom: 20px">ট্র্যাকিং নম্বর অনুসন্ধান</div>
-            <div class="font-lg text-center margin-20" style="margin-bottom: 20px">ট্র্যাকিং নম্বর লিখুন</div>
+            <div class="font-lg bold text-center margin-20" style="margin-bottom: 20px">অভিযোগ অনুসন্ধান</div>
 
             <div class="row margin-bottom-20 trx-search" style="margin-bottom: 30px;">
                 <form id="searchForm" class="form-inline" style="width: 100%;">
@@ -52,23 +13,17 @@
                         <!-- Search type dropdown -->
                         <select id="searchType" class="form-control form-control-lg" style="width: 100%; font-size: 14px;">
                             <option value="tracking_number">ট্র্যাকিং নম্বর</option>
-                            <option value="personal_identification">জাতীয় পরিচয় পত্র / পাসপোর্ট / জন্মসনদ</option>
                             <option value="phone_number">ফোন নম্বর</option>
-                        </select>
-                    </div>
-
-                    <!-- Hidden dropdown for personal identification types -->
-                    <div class="form-group" id="personalIdTypeDiv" style="width: 100%; max-width: 800px; margin: 20px auto 0; display: none;">
-                        <select id="personalIdType" class="form-control form-control-lg" style="width: 100%; font-size: 14px;">
                             <option value="nid">জাতীয় পরিচয় পত্র</option>
                             <option value="passport">পাসপোর্ট</option>
                             <option value="bcn">জন্মসনদ</option>
                         </select>
                     </div>
 
+
                     <!-- Search input -->
                     <div class="form-group" style="width: 100%; max-width: 800px; margin: 20px auto 0;">
-                        <input type="text" id="search_trx" name="search_trx" class="form-control form-control-lg" placeholder="ট্র্যাকিং নম্বর প্রদান করুন" style="width: 100%;font-size: 14px;">
+                        <input type="text" id="search_input" name="search_input" class="form-control form-control-lg" placeholder="ট্র্যাকিং নম্বর প্রদান করুন" style="width: 100%;font-size: 14px;">
                     </div>
 
                 </form>
@@ -103,61 +58,68 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const searchType = document.getElementById("searchType");
-        const personalIdTypeDiv = document.getElementById("personalIdTypeDiv");
-        const searchInput = document.getElementById("search_trx");
-        const personalIdType = document.getElementById("personalIdType");
+        const searchInput = document.getElementById("search_input");
 
         searchType.addEventListener("change", function () {
             let selectedValue = searchType.value;
 
-            if (selectedValue === "personal_identification") {
-                personalIdTypeDiv.style.display = "block";
+            if (selectedValue === "nid") {
                 searchInput.placeholder = "জাতীয় পরিচয় পত্র নম্বর প্রদান করুন";
-            } else {
-                personalIdTypeDiv.style.display = "none";
+            }
+            else if (selectedValue === "tracking_number") {
+                searchInput.placeholder = "ট্র্যাকিং নম্বর প্রদান করুন";
+            } else if (selectedValue === "phone_number") {
+                searchInput.placeholder = "ফোন নম্বর প্রদান করুন";
+            } else if (selectedValue === "passport") {
+                searchInput.placeholder = "পাসপোর্ট নম্বর প্রদান করুন";
+            } else if (selectedValue === "bcn") {
+                searchInput.placeholder = "জন্মসনদ নম্বর প্রদান করুন";
+            }
 
-                if (selectedValue === "tracking_number") {
-                    searchInput.placeholder = "ট্র্যাকিং নম্বর প্রদান করুন";
-                } else if (selectedValue === "phone_number") {
-                    searchInput.placeholder = "ফোন নম্বর প্রদান করুন";
+        });
+
+        document.getElementById("searchButton").addEventListener("click", function() {
+            let currentSearchInput = document.getElementById("search_input").value.trim();
+
+            if (currentSearchInput !== "") {
+                if(searchType.value === "tracking_number"){
+                    searchByTrackingNumber(currentSearchInput, "trx");
+                } else if (searchType.value === "nid") {
+                    currentSearchInput = convertBanglaToEnglishNumerals(currentSearchInput);
+                    searchByTrackingNumber(currentSearchInput, "nid")
+                } else if (searchType.value === "passport") {
+                    searchByTrackingNumber(currentSearchInput, "pp")
+                } else if (searchType.value === "bcn"){
+                    currentSearchInput = convertBanglaToEnglishNumerals(currentSearchInput);
+                    searchByTrackingNumber(currentSearchInput, "bcn")
+                } else if (searchType.value === "phone_number"){
+                    currentSearchInput = convertBanglaToEnglishNumerals(currentSearchInput);
+                    searchByTrackingNumber(currentSearchInput, "ph")
+                }
+            } else {
+                alert("ব্যক্তিগত নম্বর প্রদান করুন");
+            }
+        });
+
+        document.getElementById("search_input").addEventListener("keypress", function(event) {
+            if (event.key === "Enter") {
+                event.preventDefault();
+                document.getElementById("searchButton").click();
+            }
+        });
+
+        document.getElementById('search_input').addEventListener('keypress', function(event) {
+            if(searchType.value !== "passport"){
+                if (event.charCode < 48 || event.charCode > 57) {
+                    event.preventDefault();
                 }
             }
         });
-
-        personalIdType.addEventListener("change", function () {
-            let personalIdValue = personalIdType.value;
-
-            if (personalIdValue === "nid") {
-                searchInput.placeholder = "জাতীয় পরিচয় পত্র নম্বর প্রদান করুন";
-            } else if (personalIdValue === "passport") {
-                searchInput.placeholder = "পাসপোর্ট নম্বর প্রদান করুন";
-            } else if (personalIdValue === "bcn") {
-                searchInput.placeholder = "জন্মসনদ নম্বর প্রদান করুন";
-            }
-        });
     });
 
-    document.getElementById("searchButton").addEventListener("click", function() {
-        let currentTrackingNumber = document.getElementById("search_trx").value.trim();
-        currentTrackingNumber = convertBanglaToEnglishNumerals(currentTrackingNumber);
-
-        if (currentTrackingNumber !== "") {
-            searchByTrackingNumber(currentTrackingNumber);
-        } else {
-            alert("ট্র্যাকিং নম্বর প্রদান করুন");
-        }
-    });
-
-    document.getElementById("search_trx").addEventListener("keypress", function(event) {
-        if (event.key === "Enter") {
-            event.preventDefault();
-            document.getElementById("searchButton").click();
-        }
-    });
-
-    function searchByTrackingNumber(currentTrackingNumber) {
+    function searchByTrackingNumber(currentSearchInput, type) {
         $.ajax({
-            url: `/api/search/trx/${currentTrackingNumber}`,
+            url: `/api/search/${type}/${currentSearchInput}`,
             type: "GET",
             success: function(response) {
                 if (response.single) {
@@ -168,7 +130,7 @@
             },
             error: function(xhr, status, error) {
                 console.log("Error fetching grievance data: " + xhr.responseText);
-                alert("প্রদত্ত ট্র্যাকিং নম্বরের জন্য কোনো অভিযোগ পাওয়া যায়নি।");
+                alert(`প্রদত্ত নম্বরের জন্য কোনো অভিযোগ পাওয়া যায়নি।`);
             }
         });
     }
@@ -229,17 +191,13 @@
     }
 
     // Helper functions, possibly move out into a separate utility module? but only if asked later on
-    // document.getElementById('search_trx').addEventListener('input', function(event) {
+    // document.getElementById('search_input').addEventListener('input', function(event) {
     //     var inputField = event.target;
     //     var inputValue = inputField.value;
     //
     //     inputField.value = inputValue.toBanglaNumber();
     // });
-    document.getElementById('search_trx').addEventListener('keypress', function(event) {
-        if (event.charCode < 48 || event.charCode > 57) {
-            event.preventDefault();
-        }
-    });
+
     function convertBanglaToEnglishNumerals(input) {
         const banglaToEnglishMap = {
             '০': '0', '১': '1', '২': '2', '৩': '3', '৪': '4',

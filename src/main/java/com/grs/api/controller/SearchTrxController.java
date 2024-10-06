@@ -1,5 +1,7 @@
 package com.grs.api.controller;
 
+import com.grs.core.domain.IdentificationType;
+import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.Grievance;
 import com.grs.core.repo.grs.GrievanceRepo;
 import com.grs.core.service.ModelViewService;
@@ -41,7 +43,95 @@ public class SearchTrxController {
             return ResponseEntity.ok(response);
         }
 
-        // If there are multiple grievances, return the list to be displayed
+        Map<String, Object> response = new HashMap<>();
+        response.put("single", false);
+        response.put("grievances", grievances);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/nid/{nid}")
+    public ResponseEntity<?> findByNID(@PathVariable("nid") String nid) {
+        List<Grievance> grievances = grievanceRepo.findGrievancesByIdentificationValue(String.valueOf(IdentificationType.NID),nid);
+
+        if (grievances.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Grievance with nid number " + nid + " not found.");
+        }
+
+        if (grievances.size() == 1) {
+            Long grievance_id = grievances.get(0).getId();
+            Map<String, Object> response = new HashMap<>();
+            response.put("single", true);
+            response.put("id", grievance_id);
+            return ResponseEntity.ok(response);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("single", false);
+        response.put("grievances", grievances);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/ph/{ph}")
+    public ResponseEntity<?> findByPhoneNumber(@PathVariable("ph") String ph) {
+        List<Grievance> grievances = grievanceRepo.findGrievancesByMobileNumber(ph);
+
+        if (grievances.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Grievance with phone number " + ph + " not found.");
+        }
+
+        if (grievances.size() == 1) {
+            Long grievance_id = grievances.get(0).getId();
+            Map<String, Object> response = new HashMap<>();
+            response.put("single", true);
+            response.put("id", grievance_id);
+            return ResponseEntity.ok(response);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("single", false);
+        response.put("grievances", grievances);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/bcn/{bcn}")
+    public ResponseEntity<?> findByBCN(@PathVariable("bcn") String bcn) {
+        List<Grievance> grievances = grievanceRepo.findGrievancesByIdentificationValue(String.valueOf(IdentificationType.BCN),bcn);
+
+        if (grievances.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Grievance with bcn number " + bcn + " not found.");
+        }
+
+        if (grievances.size() == 1) {
+            Long grievance_id = grievances.get(0).getId();
+            Map<String, Object> response = new HashMap<>();
+            response.put("single", true);
+            response.put("id", grievance_id);
+            return ResponseEntity.ok(response);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("single", false);
+        response.put("grievances", grievances);
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/pp/{pp}")
+    public ResponseEntity<?> findByPassport(@PathVariable("pp") String pp) {
+        List<Grievance> grievances = grievanceRepo.findGrievancesByIdentificationValue(String.valueOf(IdentificationType.PASSPORT),pp);
+
+        if (grievances.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body("Grievance with passport number " + pp + " not found.");
+        }
+
+        if (grievances.size() == 1) {
+            Long grievance_id = grievances.get(0).getId();
+            Map<String, Object> response = new HashMap<>();
+            response.put("single", true);
+            response.put("id", grievance_id);
+            return ResponseEntity.ok(response);
+        }
+
         Map<String, Object> response = new HashMap<>();
         response.put("single", false);
         response.put("grievances", grievances);
