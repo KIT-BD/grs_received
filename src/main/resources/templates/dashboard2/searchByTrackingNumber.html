@@ -110,7 +110,18 @@
 
         document.getElementById('search_input').addEventListener('keypress', function(event) {
             if(searchType.value !== "passport"){
-                if (event.charCode < 48 || event.charCode > 57) {
+                if ((event.charCode < 48 || event.charCode > 57) && (event.charCode < 2534 || event.charCode > 2543)) {
+                    event.preventDefault();
+                }
+            }
+        });
+        document.getElementById('search_input').addEventListener('paste', function(event) {
+            if (searchType.value !== "passport") {
+                let pastedData = (event.clipboardData || window.clipboardData).getData('text');
+
+                const regex = /^[0-9\u09E6-\u09EF]+$/;
+
+                if (!regex.test(pastedData)) {
                     event.preventDefault();
                 }
             }
