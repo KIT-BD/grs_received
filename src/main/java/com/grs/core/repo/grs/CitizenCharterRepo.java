@@ -36,9 +36,11 @@ public interface CitizenCharterRepo extends JpaRepository<CitizenCharter, Long> 
 
     @Query(
             nativeQuery = true,
-            value = "select * \n" +
-                    "from offices_citizen_charter\n" +
-                    "where service_id=:service_id and office_id=:office_id\n")
+            value = "SELECT * " +
+                    "FROM offices_citizen_charter " +
+                    "WHERE service_id = :service_id " +
+                    "AND office_id = :office_id " +
+                    "LIMIT 1")
     CitizenCharter findByServiceIdAndOfficeId(@Param("service_id") Long serviceId, @Param("office_id") Long officeId);
 
 
