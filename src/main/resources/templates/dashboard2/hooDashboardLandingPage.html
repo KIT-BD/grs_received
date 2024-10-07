@@ -17,70 +17,76 @@
                         <span class="monthToBeShown"></span>&nbsp;মাসের অভিযোগ নিষ্পত্তির চিত্র
                     </h3>
                     <div class="row">
-                        <div class="col-md-4 col-sm-6 col-12 py-2">
-                            <div class="md-rectbox">
-                                <h3 class="text-center md-heading">প্রাপ্ত অভিযোগ</h3>
-                                <div class="col-md-12 col-sm-12 col-12 h-100 text-center">
-                                    <div class="row py-2">
-                                        <div class="col-md-8 col-sm-8 col-9 col-xs-9 sm-box-1 text-center sm-min-height1">
-                                            <h3 class="text-center grievance-submitted-heading">মোট অভিযোগ</h3>
-                                        </div>
-                                        <div class="col-md-4 col-sm-4 col-3 col-xs-3 sm-box-1 text-center sm-min-height1">
-                                            <button type="button" id="totalSubmittedGrievance" class="btn btn-type1">০</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row ">
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">বর্তমান মাসে প্রাপ্ত</h3>
-                                            <button type="button" id="currentMonthAcceptance" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">জের</h3>
-                                            <button type="button" id="ascertainOfLastMonth" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="col-md-5 col-sm-6 col-12 py-2">
+                            <div class="md-rectbox bg-light text-dark">
+                                <figure class="highcharts-figure">
+                                    <div id="chart_1"></div>
+                                </figure>
+<!--                                <h3 class="text-center md-heading">প্রাপ্ত অভিযোগ</h3>-->
+<!--                                <div class="col-md-12 col-sm-12 col-12 h-100 text-center">-->
+<!--                                    <div class="row py-2">-->
+<!--                                        <div class="col-md-8 col-sm-8 col-9 col-xs-9 sm-box-1 text-center sm-min-height1">-->
+<!--                                            <h3 class="text-center grievance-submitted-heading">মোট অভিযোগ</h3>-->
+<!--                                        </div>-->
+<!--                                        <div class="col-md-4 col-sm-4 col-3 col-xs-3 sm-box-1 text-center sm-min-height1">-->
+<!--                                            <button type="button" id="totalSubmittedGrievance" class="btn btn-type1">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="row ">-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">বর্তমান মাসে প্রাপ্ত</h3>-->
+<!--                                            <button type="button" id="currentMonthAcceptance" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">জের</h3>-->
+<!--                                            <button type="button" id="ascertainOfLastMonth" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                             </div>
                         </div>
 
-                        <div class="col-md-4 col-sm-6 col-12 py-2">
-                            <div class="md-rectbox">
-                                <h3 class="text-center md-heading">প্রাপ্ত অভিযোগের অবস্থা</h3>
-                                <div class="row py-2">
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">চলমান</h3>
-                                            <button type="button" id="runningGrievances" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">অন্য দপ্তরে প্রেরিত</h3>
-                                            <button type="button" id="forwardedGrievances" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">সময় অতিক্রান্ত</h3>
-                                            <button type="button" id="timeExpiredGrievances" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">নিষ্পত্তিকৃত</h3>
-                                            <button type="button" id="resolvedGrievances" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="col-md-5 col-sm-6 col-12 py-2">
+                            <div class="md-rectbox bg-light text-dark">
+                                <figure class="highcharts-figure">
+                                    <div id="chart_2"></div>
+                                </figure>
+<!--                                <h3 class="text-center md-heading">প্রাপ্ত অভিযোগের অবস্থা</h3>-->
+<!--                                <div class="row py-2">-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">চলমান</h3>-->
+<!--                                            <button type="button" id="runningGrievances" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">অন্য দপ্তরে প্রেরিত</h3>-->
+<!--                                            <button type="button" id="forwardedGrievances" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="row">-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">সময় অতিক্রান্ত</h3>-->
+<!--                                            <button type="button" id="timeExpiredGrievances" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">নিষ্পত্তিকৃত</h3>-->
+<!--                                            <button type="button" id="resolvedGrievances" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                             </div>
                         </div>
-                        <div class="col-md-4 col-sm-6 col-12 py-2">
+                        <div class="col-md-2 col-sm-6 col-12 py-2">
                             <div class="md-rectbox2 border-assh py-2">
                                 <div class="row">
                                     <div class="col-md-12 col-sm-12 col-12">
@@ -125,63 +131,69 @@
                 <div class="lg-rectbox-body">
                     <h3 class="text-center lg-rectbox-heading"><span class="monthToBeShown"></span> মাসের আপিল নিষ্পত্তির চিত্র</h3>
                     <div class="row">
-                        <div class="col-md-4 col-sm-6 col-12 py-2">
-                            <div class="md-rectbox border-dark-blue">
-                                <h3 class="text-center md-heading">প্রাপ্ত আপিল</h3>
-                                <div class="col-md-12 col-sm-12 col-12 h-100 text-center">
-                                    <div class="row py-2">
-                                        <div class="col-md-8 col-sm-8 col-9 col-xs-9 sm-box-1 text-center sm-min-height1">
-                                            <h3 class="text-center grievance-submitted-heading">মোট আপিল</h3>
-                                        </div>
-                                        <div class="col-md-4 col-sm-4 col-3 col-xs-3 sm-box-1 text-center sm-min-height1">
-                                            <button type="button" id="appealTotal" class="btn btn-type2">০</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row ">
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">বর্তমান মাসে প্রাপ্ত</h3>
-                                            <button type="button" id="appealCurrentMonthAcceptance" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">জের</h3>
-                                            <button type="button" id="appealAscertain" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="col-md-5 col-sm-6 col-12 py-2">
+                            <div class="md-rectbox border-dark-blue bg-light text-dark">
+                                <figure class="highcharts-figure">
+                                    <div id="chart_3"></div>
+                                </figure>
+<!--                                <h3 class="text-center md-heading">প্রাপ্ত আপিল</h3>-->
+<!--                                <div class="col-md-12 col-sm-12 col-12 h-100 text-center">-->
+<!--                                    <div class="row py-2">-->
+<!--                                        <div class="col-md-8 col-sm-8 col-9 col-xs-9 sm-box-1 text-center sm-min-height1">-->
+<!--                                            <h3 class="text-center grievance-submitted-heading">মোট আপিল</h3>-->
+<!--                                        </div>-->
+<!--                                        <div class="col-md-4 col-sm-4 col-3 col-xs-3 sm-box-1 text-center sm-min-height1">-->
+<!--                                            <button type="button" id="appealTotal" class="btn btn-type2">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="row ">-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 xs-2">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">বর্তমান মাসে প্রাপ্ত</h3>-->
+<!--                                            <button type="button" id="appealCurrentMonthAcceptance" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">জের</h3>-->
+<!--                                            <button type="button" id="appealAscertain" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                             </div>
                         </div>
-                        <div class="col-md-4 col-sm-6 col-12 py-2">
-                            <div class="md-rectbox border-dark-blue">
-                                <h3 class="text-center md-heading">প্রাপ্ত আপিলের অবস্থা</h3>
-                                <div class="row">
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 py-2">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">চলমান</h3>
-                                            <button type="button" id="appealRunning" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5 py-2">
-                                        <div class="sm-box-1 h-100">
-                                            <h3 class="text-center sm-heading">সময় অতিক্রান্ত</h3>
-                                            <button type="button" id="appealTimeExpired" class="btn">০</button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-12 col-sm-12 col-12">
-                                        <div class="sm-box-1 h-100 py-2 text-center sm-min-height2">
-                                            <h3 class="text-center sm-heading">নিষ্পত্তিকৃত</h3>
-                                            <button type="button" id="appealResolved" class="btn btn-type3">০</button>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div class="col-md-5 col-sm-6 col-12 py-2">
+                            <div class="md-rectbox border-dark-blue bg-light text-dark">
+                                <figure class="highcharts-figure">
+                                    <div id="chart_4"></div>
+                                </figure>
+<!--                                <h3 class="text-center md-heading">প্রাপ্ত আপিলের অবস্থা</h3>-->
+<!--                                <div class="row">-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-right-5 py-2">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">চলমান</h3>-->
+<!--                                            <button type="button" id="appealRunning" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                    <div class="col-md-6 col-sm-6 col-12  text-center padding-left-5 py-2">-->
+<!--                                        <div class="sm-box-1 h-100">-->
+<!--                                            <h3 class="text-center sm-heading">সময় অতিক্রান্ত</h3>-->
+<!--                                            <button type="button" id="appealTimeExpired" class="btn">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
+<!--                                <div class="row">-->
+<!--                                    <div class="col-md-12 col-sm-12 col-12">-->
+<!--                                        <div class="sm-box-1 h-100 py-2 text-center sm-min-height2">-->
+<!--                                            <h3 class="text-center sm-heading">নিষ্পত্তিকৃত</h3>-->
+<!--                                            <button type="button" id="appealResolved" class="btn btn-type3">০</button>-->
+<!--                                        </div>-->
+<!--                                    </div>-->
+<!--                                </div>-->
                             </div>
                         </div>
-                        <div class="col-md-4 col-sm-6 col-12 py-2">
+                        <div class="col-md-2 col-sm-6 col-12 py-2">
                             <div class="md-rectbox2 border-assh py-2">
                                 <div class="row">
                                     <div class="col-md-12 col-sm-12 col-12">
@@ -285,3 +297,184 @@
         </div>
     </div>
 </div>
+<script type="text/javascript" th:fragment="hooDashboardLandingPageScript">
+
+    renderChart("chart_1");
+    renderPie("chart_2");
+    renderChart("chart_3");
+    renderChart("chart_4");
+    function renderChart(id){
+        Highcharts.chart(id, {
+            chart: {
+                type: 'pie',
+                custom: {},
+                events: {
+                    render() {
+                        const chart = this,
+                            series = chart.series[0];
+                        let customLabel = chart.options.chart.custom.label;
+
+                        if (!customLabel) {
+                            customLabel = chart.options.chart.custom.label =
+                                chart.renderer.label(
+                                    'মোট অভিযোগ<br/>' +
+                                    `<strong>500</strong>`
+                                )
+                                    .css({
+                                        color: '#000',
+                                        textAnchor: 'middle'
+                                    })
+                                    .add();
+                        }
+
+                        const x = series.center[0] + chart.plotLeft,
+                            y = series.center[1] + chart.plotTop -
+                                (customLabel.attr('height') / 2);
+
+                        customLabel.attr({
+                            x,
+                            y
+                        });
+                        // Set font size based on chart diameter
+                        customLabel.css({
+                            fontSize: `${series.center[2] / 12}px`
+                        });
+                    }
+                }
+            },
+            accessibility: {
+                point: {
+                    valueSuffix: '%'
+                }
+            },
+            title: {
+                text: 'প্রাপ্ত অভিযোগের অবস্থা',
+                style: {
+                    fontSize: '1.5em'
+                }
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.y}</b>'
+            },
+            legend: {
+                enabled: false
+            },
+            credits:{
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            plotOptions: {
+                series: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    borderRadius: 8,
+                    dataLabels: [{
+                        enabled: true,
+                        distance: 20,
+                        format: '{point.name}',
+                        style: {
+                            fontSize: '1em'
+                        }
+                    }, {
+                        enabled: true,
+                        distance: -25,
+                        format: '{point.y}',
+                        style: {
+                            fontSize: '1em'
+                        }
+                    }],
+                    showInLegend: true
+                }
+            },
+            series: [{
+                name: 'Registrations',
+                colorByPoint: false,
+                innerSize: '65%',
+                data: [{
+                    name: 'চলমান',
+                    y: 239,
+                    color: '#67a0de'
+                }, {
+                    name: 'অন্য দপ্তরে প্রেরিত',
+                    y: 126,
+                    color: '#ff9a2c'
+                }, {
+                    name: 'নিষ্পত্তিকৃত',
+                    y: 370,
+                    color: '#54c746'
+                }, {
+                    name: 'সময় অতিক্রান্ত',
+                    y: 264,
+                    color: '#ff5e52'
+                }]
+            }]
+        });
+    }
+    function renderPie(id){
+        Highcharts.setOptions({
+            colors: Highcharts.map(Highcharts.getOptions().colors, function (color) {
+                return {
+                    radialGradient: {
+                        cx: 0,
+                        cy: 0,
+                        r: 0
+                    },
+                    stops: [
+                        [0, color],
+                        [1, Highcharts.color(color).brighten(-0.3).get('rgb')]
+                    ]
+                };
+            })
+        });
+        Highcharts.chart(id, {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: 'নিষ্পত্তিকৃত অভিযোগের হার',
+                align: 'center'
+            },
+            tooltip: {
+                pointFormat: '{series.name}: <b>{point.percentage:.1f}%</b>'
+            },
+            credits:{
+                enabled: false
+            },
+            exporting: {
+                enabled: false
+            },
+            accessibility: {
+                point: {
+                    valueSuffix: '%'
+                }
+            },
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<span style="font-size: 1.2em"><b>{point.name}</b>' +
+                            '</span><br>' +
+                            '<span style="opacity: 0.6">{point.percentage:.1f} ' +
+                            '%</span>',
+                        connectorColor: 'rgba(128,128,128,0.5)'
+                    }
+                }
+            },
+            series: [{
+                name: 'Share',
+                data: [{ name: 'Petrol', y: 938899 },
+                    { name: 'Diesel', y: 1229600 },
+                    { name: 'Electricity', y: 325251 },
+                    { name: 'Other', y: 238751 }
+                ]
+            }]
+        });
+    }
+</script>
