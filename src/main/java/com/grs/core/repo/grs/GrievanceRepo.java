@@ -2,6 +2,7 @@ package com.grs.core.repo.grs;
 
 import com.grs.core.domain.grs.Grievance;
 import com.grs.core.domain.GrievanceCurrentStatus;
+import com.grs.core.domain.projapoti.Office;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -21,8 +22,7 @@ public interface GrievanceRepo extends JpaRepository<Grievance, Long> {
     nativeQuery = true)
     public long findMaxTrackingNumber();
 
-
-//    @Query("SELECT g FROM Grievance g WHERE g.trackingNumber = :trx OR g.trackingNumber = CONCAT('0', :trx)")
+    //    @Query("SELECT g FROM Grievance g WHERE g.trackingNumber = :trx OR g.trackingNumber = CONCAT('0', :trx)")
 //    List<Grievance> findGrievancesByTrackingNumber(@Param("trx") String trx);
     @Query("SELECT g FROM Grievance g WHERE g.trackingNumber = :trx " +
             "OR g.trackingNumber = CONCAT('0', :trx) " +

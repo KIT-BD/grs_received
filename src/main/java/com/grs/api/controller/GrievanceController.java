@@ -121,15 +121,13 @@ public class GrievanceController {
         return new ModelAndView("redirect:/error-page");
     }
 
-    @RequestMapping(value = "/searchGrievances.do", method = RequestMethod.GET, params = "id")
+    @RequestMapping(value = "/searchGrievances.do", method = RequestMethod.GET, params = {"id","tab"})
     public ModelAndView searchGrievancesPage(
             Authentication authentication,
             Model model,
             HttpServletRequest request,
             @RequestParam Long id,
-            @RequestParam(required = false) String tab, // Add tab as an optional parameter
-            @RequestParam(required = false) Integer page, // Add page as an optional parameter
-            @RequestParam(required = false) Integer size // Add size as an optional parameter
+            @RequestParam(required = false) String tab
     ) {
         if (authentication != null) {
             if(!accessControlService.hasPermissionToViewGrievanceDetails(authentication, id)) {
@@ -180,8 +178,6 @@ public class GrievanceController {
 
             // Add tab, page, and size parameters to the model so they can be passed back
             model.addAttribute("currentTab", tab);
-            model.addAttribute("currentPage", page);
-            model.addAttribute("pageSize", size);
 
             return modelViewService.addNecessaryAttributesAndReturnViewPage(model,
                     authentication,
