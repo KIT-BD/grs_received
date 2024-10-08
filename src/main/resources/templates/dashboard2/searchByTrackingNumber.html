@@ -149,7 +149,7 @@
             type: "GET",
             success: function(response) {
                 if (response.single) {
-                    window.location.href = `/searchGrievances.do?id=${response.id}`;
+                    window.location.href = `/searchGrievances.do?id=${response.id}&tab=FindByTrackingNumber`;
                 } else {
                     data_exist.style.display = 'none';
                     console.log(response.grievances)
