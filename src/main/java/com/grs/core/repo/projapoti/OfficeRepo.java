@@ -15,6 +15,8 @@ import java.util.List;
  */
 @Repository
 public interface OfficeRepo extends JpaRepository<Office, Long> {
+
+    Office findOfficeById(Long id);
     List<Office> findByOfficeLayerInAndStatusTrueOrderByIdAsc(List<OfficeLayer> officeLayers);
     Integer countByParentOfficeId(Long parentOfficeId);
     List<Office> findByParentOfficeIdAndStatusTrue(Long parentOfficeId);
