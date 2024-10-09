@@ -654,15 +654,40 @@
                                             }
                 }
             }
-            console.log(response);
         }).done(function (response) {
+            console.log(response)
+
+            renderGrievanceResolvedChart("chart_1",
+                response.runningGrievances,
+                response.forwardedGrievances,
+                response.resolvedGrievances,
+                response.timeExpiredGrievances,
+                response.totalSubmittedGrievance
+            );
+            renderPie("chart_2",
+                'অভিযোগ নিষ্পত্তির হার',
+                response.resolveRate,
+                parseFloat((100-response.resolveRate).toFixed(1))
+            );
+            renderAppealResolvedChart("chart_3",
+                response.appealRunning,
+                response.appealTimeExpired,
+                response.appealResolved,
+                response.appealTotal
+            );
+            renderPie("chart_4",
+                'আপিল নিষ্পত্তির হার',
+                response.appealResolveRate,
+                parseFloat((100-response.appealResolveRate).toFixed(1))
+            );
         }).fail(function (response) {
-            var message = (languageCode == "en") ? "Sorry! Cannot load dashboard data" : "দুঃখিত! তথ্য লোড করা যাচ্ছেনা";
+            var message = (languageCode === "en") ? "Sorry! Cannot load dashboard data" : "দুঃখিত! তথ্য লোড করা যাচ্ছেনা";
             toastr.error(message, null, {positionClass: 'toast-top-center'});
         }).always(function () {
             unblockUI();
         });
     }
+
 
     function loadCabinetCellPageData() {
         blockUI();
