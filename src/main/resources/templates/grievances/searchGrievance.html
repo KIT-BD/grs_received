@@ -3064,10 +3064,10 @@
             switch (field.action) {
                 case "NEW":
                     if (field.fromGroNameBangla == field.toGroNameBangla) {
-                        actionBng = ' নতুন অভিযোগ প্রাপ্তি ' + '<hr class="blackLine"><br>' + 'অভিযোগকারী ' + ' কর্তৃক <span class="officerName" style="color:#00a887;">' + field.toGroNameBangla + ', ' + field.toDesignationNameBangla + ', ' + field.toOfficeUnitNameBangla + ', ' + field.toOfficeNameBangla + '</span> এর নিকট প্রেরিত।<br>';
+                        actionBng = '<strong><span style="color: cornflowerblue">নতুন অভিযোগ প্রাপ্তি</span></strong>' + '<hr class="blackLine"><br>' + 'অভিযোগকারী ' + ' কর্তৃক <span class="officerName" style="color:#00a887;">' + field.toGroNameBangla + ', ' + field.toDesignationNameBangla + ', ' + field.toOfficeUnitNameBangla + ', ' + field.toOfficeNameBangla + '</span> এর নিকট প্রেরিত।<br>';
                         actionEng = ' New Grievance Received ' + '<hr class="blackLine"><br>' + 'Complainant has forwarded grievance to ' + field.toGroNameEnglish + '.';
                     } else {
-                        actionBng = ' নতুন অভিযোগ প্রাপ্তি ' + '<hr class="blackLine"><br>' + ' <span class="officerName" style="color:#00a887;">  ' + field.fromGroNameBangla + ', ' + field.fromDesignationNameBangla + ', ' + field.fromOfficeUnitNameBangla + ', ' + field.fromOfficeNameBangla + '</span> ' + ' কর্তৃক <span class="officerName" style="color:#00a887;">' + field.toGroNameBangla + ', ' + field.toDesignationNameBangla + ', ' + field.toOfficeUnitNameBangla + ', ' + field.toOfficeNameBangla + '</span> এর নিকট প্রেরিত।<br>';
+                        actionBng = '<strong><span style="color: cornflowerblue">নতুন অভিযোগ প্রাপ্তি</span></strong>' + '<hr class="blackLine"><br>' + ' <span class="officerName" style="color:#00a887;">  ' + field.fromGroNameBangla + ', ' + field.fromDesignationNameBangla + ', ' + field.fromOfficeUnitNameBangla + ', ' + field.fromOfficeNameBangla + '</span> ' + ' কর্তৃক <span class="officerName" style="color:#00a887;">' + field.toGroNameBangla + ', ' + field.toDesignationNameBangla + ', ' + field.toOfficeUnitNameBangla + ', ' + field.toOfficeNameBangla + '</span> এর নিকট প্রেরিত।<br>';
                         actionEng = ' New Grievance Received ' + '<hr class="blackLine"><br>' + 'Complainant has forwarded grievance to ' + field.toGroNameEnglish + '.';
                     }
                     break;
@@ -3248,7 +3248,7 @@
                 case "APPEAL_CLOSED_INSTRUCTION_EXECUTED":
                 case "APPEAL_CLOSED_ANSWER_OK":
                 case "APPEAL_CLOSED_SERVICE_GIVEN":
-                    actionBng = ' অভিযোগ নিষ্পত্তি ' + '<hr class="blackLine"><br><span class="officerName" style="color:#00a887;">' + field.fromGroNameBangla + ', ' + field.fromDesignationNameBangla + ', ' + field.fromOfficeUnitNameBangla + ', ' + field.fromOfficeNameBangla + '</span> অভিযোগটি নিষ্পত্তি করেছেন। <br>';
+                    actionBng = ' <strong><span style="color: mediumseagreen">অভিযোগ নিষ্পত্তি</span></strong> ' + '<hr class="blackLine"><br><span class="officerName" style="color:#00a887;">' + field.fromGroNameBangla + ', ' + field.fromDesignationNameBangla + ', ' + field.fromOfficeUnitNameBangla + ', ' + field.fromOfficeNameBangla + '</span> অভিযোগটি নিষ্পত্তি করেছেন। <br>';
                     actionEng = ' Grievance Closed ' + '<br>' + field.fromGroNameEnglish + ' closed the grievance.';
                     break;
                 case "REJECTED":
@@ -3258,10 +3258,10 @@
                     break;
                 case "APPEAL":
                     if (field.fromGroNameBangla == field.toGroNameBangla) {
-                        actionBng = ' আপিলকৃত ' + '<hr class="blackLine"><br>' + ' অভিযোগকারী আপিল করেছেন।<br>';
+                        actionBng = ' <strong><span style="color: darkred">আপিলকৃত</span></strong> ' + '<hr class="blackLine"><br>' + ' অভিযোগকারী আপিল করেছেন।<br>';
                         actionEng = ' Appeal ' + '<br>' + ' The complainant has appealed.';
                     } else {
-                        actionBng = ' আপিলকৃত ' + '<hr class="blackLine"><br><span class="officerName">' + field.fromGroNameBangla + ', ' + field.fromDesignationNameBangla + ', ' + field.fromOfficeUnitNameBangla + ', ' + field.fromOfficeNameBangla + '</span> কর্তৃক <span class="officerName">' + field.toGroNameBangla + ', ' + field.toDesignationNameBangla + ', ' + field.toOfficeUnitNameBangla + ', ' + field.toOfficeNameBangla + '</span>-এর নিকট আপিলকৃত।<br>';
+                        actionBng = ' <strong><span style="color: darkred">আপিলকৃত</span></strong> ' + '<hr class="blackLine"><br><span class="officerName">' + field.fromGroNameBangla + ', ' + field.fromDesignationNameBangla + ', ' + field.fromOfficeUnitNameBangla + ', ' + field.fromOfficeNameBangla + '</span> কর্তৃক <span class="officerName">' + field.toGroNameBangla + ', ' + field.toDesignationNameBangla + ', ' + field.toOfficeUnitNameBangla + ', ' + field.toOfficeNameBangla + '</span>-এর নিকট আপিলকৃত।<br>';
                         actionEng = ' Appeal ' + '<br>' + field.fromGroNameEnglish + ' has appealed to ' + field.toGroNameEnglish + '.';
                     }
                     break;

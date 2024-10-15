@@ -6,48 +6,52 @@
     <div class="panel panel-default" style="background: white;">
         <div class="panel-body" id="searchByTrxPanel" style="margin-left: 50px; margin-right: 50px">
             <div class="font-lg bold text-center margin-20" style="margin-bottom: 20px">অভিযোগ অনুসন্ধান</div>
+            <div class="input_container" style="display: flex; flex-direction: column; align-items: center;">
+                <div class="row margin-bottom-20 trx-search" style="margin-bottom: 30px; width: 20%; max-width: 800px;display: flex; flex-direction: column; align-items: center;">
+                    <form id="searchForm" class="form-inline p-12" style="width: 100%;">
+                        <div class="form-group" style="width: 100%; margin: 0 auto;">
+                            <!-- Search type dropdown -->
+                            <select id="searchType" class="form-control form-control-lg rounded" style="width: 100%; font-size: 14px; height: 34px;">
+                                <option value="tracking_number">ট্র্যাকিং নম্বর</option>
+                                <option value="phone_number">ফোন নম্বর</option>
+                                <option value="nid">জাতীয় পরিচয় পত্র</option>
+                                <option value="passport">পাসপোর্ট</option>
+                                <option value="bcn">জন্মসনদ</option>
+                            </select>
+                        </div>
 
-            <div class="row margin-bottom-20 trx-search" style="margin-bottom: 30px;">
-                <form id="searchForm" class="form-inline" style="width: 100%;">
-                    <div class="form-group" style="width: 100%; max-width: 800px; margin: 0 auto;">
-                        <!-- Search type dropdown -->
-                        <select id="searchType" class="form-control form-control-lg" style="width: 100%; font-size: 14px;">
-                            <option value="tracking_number">ট্র্যাকিং নম্বর</option>
-                            <option value="phone_number">ফোন নম্বর</option>
-                            <option value="nid">জাতীয় পরিচয় পত্র</option>
-                            <option value="passport">পাসপোর্ট</option>
-                            <option value="bcn">জন্মসনদ</option>
-                        </select>
-                    </div>
-
-
-                    <!-- Search input -->
-                    <div class="form-group" style="width: 100%; max-width: 800px; margin: 20px auto 0;">
-                        <input type="text" id="search_input" name="search_input" class="form-control form-control-lg" placeholder="ট্র্যাকিং নম্বর প্রদান করুন" style="width: 100%;font-size: 14px;">
-                    </div>
-
-                </form>
+                        <!-- Search input -->
+                        <div class="form-group" style="width: 100%; margin: 20px auto 0;">
+                            <input type="text" id="search_input" name="search_input" class="form-control form-control-lg" placeholder="ট্র্যাকিং নম্বর প্রদান করুন" style="width: 100%; font-size: 14px;">
+                        </div>
+                    </form>
+                </div>
             </div>
 
-            <div class="text-center margin-top-20">
-                <button id="searchButton" class="btn btn-primary" style="cursor: pointer; height: 35px; width: 140px; font-size: 16px;">সার্চ</button>
+            <div class="text-center margin-top-20" style="display: flex; justify-content: center; gap: 10px;">
+                <button id="clearButton" class="btn btn-warning" style="cursor: pointer; height: 35px; width: 140px; font-size: 16px;">রিফ্রেশ করুন</button>
+                <button id="searchButton" class="btn btn-primary" style="cursor: pointer; height: 35px; width: 140px; font-size: 16px;">অনুসন্ধান করুন</button>
             </div>
 
-            <div class="margin-top-20" id="grievanceTableContainer" style="display: none;">
+
+            <div style="margin-top: 50px;" id="grievanceTableContainer">
                 <div class="table-responsive">
-                    <table class="table table-bordered table-striped">
+                    <table class="table table-striped table-bordered border bg-light">
                         <thead>
-                        <tr>
-                            <th>ট্র্যাকিং নম্বর</th>
-                            <th>জমাদানের তারিখ</th>
-                            <th>অভিযোগের ধরন</th>
-                            <th>অবস্থা</th>
-                            <th>বিষয়</th>
-                            <th>অ্যাকশন</th>
-                        </tr>
+                            <tr>
+                                <th>#</th>
+                                <th>ট্র্যাকিং নম্বর</th>
+                                <th>জমাদানের তারিখ</th>
+                                <th>অফিসের নাম</th>
+                                <th>অবস্থা</th>
+                                <th>বিষয়</th>
+                                <th>অ্যাকশন</th>
+                            </tr>
                         </thead>
-                        <tbody id="grievanceTableBody"></tbody>
+                        <tbody id="grievanceTableBody">
+                        </tbody>
                     </table>
+                    <p id="data_found" style="text-align: center; display: block; margin: 0 auto; color: red;">কোনো অভিযোগ খুঁজে পাওয়া যায় নি</p>
                 </div>
             </div>
         </div>
@@ -57,6 +61,10 @@
 <script type="text/javascript" th:fragment="searchByTrxScript">
 
     document.addEventListener("DOMContentLoaded", function () {
+        console.log(window.location.href);
+        let newUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState(null, '', newUrl);
+
         const searchType = document.getElementById("searchType");
         const searchInput = document.getElementById("search_input");
 
@@ -76,6 +84,12 @@
                 searchInput.placeholder = "জন্মসনদ নম্বর প্রদান করুন";
             }
 
+        });
+
+        document.getElementById("clearButton").addEventListener("click", function (){
+            document.getElementById("search_input").value = "";
+            document.getElementById("grievanceTableBody").innerHTML = "";
+            document.getElementById("data_found").style.display = 'block';
         });
 
         document.getElementById("searchButton").addEventListener("click", function() {
@@ -129,13 +143,16 @@
     });
 
     function searchByTrackingNumber(currentSearchInput, type) {
+        const data_exist = document.getElementById("data_found");
         $.ajax({
             url: `/api/search/${type}/${currentSearchInput}`,
             type: "GET",
             success: function(response) {
                 if (response.single) {
-                    window.location.href = `/searchGrievances.do?id=${response.id}`;
+                    window.location.href = `/searchGrievances.do?id=${response.id}&tab=FindByTrackingNumber`;
                 } else {
+                    data_exist.style.display = 'none';
+                    console.log(response.grievances)
                     displayGrievanceTable(response.grievances);
                 }
             },
@@ -146,58 +163,125 @@
         });
     }
 
+    // function displayGrievanceTable(grievances) {
+    //     const tableBody = document.getElementById("grievanceTableBody");
+    //     tableBody.innerHTML = '';
+    //
+    //     grievances.forEach(function(grievance) {
+    //         let row = document.createElement("tr");
+    //
+    //         let trackingNumberCell = document.createElement("td");
+    //         trackingNumberCell.textContent = grievance.trackingNumber.toBanglaNumber();
+    //         row.appendChild(trackingNumberCell);
+    //
+    //         let submissionDateCell = document.createElement("td");
+    //         let date = new Date(grievance.submissionDate);
+    //         let year = date.getFullYear().toString().toBanglaNumber();
+    //         let month = (date.getMonth() + 1).toString().toBanglaNumber();
+    //         if (month.length === 1) {
+    //             month = "০"+month;
+    //         }
+    //         let day = date.getDate().toString().toBanglaNumber();
+    //         if (day.length === 1) {
+    //             day = "০"+day;
+    //         }
+    //         submissionDateCell.textContent = `${day}-${month}-${year}`;
+    //         row.appendChild(submissionDateCell);
+    //
+    //         let complaintTypeCell = document.createElement("td");
+    //         complaintTypeCell.textContent = convertServiceTypeToBangla(grievance.grievanceType);
+    //         row.appendChild(complaintTypeCell);
+    //
+    //         let statusCell = document.createElement("td");
+    //         statusCell.textContent = convertGrievanceStatusToBangla(grievance.grievanceCurrentStatus);
+    //         row.appendChild(statusCell);
+    //
+    //         let subjectCell = document.createElement("td");
+    //         subjectCell.textContent = grievance.subject;
+    //         row.appendChild(subjectCell);
+    //
+    //         let actionCell = document.createElement("td");
+    //         let viewButton = document.createElement("button");
+    //         viewButton.textContent = "দেখুন";
+    //         viewButton.className = "btn btn-primary";
+    //         viewButton.style.cursor = "pointer";
+    //         viewButton.addEventListener("click", function() {
+    //             window.location.href = `/searchGrievances.do?id=${grievance.id}`;
+    //         });
+    //         actionCell.appendChild(viewButton);
+    //         row.appendChild(actionCell);
+    //
+    //         tableBody.appendChild(row);
+    //     });
+    //
+    //     document.getElementById("grievanceTableContainer").style.display = "block";
+    // }
+
     function displayGrievanceTable(grievances) {
-        console.log(grievances)
         const tableBody = document.getElementById("grievanceTableBody");
         tableBody.innerHTML = '';
 
-        grievances.forEach(function(grievance) {
+        grievances.forEach(function(grievance, index) {
             let row = document.createElement("tr");
 
+            // Add the serial number column
+            let serialNumberCell = document.createElement("td");
+            serialNumberCell.textContent = (index + 1).toString().toBanglaNumber(); // Convert to Bangla number
+            row.appendChild(serialNumberCell);
+
+            // Tracking Number
             let trackingNumberCell = document.createElement("td");
             trackingNumberCell.textContent = grievance.trackingNumber.toBanglaNumber();
             row.appendChild(trackingNumberCell);
 
+            // Submission Date
             let submissionDateCell = document.createElement("td");
             let date = new Date(grievance.submissionDate);
             let year = date.getFullYear().toString().toBanglaNumber();
             let month = (date.getMonth() + 1).toString().toBanglaNumber();
             if (month.length === 1) {
-                month = "০"+month;
+                month = "০" + month;
             }
             let day = date.getDate().toString().toBanglaNumber();
             if (day.length === 1) {
-                day = "০"+day;
+                day = "০" + day;
             }
             submissionDateCell.textContent = `${day}-${month}-${year}`;
             row.appendChild(submissionDateCell);
 
-            let complaintTypeCell = document.createElement("td");
-            complaintTypeCell.textContent = convertServiceTypeToBangla(grievance.grievanceType);
-            row.appendChild(complaintTypeCell);
+            let officeNameCell = document.createElement("td");
+            officeNameCell.textContent = grievance.officeName || 'N/A';
+            row.appendChild(officeNameCell);
 
+            // Complaint Type
+            // let complaintTypeCell = document.createElement("td");
+            // complaintTypeCell.textContent = convertServiceTypeToBangla(grievance.grievanceType);
+            // row.appendChild(complaintTypeCell);
+
+            // Status
             let statusCell = document.createElement("td");
             statusCell.textContent = convertGrievanceStatusToBangla(grievance.grievanceCurrentStatus);
             row.appendChild(statusCell);
 
+            // Subject
             let subjectCell = document.createElement("td");
             subjectCell.textContent = grievance.subject;
             row.appendChild(subjectCell);
 
+            // Action button
             let actionCell = document.createElement("td");
             let viewButton = document.createElement("button");
-            viewButton.textContent = "দেখুন";
+            viewButton.textContent = "বিস্তারিত দেখুন";
             viewButton.className = "btn btn-primary";
             viewButton.style.cursor = "pointer";
             viewButton.addEventListener("click", function() {
-                window.location.href = `/searchGrievances.do?id=${grievance.id}`;
+                window.location.href = `/searchGrievances.do?id=${grievance.id}&tab=FindByTrackingNumber`;
             });
             actionCell.appendChild(viewButton);
             row.appendChild(actionCell);
 
             tableBody.appendChild(row);
         });
-
         document.getElementById("grievanceTableContainer").style.display = "block";
     }
 
