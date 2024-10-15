@@ -465,6 +465,7 @@ public class GrievanceForwardingService {
     public List<GrievanceForwardingEmployeeRecordsDTO> searchAllComplaintMovementHistoryByGrievance(Long grievanceId) {
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         List<GrievanceForwarding> grievanceForwardings = grievanceForwardingDAO.getAllComplaintMovement(grievance);
+        Collections.reverse(grievanceForwardings);
 
         return grievanceForwardings.stream()
                 .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
