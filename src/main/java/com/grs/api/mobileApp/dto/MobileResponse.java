@@ -11,5 +11,5 @@ import java.util.List;
 @Builder
 public class MobileResponse {
     public String status;
-    public List<String> data;
+    public List<?> data;
 }
