@@ -20,4 +20,5 @@ public interface OfficeLayerRepo extends JpaRepository<OfficeLayer, Long> {
     List<OfficeLayer> findByLayerLevelAndCustomLayerId(Integer layerLevel, Integer customLayerId);
     List<OfficeLayer> findByLayerLevelAndCustomLayerIdIn(Integer layerLevel, List<Integer> customLayerIdList);
     List<String> findLayerNameBngByLayerLevel(Integer layerLevel);
+    List<OfficeLayer> findByCustomLayerId(Integer customLayerId);
 }
