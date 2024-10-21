@@ -1,5 +1,7 @@
 package com.grs.api.config.security;
 
+import com.grs.api.mobileApp.config.JWTLoginFilterForMobileAPI;
+import com.grs.core.service.ComplainantService;
 import com.grs.utils.CookieUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +27,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Autowired
     private OISFUserDetailsServiceImpl oisfUserDetailsService;
     @Autowired
+    private ComplainantService complainantService;
+    @Autowired
     private GRSUserDetailsServiceImpl grsUserDetailsService;
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
@@ -34,14 +38,14 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http.cors().configurationSource(request -> {
-            CorsConfiguration cors = new CorsConfiguration();
+                    CorsConfiguration cors = new CorsConfiguration();
                     cors.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));
                     cors.setAllowedOrigins(Collections.singletonList("*"));
                     cors.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PUT","OPTIONS","PATCH", "DELETE"));
                     cors.setAllowCredentials(true);
                     cors.setExposedHeaders(Collections.singletonList("Authorization"));
-            return cors;
-        }).and().csrf().disable().authorizeRequests()
+                    return cors;
+                }).and().csrf().disable().authorizeRequests()
                 .antMatchers("/register", "/").permitAll()
                 .antMatchers("/api/**").permitAll()
                 .antMatchers("/viewCitizenCharter.do").hasAnyAuthority("VIEW_CITIZEN_CHARTER")
@@ -73,6 +77,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
                 .addFilterBefore(new JWTLoginFilter("/login", authenticationManager(), bCryptPasswordEncoder), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JWTLoginFilterForAPI("/api/login", authenticationManager(), bCryptPasswordEncoder), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JWTLoginFilterForMobileAPI("/api/mobile/login", authenticationManager(), bCryptPasswordEncoder, complainantService), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JWTAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
