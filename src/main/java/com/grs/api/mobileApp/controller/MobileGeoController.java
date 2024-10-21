@@ -2,6 +2,9 @@ package com.grs.api.mobileApp.controller;
 
 import com.grs.api.mobileApp.dto.MobileResponse;
 import com.grs.api.mobileApp.service.MobileGeoService;
+import com.grs.core.domain.projapoti.District;
+import com.grs.core.domain.projapoti.Division;
+import com.grs.core.domain.projapoti.Upazila;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -9,7 +12,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
@@ -26,11 +31,42 @@ public class MobileGeoController {
 
         Integer code = prams != null ? Integer.valueOf(prams.split("=")[1]): null;
 
-        List<?> getAll = mobileGeoService.findGeo(apiUrl,code);
+        List<?> getAll = mobileGeoService.findGeo(apiUrl, code);
+
+        List<Map<String, Object>> responseList = new ArrayList<>();
+
+        for (Object var : getAll) {
+            Map<String, Object> response = new LinkedHashMap<>();
+            if (var instanceof Division) {
+                Division division = (Division) var;
+                response.put("bbsCode", null);
+                response.put("name", division.getNameEnglish());
+                response.put("nameBn", division.getNameBangla());
+                response.put("id", division.getId());
+
+            } else if (var instanceof District) {
+                District district = (District) var;
+                response.put("bbsCode", null);
+                response.put("division", district.getDivisionId());
+                response.put("name", district.getNameEnglish());
+                response.put("nameBn", district.getNameBangla());
+                response.put("id", district.getId());
+            } else if (var instanceof Upazila){
+                Upazila upazila = (Upazila) var;
+                response.put("bbsCode", null);
+                response.put("division",upazila.getDivisionId());
+                response.put("district", upazila.getDistrictId());
+                response.put("name", upazila.getNameEnglish());
+                response.put("nameBn", upazila.getNameBangla());
+                response.put("id", upazila.getId());
+            }
+            responseList.add(response);
+        }
+
 
         return MobileResponse.builder()
                 .status("success")
-                .data(getAll)
+                .data(responseList)
                 .build();
     }
 }
