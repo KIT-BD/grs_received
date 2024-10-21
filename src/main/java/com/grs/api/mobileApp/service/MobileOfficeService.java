@@ -1,25 +1,38 @@
 package com.grs.api.mobileApp.service;
 
-import com.grs.api.mobileApp.dto.MobileCustomOfficeLayerDTO;
-import com.grs.api.mobileApp.dto.MobileOfficeDTO;
-import com.grs.api.mobileApp.dto.MobileOfficeLayerDTO;
-import com.grs.api.mobileApp.dto.MobileOfficeLayerDuplicateDTO;
+import com.grs.api.mobileApp.dto.*;
+import com.grs.core.dao.OfficeDAO;
 import com.grs.core.domain.projapoti.CustomOfficeLayer;
 import com.grs.core.domain.projapoti.Office;
+import com.grs.core.domain.projapoti.OfficeLayer;
+import com.grs.core.domain.projapoti.OfficeOrigin;
+import com.grs.core.repo.projapoti.CustomOfficeLayerRepo;
+import com.grs.core.repo.projapoti.OfficeLayerRepo;
 import com.grs.core.service.OfficeService;
+import com.grs.utils.MessageUtils;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
-@RequiredArgsConstructor
 public class MobileOfficeService {
 
-    private final OfficeService officeService;
+    @Autowired
+    private OfficeService officeService;
+
+    @Autowired
+    private OfficeLayerRepo officeLayerRepo;
+
+    @Autowired
+    private CustomOfficeLayerRepo customOfficeLayerRepo;
+
+    @Autowired
+    private OfficeDAO officeDAO;
+
+
 
     public List<MobileOfficeLayerDTO> getOfficeLayers() {
         List<MobileOfficeLayerDTO> officeLayers = new ArrayList<>();
@@ -41,129 +54,100 @@ public class MobileOfficeService {
 
         for (Office office : offices) {
             MobileOfficeDTO mobileOffice = new MobileOfficeDTO();
-            mobileOffice.setId(office.getId().intValue());
-            mobileOffice.setOffice_name_bng(office.getNameBangla());
-            mobileOffice.setOffice_name_eng(office.getNameEnglish());
+
+            mobileOffice.setId(office.getId() != null ? office.getId() : null);
+            mobileOffice.setOffice_name_bng(office.getNameBangla() != null ? office.getNameBangla() : null);
+            mobileOffice.setOffice_name_eng(office.getNameEnglish() != null ? office.getNameEnglish() : null);
+
             mobileOffice.setGeo_division_id(office.getDivisionId());
-            mobileOffice.setGeo_district_id(office.getDistrictId() != null ? office.getDistrictId() : 0);
-            mobileOffice.setGeo_upazila_id(office.getUpazilaId() != null ? office.getUpazilaId() : 0);
+            mobileOffice.setGeo_district_id(office.getDistrictId());
+            mobileOffice.setGeo_upazila_id(office.getUpazilaId());
+
             mobileOffice.setDigital_nothi_code("");
             mobileOffice.setOffice_phone("");
             mobileOffice.setOffice_mobile("");
             mobileOffice.setOffice_fax("");
             mobileOffice.setOffice_email("");
-            mobileOffice.setOffice_web(office.getWebsiteUrl());
-            mobileOffice.setOffice_ministry_id(office.getOfficeMinistry() != null ? office.getOfficeMinistry().getId().intValue() : 0);
-            mobileOffice.setOffice_layer_id(office.getOfficeLayer() != null ? office.getOfficeLayer().getId().intValue() : 0);
-            mobileOffice.setOffice_origin_id(office.getOfficeOriginId() != null ? office.getOfficeOriginId().intValue() : 0);
-            mobileOffice.setCustom_layer_id(office.getOfficeLayer().getCustomLayerId() != null ? office.getOfficeLayer().getCustomLayerId() : 0);
-            mobileOffice.setParent_office_id(office.getParentOfficeId() != null ? office.getParentOfficeId().intValue() : 0);
+            mobileOffice.setOffice_web(office.getWebsiteUrl() != null ? office.getWebsiteUrl() : null);
 
-            // Add office layer details if available
-            if (office.getOfficeLayer() != null) {
-                MobileOfficeLayerDuplicateDTO officeLayer = new MobileOfficeLayerDuplicateDTO();
-                officeLayer.setId(office.getOfficeLayer().getId().intValue());
-                officeLayer.setLayer_name_eng(office.getOfficeLayer().getLayerNameEnglish());
-                officeLayer.setLayer_name_bng(office.getOfficeLayer().getLayerNameBangla());
-                officeLayer.setLayer_level(office.getOfficeLayer().getLayerLevel());
+            mobileOffice.setOffice_ministry_id(office.getOfficeMinistry() != null ? office.getOfficeMinistry().getId() : null);
+            mobileOffice.setOffice_layer_id(office.getOfficeLayer() != null ? office.getOfficeLayer().getId() : null);
+            mobileOffice.setOffice_origin_id(office.getOfficeOriginId() != null ? office.getOfficeOriginId() : null);
+            mobileOffice.setCustom_layer_id(office.getOfficeLayer() != null ? office.getOfficeLayer().getCustomLayerId() : null);
+            mobileOffice.setParent_office_id(office.getParentOfficeId() != null ? office.getParentOfficeId() : null);
 
-                mobileOffice.setOffice_layer(officeLayer);
-            }
+            MobileOfficeLayerDuplicateDTO officeLayer = new MobileOfficeLayerDuplicateDTO();
+            officeLayer.setId(office.getOfficeLayer() != null ? office.getOfficeLayer().getId() : null);
+            officeLayer.setLayer_name_eng(office.getOfficeLayer() != null ? office.getOfficeLayer().getLayerNameEnglish() : null);
+            officeLayer.setLayer_name_bng(office.getOfficeLayer() != null ? office.getOfficeLayer().getLayerNameBangla() : null);
+            officeLayer.setLayer_level(office.getOfficeLayer() != null ? office.getOfficeLayer().getLayerLevel() : null);
+            mobileOffice.setOffice_layer(officeLayer);
 
-            response.put(mobileOffice.getId(), mobileOffice);
+            response.put(mobileOffice.getId().intValue(), mobileOffice);
         }
         return response;
     }
 
 
     public List<MobileCustomOfficeLayerDTO> getCustomOfficeLayersForMobileByLayerLevel(Integer layerLevel) {
-        // Fetch the original custom office layers
         List<CustomOfficeLayer> customOfficeLayers = officeService.getCustomOfficeLayersByLayerLevel(layerLevel);
 
-        // Convert to the mobile DTO format
         List<MobileCustomOfficeLayerDTO> mobileOfficeLayerDtos = new ArrayList<>();
 
         for (CustomOfficeLayer layer : customOfficeLayers) {
-            String nameEn = getEnglishName(layer.getName());
+            String nameEn = MessageUtils.getCustomLayerEnglishName(layer.getName());
             mobileOfficeLayerDtos.add(new MobileCustomOfficeLayerDTO(layer.getId(), layer.getName(), layer.getLayerLevel(), nameEn));
         }
 
         return mobileOfficeLayerDtos;
     }
 
-    private String getEnglishName(String nameBng) {
-        switch (nameBng) {
-            case "কর্তৃপক্ষ / অথোরিটি":
-                return "Authority";
-            case "ইনস্টিটিউট":
-                return "Institute";
-            case "অন্যান্য প্রতিষ্ঠান":
-                return "Other Institutions";
-            case "একাডেমি/ প্রশিক্ষণ কেন্দ্র":
-                return "Academy / Training Center";
-            case "ব্যুরো":
-                return "Bureau";
-            case "কর্পোরেশন":
-                return "Corporation";
-            case "কাউন্সিল":
-                return "Council";
-            case "কমিশন":
-                return "Commission";
-            case "কোম্পানি":
-                return "Company";
-            case "পরিদপ্তর":
-                return "Directorate";
-            case "পরিষদ":
-                return "Council";
-            case "প্লান্ট/স্টেশন/ফিল্ড":
-                return "Plant / Station / Field";
-            case "প্রোগ্রাম / প্রকল্প":
-                return "Program / Project";
-            case "মন্ত্রণালয়":
-                return "Ministry";
-            case "অধিদপ্তর":
-                return "Department";
-            case "বিভাগীয় কার্যালয়":
-                return "Divisional Office";
-            case "জেলা কার্যালয়":
-                return "District Office";
-            case "উপজেলা কার্যালয়":
-                return "Upazila Office";
-            case "উপজেলা ভূমি অফিস":
-                return "Upazila Land Office";
-            case "বিভাগ":
-                return "Division";
-            case "সংস্থা":
-                return "Agency";
-            case "ইউনিট":
-                return "Unit";
-            case "বোর্ড":
-                return "Board";
-            case "আঞ্চলিক কার্যালয়":
-                return "Regional Office";
-            case "ফাউন্ডেশন":
-                return "Foundation";
-            case "বিশ্ববিদ্যালয়":
-                return "University";
-            case "কলেজ":
-                return "College";
-            case "স্কুল":
-                return "School";
-            case "টেকনিক্যাল/ভোকেশনাল প্রতিষ্ঠান":
-                return "Technical / Vocational Institution";
-            case "জোনাল অফিস":
-                return "Zonal Office";
-            case "মেট্রোপলিটন":
-                return "Metropolitan";
-            case "মিশন ও অন্যান্য":
-                return "Mission and Others";
-            case "সার্কেল অফিস":
-                return "Circle Office";
-            default:
-                return ""; // Fallback for unknown entries
-        }
+    public List<Office> getOfficesByCustomLayerId(Long customLayerId) {
+        CustomOfficeLayer customOfficeLayer = customOfficeLayerRepo.findById(customLayerId);
+
+        List<OfficeLayer> officeLayerList = officeLayerRepo.findByCustomLayerId(customOfficeLayer.getId().intValue());
+
+        return officeService.getOfficesByOfficeLayer(officeLayerList, true);
     }
 
 
+    public List<MobileOfficeOriginDTO> getOfficeOriginsForMobile(Integer layerLevel) {
+        List<OfficeOrigin> officeOrigins = officeService.getOfficeOriginsByLayerLevel(layerLevel, true, false);
+
+        List<MobileOfficeOriginDTO> mobileOfficeOrigins = new ArrayList<>();
+
+        for (OfficeOrigin origin : officeOrigins) {
+            MobileOfficeOriginDTO mobileOrigin = new MobileOfficeOriginDTO();
+            mobileOrigin.setId(origin.getId());
+            mobileOrigin.setOffice_name_bng(origin.getOfficeNameBangla());
+            mobileOrigin.setOffice_name_eng(origin.getOfficeNameEnglish());
+            mobileOrigin.setOffice_ministry_id(null);
+            mobileOrigin.setOffice_layer_id(origin.getOfficeLayerId());
+            mobileOrigin.setParent_office_id(origin.getParentOfficeOriginId());
+            mobileOrigin.setOffice_level(null);
+            mobileOrigin.setOffice_sequence(null);
+
+            MobileOfficeLayerDuplicateDTO officeLayerDto = new MobileOfficeLayerDuplicateDTO();
+            OfficeLayer officeLayer = officeLayerRepo.findOne(origin.getOfficeLayerId());
+            if (officeLayer != null) {
+                officeLayerDto.setId(officeLayer.getId());
+                officeLayerDto.setLayer_name_eng(officeLayer.getLayerNameEnglish());
+                officeLayerDto.setLayer_name_bng(officeLayer.getLayerNameBangla());
+                officeLayerDto.setLayer_level(officeLayer.getLayerLevel());
+                mobileOrigin.setOffice_layer(officeLayerDto);
+            }
+
+            mobileOfficeOrigins.add(mobileOrigin);
+        }
+
+        return mobileOfficeOrigins;
+    }
+
+    public Map<Integer, MobileOfficeDTO> findByOfficeOriginIdForMobile(Long officeOriginId) {
+
+        List<Office> offices = this.officeDAO.findByOfficeOriginId(officeOriginId);
+
+        return this.convertToMobileOfficeDto(offices);
+    }
 
 }
