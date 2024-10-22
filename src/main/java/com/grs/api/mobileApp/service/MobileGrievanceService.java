@@ -28,6 +28,9 @@ public class MobileGrievanceService {
     public List<Grievance> findGrievancesByUser(Long id){
         return grievanceRepo.findGrievancesByComplainantId(id);
     }
+    public Grievance submitGrievance(GrievanceRequestDTO grievanceRequestDTO){
+        return submitGrievance(null, grievanceRequestDTO);
+    }
 
     public Grievance submitGrievance(UserInformation userInformation, GrievanceRequestDTO grievanceRequestDTO) {
         boolean isGrsUser = false;
