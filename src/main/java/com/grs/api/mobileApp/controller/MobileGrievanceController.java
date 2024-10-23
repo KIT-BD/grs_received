@@ -118,35 +118,6 @@ public class MobileGrievanceController {
                 .status("success")
                 .data(responseDTO)
                 .build();
-
-//        {
-//            "status": "success",
-//            "data": {
-//                    "subject": "dfgsdfgsdfg",
-//                    "submission_date": "2024-10-17 08:11:15am",
-//                    "submission_date_bn": "২০২৪-১০-১৭ ০৮:১১:১৫পুর্বাহ্ন",
-//                    "complaint_type": "Nagorik",
-//                    "complaint_type_bn": "নাগরিক",
-//                    "current_status": "New",
-//                    "current_status_bn": "নতুন",
-//                    "details": "<p>cxbvxcbxcvbcxvb</p>",
-//                    "tracking_number": "01960782919101",
-//                    "tracking_number_bn": "০১৯৬০৭৮২৯১৯১০১",
-//                    "complainant_id": 29956,
-//                    "is_grs_user": 1,
-//                    "office_id": 28,
-//                    "is_self_motivated_grievance": 1,
-//                    "other_service": "অন্যান্য",
-//                    "service_id": null,
-//                    "source_of_grievance": "COMPLAINANT",
-//                    "status": 1,
-//                    "possible_close_date": "2024-09-07",
-//                    "possible_close_date_bn": "২০২৪-০৯-০৭",
-//                    "updated_at": "2024-10-17T08:11:15.000000Z",
-//                    "created_at": "2024-10-17T08:11:15.000000Z",
-//                    "id": 748
-//             }
-//        }
     }
 
     @GetMapping("/api/grievance/list")
