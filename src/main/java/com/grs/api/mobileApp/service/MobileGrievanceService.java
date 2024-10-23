@@ -10,8 +10,10 @@ import com.grs.core.dao.GrievanceDAO;
 import com.grs.core.domain.ServiceType;
 import com.grs.core.domain.grs.ServiceOrigin;
 import com.grs.core.service.GrievanceService;
+import com.grs.core.service.OfficeService;
 import com.grs.core.service.StorageService;
 import com.grs.utils.BanglaConverter;
+import com.grs.utils.DateTimeConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.grs.api.model.UserInformation;
 import com.grs.api.model.UserType;
@@ -48,6 +50,7 @@ public class MobileGrievanceService {
     private StorageService storageService;
     private final GrievanceRepo grievanceRepo;
     private final GrievanceDAO grievanceDAO;
+    private final OfficeService officeService;
 
     public MobileGrievanceResponseDTO saveGrievanceWithLogin(
             Authentication authentication,
@@ -67,10 +70,11 @@ public class MobileGrievanceService {
                 .name(complainant.getName())
                 .email(complainant.getEmail())
                 .officeId(String.valueOf(officeId))
-                .serviceId(serviceId == null ? String.valueOf(ServiceType.NAGORIK.ordinal()) : serviceId)
-                .submissionDate(String.valueOf(new Date()))
+                .officeLayers(String.valueOf(officeService.findOne(officeId).getOfficeLayer().getId()))
+                .serviceId(serviceId == null || serviceId.trim().isEmpty() ? "0" : serviceId)
+                .submissionDate(DateTimeConverter.convertDateToString(new Date()))
                 .body(description)
-                .relation("Self")
+                .relation(null)
                 .serviceReceiver(null)
                 .serviceOthers(null)
                 .isAnonymous(false)
@@ -88,8 +92,8 @@ public class MobileGrievanceService {
                 .district(null)
                 .upazila(null)
                 .safetyNetId(1)
-                .divisionId(complainant.getPermanentAddressDivisionId())
-                .districtId(complainant.getPermanentAddressDistrictId())
+                .divisionId(complainant.getPermanentAddressDivisionId() == null ? 0 : complainant.getPermanentAddressDivisionId())
+                .districtId(complainant.getPermanentAddressDistrictId() == null ? 0 : complainant.getPermanentAddressDistrictId())
                 .upazilaId(0)
                 .build();
 
@@ -107,8 +111,6 @@ public class MobileGrievanceService {
                                 .url(fileDerivedDTO.getUrl())
                                 .build()
                 );
-                System.out.println("Name: " + fileNames[i-1]);
-                System.out.println("URL: " + fileDerivedDTO.getUrl());
             }
             requestDTO.setFiles(fileDTOS);
         }
