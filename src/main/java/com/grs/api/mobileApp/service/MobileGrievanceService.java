@@ -80,18 +80,18 @@ public class MobileGrievanceService {
                 .isAnonymous(false)
                 .serviceType(ServiceType.NAGORIK)
                 .offlineGrievanceUpload(false)
-                .PhoneNumber(complainant.getPhoneNumber())
-                .isSelfMotivated(true)
-                .SourceOfGrievance(String.valueOf(UserType.COMPLAINANT))
-                .user(complainant.getName())
+                .PhoneNumber(null)
+                .isSelfMotivated(null)
+                .SourceOfGrievance(null)
+                .user(null)
                 .secret(null)
-                .submittedThroughApi(1)
+                .submittedThroughApi(0)
                 .grievanceCategory(ServiceType.NAGORIK.ordinal())
                 .spProgrammeId(null)
                 .division(null)
                 .district(null)
                 .upazila(null)
-                .safetyNetId(1)
+                .safetyNetId(0)
                 .divisionId(complainant.getPermanentAddressDivisionId() == null ? 0 : complainant.getPermanentAddressDivisionId())
                 .districtId(complainant.getPermanentAddressDistrictId() == null ? 0 : complainant.getPermanentAddressDistrictId())
                 .upazilaId(0)
@@ -166,9 +166,9 @@ public class MobileGrievanceService {
         grievanceDTO.setName(name);
         grievanceDTO.setEmail(email);
         grievanceDTO.setOfficeId(officeId);
-        grievanceDTO.setOfficeLayers(null);
+        grievanceDTO.setOfficeLayers(String.valueOf(officeService.findOne(Long.valueOf(officeId)).getOfficeLayer().getId()));
         grievanceDTO.setServiceId("0");
-        grievanceDTO.setSubmissionDate(String.valueOf(new Date()));
+        grievanceDTO.setSubmissionDate(DateTimeConverter.convertDateToString(new Date()));
         grievanceDTO.setSubject(subject);
         grievanceDTO.setBody(description);
         grievanceDTO.setRelation(null);
@@ -178,8 +178,8 @@ public class MobileGrievanceService {
         grievanceDTO.setServiceType(ServiceType.NAGORIK);
         grievanceDTO.setOfflineGrievanceUpload(false);
         grievanceDTO.setPhoneNumber(null);
-        grievanceDTO.setIsSelfMotivated(true);
-        grievanceDTO.setSourceOfGrievance("Mobile App");
+        grievanceDTO.setIsSelfMotivated(null);
+        grievanceDTO.setSourceOfGrievance(null);
         grievanceDTO.setUser(null);
         grievanceDTO.setSecret(null);
         grievanceDTO.setSubmittedThroughApi(0);
@@ -207,8 +207,8 @@ public class MobileGrievanceService {
                                 .url(fileDerivedDTO.getUrl())
                                 .build()
                 );
-                System.out.println("Name: " + fileNames[i-1]);
-                System.out.println("URL: " + fileDerivedDTO.getUrl());
+                // System.out.println("Name: " + fileNames[i-1]);
+                // System.out.println("URL: " + fileDerivedDTO.getUrl());
             }
             grievanceDTO.setFiles(fileDTOS);
         }
