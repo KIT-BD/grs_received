@@ -4,8 +4,13 @@ import com.grs.api.mobileApp.dto.MobileAuthDTO;
 import com.grs.api.mobileApp.dto.MobileResponse;
 import com.grs.api.mobileApp.dto.MobileResponseNoList;
 import com.grs.api.mobileApp.service.MobileAuthService;
+import com.grs.api.mobileApp.service.MobilePublicAPIService;
+import com.grs.api.model.request.ComplainantDTO;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.CountryInfo;
+import com.grs.core.domain.grs.Occupation;
+import com.grs.core.service.ComplainantService;
+import com.grs.core.service.OccupationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,12 +18,76 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/mobile")
+@RequestMapping("/api/complainant")
 public class MobileAuthController {
 
     private final MobileAuthService mobileAuthService;
+    private final ComplainantService complainantService;
+    private final OccupationService occupationService;
 
-    @GetMapping("/complainant/show")
+    @PostMapping("/save")
+    public MobileResponseNoList registerComplainant(@RequestBody MobileAuthDTO mobileAuthDTO){
+
+        Long occupationId = Long.valueOf(mobileAuthDTO.getOccupation());
+
+        if (mobileAuthDTO.getGender() == null || mobileAuthDTO.getGender().trim().isEmpty()){
+            return MobileResponseNoList.builder()
+                    .status("error")
+                    .data("Gender is required")
+                    .build();
+        }
+        if (complainantService.findComplainantByPhoneNumber(mobileAuthDTO.getMobile_number()) != null){
+            return MobileResponseNoList.builder()
+                    .status("error")
+                    .data("Complainant already exists")
+                    .build();
+        }
+
+        ComplainantDTO complainantDTO = ComplainantDTO.builder()
+                .name(mobileAuthDTO.getName())
+                .identificationValue(mobileAuthDTO.getIdentification_value())
+                .identificationType(mobileAuthDTO.getIdentification_type())
+                .phoneNumber(mobileAuthDTO.getMobile_number())
+                .email(mobileAuthDTO.getEmail())
+                .birthDate(mobileAuthDTO.getBirth_date())
+                .occupation(occupationService.getOccupation(occupationId).getOccupationEnglish())
+                .gender(mobileAuthDTO.getGender())
+                .nationality(String.valueOf(mobileAuthDTO.getNationality_id()))
+                .permanentAddressStreet(mobileAuthDTO.getPermanent_address_street())
+                .permanentAddressHouse(mobileAuthDTO.getPermanent_address_house())
+                .permanentAddressCountryId(String.valueOf(mobileAuthDTO.getPermanent_address_country_id()))
+                .build();
+
+        Complainant complainant = complainantService.insertComplainant(complainantDTO);
+
+        MobileAuthDTO responseDTO = MobileAuthDTO.builder()
+                .id(complainant.getId())
+                .name(complainant.getUsername())
+                .identification_value(complainant.getIdentificationValue())
+                .identification_type(Optional.ofNullable(complainant.getIdentificationType()).map(String::valueOf).orElse(null))
+                .mobile_number(complainant.getPhoneNumber())
+                .email(complainant.getEmail())
+                .birth_date(Optional.ofNullable(complainant.getBirthDate()).map(String::valueOf).orElse(null))
+                .occupation(String.valueOf(occupationId))
+                .educational_qualification(complainant.getEducation())
+                .gender(Optional.ofNullable(complainant.getGender()).map(String::valueOf).orElse(null))
+                .username(complainant.getUsername())
+                .nationality_id(Optional.ofNullable(complainant.getCountryInfo()).map(CountryInfo::getId).orElse(null))
+                .present_address_street(complainant.getPresentAddressStreet())
+                .present_address_house(complainant.getPresentAddressHouse())
+                .permanent_address_country_id(complainant.getPermanentAddressCountryId())
+                .is_authenticated(complainant.isAuthenticated())
+                .created_at(Optional.ofNullable(complainant.getCreatedAt()).map(String::valueOf).orElse(null))
+                .modified_at(String.valueOf(complainant.getCreatedAt()))
+                .build();
+
+        return MobileResponseNoList.builder()
+                .status("success")
+                .data(responseDTO)
+                .build();
+    }
+
+    @GetMapping("/show")
     public MobileResponseNoList checkUser(
             @RequestParam("mobile_number") String mobileNumber
     ){

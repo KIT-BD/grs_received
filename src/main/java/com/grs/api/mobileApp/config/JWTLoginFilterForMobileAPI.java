@@ -111,7 +111,7 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
                 .user_info(
                         MobileAuthDTO.builder()
                                 .id(complainant.getId())
-                                .name(complainant.getUsername())
+                                .name(complainant.getName())
                                 .identification_value(complainant.getIdentificationValue())
                                 .identification_type(Optional.ofNullable(complainant.getIdentificationType()).map(String::valueOf).orElse(null))
                                 .mobile_number(complainant.getPhoneNumber())
@@ -177,9 +177,9 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
                 .token(JWT)
                 .build();
 
-        MobileResponse mobileResponse = MobileResponse.builder()
+        MobileResponseNoList mobileResponse = MobileResponseNoList.builder()
                 .status("success")
-                .data(Collections.singletonList(responseDTO))
+                .data(responseDTO)
                 .build();
 
         response.addHeader(HEADER_STRING,  JWT);
