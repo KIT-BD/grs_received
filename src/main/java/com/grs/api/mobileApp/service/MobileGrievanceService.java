@@ -1,6 +1,7 @@
 package com.grs.api.mobileApp.service;
 
 import com.grs.api.mobileApp.dto.MobileGrievanceResponseDTO;
+import com.grs.api.model.UserType;
 import com.grs.api.model.request.FileDTO;
 import com.grs.api.model.request.GrievanceWithoutLoginRequestDTO;
 import com.grs.api.model.response.file.FileBaseDTO;
@@ -167,8 +168,8 @@ public class MobileGrievanceService {
         grievanceDTO.setServiceType(ServiceType.NAGORIK);
         grievanceDTO.setOfflineGrievanceUpload(false);
         grievanceDTO.setPhoneNumber(null);
-        grievanceDTO.setIsSelfMotivated(null);
-        grievanceDTO.setSourceOfGrievance(null);
+        grievanceDTO.setIsSelfMotivated(false);
+        grievanceDTO.setSourceOfGrievance(UserType.COMPLAINANT.toString());
         grievanceDTO.setUser(null);
         grievanceDTO.setSecret(null);
         grievanceDTO.setSubmittedThroughApi(0);
