@@ -46,7 +46,7 @@ public class MobileGrievanceController {
     private final ComplainantService complainantService;
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<WeakHashMap<String, Object>> savePublicGrievance(
+    public MobileResponseNoList savePublicGrievance(
             @RequestParam("officeId") String officeId,
             @RequestParam("description") String description,
             @RequestParam("subject") String subject,
@@ -63,13 +63,16 @@ public class MobileGrievanceController {
             Principal principal) throws Exception {
 
         // Call the service method
-        WeakHashMap<String, Object> response = mobileGrievanceService.savePublicGrievanceService(
+        MobileGrievanceResponseDTO response = mobileGrievanceService.savePublicGrievanceService(
                 officeId, description, subject, spProgrammeId, mobileNumber, name,
                 email, divisionId, districtId, upazilaId, complaintCategory,
                 fileNameByUser, files, principal
         );
 
-        return ResponseEntity.ok(response);
+        return MobileResponseNoList.builder()
+                .status("success")
+                .data(response)
+                .build();
     }
 
 //    @RequestMapping(value = "/api/grievance", method = RequestMethod.GET)

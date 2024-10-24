@@ -15,18 +15,9 @@ import com.grs.core.service.StorageService;
 import com.grs.utils.BanglaConverter;
 import com.grs.utils.DateTimeConverter;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.grs.api.model.UserInformation;
-import com.grs.api.model.UserType;
-import com.grs.api.model.request.GrievanceRequestDTO;
-import com.grs.core.dao.CitizenCharterDAO;
-import com.grs.core.domain.GrievanceCurrentStatus;
-import com.grs.core.domain.MediumOfSubmission;
-import com.grs.core.domain.grs.CitizenCharter;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.Grievance;
 import com.grs.core.repo.grs.GrievanceRepo;
-import com.grs.core.service.ComplainantService;
-import com.grs.utils.StringUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -34,8 +25,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import java.util.List;
@@ -150,7 +139,7 @@ public class MobileGrievanceService {
                 .build();
     }
 
-    public WeakHashMap<String, Object> savePublicGrievanceService(
+    public MobileGrievanceResponseDTO savePublicGrievanceService(
             String officeId, String description, String subject,
             String spProgrammeId, String mobileNumber, String name,
             String email, Integer divisionId, Integer districtId,
@@ -213,7 +202,40 @@ public class MobileGrievanceService {
             grievanceDTO.setFiles(fileDTOS);
         }
 
-        return grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
+        WeakHashMap<String, Object> addedGrievance = grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
+
+        String trackingNumber = addedGrievance.get("trackingNumber").toString();
+        Grievance g = grievanceDAO.findByTrackingNumber(trackingNumber);
+
+        String submissionDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa").format(new Date(g.getSubmissionDate().getTime()));
+        String closedDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa").format(new Date(g.getSubmissionDate().getTime() + (30L * 24 * 60 * 60 * 1000)));
+
+        return MobileGrievanceResponseDTO.builder()
+                .id(g.getId())
+                .subject(g.getSubject())
+                .submission_date(submissionDate)
+                .submission_date_bn(BanglaConverter.getDateBanglaFromEnglish(submissionDate))
+                .complaint_type(String.valueOf(g.getGrievanceType()))
+                .complaint_type_bn(BanglaConverter.convertServiceTypeToBangla(g.getGrievanceType()))
+                .current_status(String.valueOf(g.getGrievanceCurrentStatus()))
+                .current_status_bn(BanglaConverter.convertGrievanceStatusToBangla(g.getGrievanceCurrentStatus()))
+                .details(g.getDetails())
+                .tracking_number(g.getTrackingNumber())
+                .tracking_number_bn(BanglaConverter.convertToBanglaDigit(g.getTrackingNumber()))
+                .complainant_id(g.getComplainantId())
+                .is_grs_user(g.isGrsUser())
+                .office_id(g.getOfficeId())
+                .is_self_motivated_grievance(g.getIsSelfMotivatedGrievance())
+                .other_service(g.getOtherService())
+                .service_id(Optional.ofNullable(g.getServiceOrigin()).map(ServiceOrigin::getId).orElse(null))
+                .source_of_grievance(g.getSourceOfGrievance())
+                .status(String.valueOf(g.getStatus()))
+                .possible_close_date(closedDate)
+                .possible_close_date_bn(BanglaConverter.getDateBanglaFromEnglish(closedDate))
+                .created_at(String.valueOf(g.getCreatedAt()))
+                .updated_at(String.valueOf(g.getUpdatedAt()))
+                .build();
+        //return grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
     }
     public List<Grievance> findGrievancesByUser(Long id){
         return grievanceRepo.findGrievancesByComplainantId(id);
