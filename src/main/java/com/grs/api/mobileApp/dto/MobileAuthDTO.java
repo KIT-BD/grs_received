@@ -55,7 +55,7 @@ public class MobileAuthDTO {
     private String foreign_present_address_city;
     private String foreign_present_address_line2;
     private String foreign_present_address_line1;
-    private Boolean is_authenticated;
+    private Long is_authenticated;
     private String created_at;
     private String modified_at;
     private String created_by;

@@ -76,7 +76,7 @@ public class MobileAuthController {
                 .present_address_street(complainant.getPresentAddressStreet())
                 .present_address_house(complainant.getPresentAddressHouse())
                 .permanent_address_country_id(complainant.getPermanentAddressCountryId())
-                .is_authenticated(complainant.isAuthenticated())
+                .is_authenticated(complainant.isAuthenticated() ? 1L : 0L)
                 .created_at(Optional.ofNullable(complainant.getCreatedAt()).map(String::valueOf).orElse(null))
                 .modified_at(String.valueOf(complainant.getCreatedAt()))
                 .build();
@@ -102,7 +102,7 @@ public class MobileAuthController {
 
         MobileAuthDTO responseDTO = MobileAuthDTO.builder()
                 .id(complainant.getId())
-                .name(complainant.getUsername())
+                .name(complainant.getName())
                 .identification_value(complainant.getIdentificationValue())
                 .identification_type(Optional.ofNullable(complainant.getIdentificationType()).map(String::valueOf).orElse(null))
                 .mobile_number(complainant.getPhoneNumber())
@@ -150,7 +150,7 @@ public class MobileAuthController {
                 .foreign_present_address_city(complainant.getForeignPresentAddressCity())
                 .foreign_present_address_line2(complainant.getForeignPresentAddressLine2())
                 .foreign_present_address_line1(complainant.getForeignPresentAddressLine1())
-                .is_authenticated(complainant.isAuthenticated())
+                .is_authenticated(complainant.isAuthenticated() ? 1L : 0L)
                 .created_at(Optional.ofNullable(complainant.getCreatedAt()).map(String::valueOf).orElse(null))
                 .modified_at(null)
                 .created_by(Optional.ofNullable(complainant.getCreatedBy()).map(String::valueOf).orElse(null))
