@@ -2,13 +2,10 @@ package com.grs.api.mobileApp.controller;
 
 import com.grs.api.mobileApp.dto.MobileAuthDTO;
 import com.grs.api.mobileApp.dto.MobileResponse;
-import com.grs.api.mobileApp.dto.MobileResponseNoList;
 import com.grs.api.mobileApp.service.MobileAuthService;
-import com.grs.api.mobileApp.service.MobilePublicAPIService;
 import com.grs.api.model.request.ComplainantDTO;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.CountryInfo;
-import com.grs.core.domain.grs.Occupation;
 import com.grs.core.service.ComplainantService;
 import com.grs.core.service.OccupationService;
 import lombok.RequiredArgsConstructor;
@@ -26,18 +23,18 @@ public class MobileAuthController {
     private final OccupationService occupationService;
 
     @PostMapping("/save")
-    public MobileResponseNoList registerComplainant(@RequestBody MobileAuthDTO mobileAuthDTO){
+    public MobileResponse registerComplainant(@RequestBody MobileAuthDTO mobileAuthDTO){
 
         Long occupationId = Long.valueOf(mobileAuthDTO.getOccupation());
 
         if (mobileAuthDTO.getGender() == null || mobileAuthDTO.getGender().trim().isEmpty()){
-            return MobileResponseNoList.builder()
+            return MobileResponse.builder()
                     .status("error")
                     .data("Gender is required")
                     .build();
         }
         if (complainantService.findComplainantByPhoneNumber(mobileAuthDTO.getMobile_number()) != null){
-            return MobileResponseNoList.builder()
+            return MobileResponse.builder()
                     .status("error")
                     .data("Complainant already exists")
                     .build();
@@ -81,20 +78,20 @@ public class MobileAuthController {
                 .modified_at(String.valueOf(complainant.getCreatedAt()))
                 .build();
 
-        return MobileResponseNoList.builder()
+        return MobileResponse.builder()
                 .status("success")
                 .data(responseDTO)
                 .build();
     }
 
     @GetMapping("/show")
-    public MobileResponseNoList checkUser(
+    public MobileResponse checkUser(
             @RequestParam("mobile_number") String mobileNumber
     ){
         Complainant complainant = mobileAuthService.findByMobileNumber(mobileNumber);
 
         if (complainant == null) {
-            return MobileResponseNoList.builder()
+            return MobileResponse.builder()
                             .status("error")
                             .data("User not found for the mobile number: " + mobileNumber)
                             .build();
@@ -164,7 +161,7 @@ public class MobileAuthController {
                 .is_requested(null)
                 .build();
 
-        return MobileResponseNoList.builder()
+        return MobileResponse.builder()
                 .status("success")
                 .data(responseDTO)
                 .build();

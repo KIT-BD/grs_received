@@ -5,11 +5,9 @@ import com.grs.api.config.security.CustomAuthenticationToken;
 import com.grs.api.config.security.UserDetailsImpl;
 import com.grs.api.mobileApp.dto.*;
 import com.grs.api.model.UserInformation;
-import com.grs.api.model.response.ErrorDTO;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.CountryInfo;
 import com.grs.core.service.ComplainantService;
-import javassist.NotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -23,12 +21,10 @@ import org.springframework.security.web.authentication.AbstractAuthenticationPro
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -199,7 +195,7 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
                 .token(JWT)
                 .build();
 
-        MobileResponseNoList mobileResponse = MobileResponseNoList.builder()
+        MobileResponse mobileResponse = MobileResponse.builder()
                 .status("success")
                 .data(responseDTO)
                 .build();
@@ -223,7 +219,7 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
 //            message = "Authentication failed due to an unknown error";
 //        }
 
-        MobileResponseNoList error  = MobileResponseNoList.builder()
+        MobileResponse error  = MobileResponse.builder()
                 .status("error")
                 .data("Wrong username or password")
                 .build();
