@@ -29,7 +29,7 @@ public class MobileGrievanceController {
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public MobileResponse savePublicGrievance(
-            @RequestParam("officeId") String officeId,
+            @RequestParam(value = "officeId", required = false) String officeId,
             @RequestParam("description") String description,
             @RequestParam("subject") String subject,
             @RequestParam(value = "sp_programme_id", required = false) String spProgrammeId,
@@ -66,7 +66,7 @@ public class MobileGrievanceController {
     @PostMapping("/api/grievance/save")
     public MobileResponse submitMobileGrievanceWithLogin(
             Authentication authentication,
-            @RequestParam("officeId") Long officeId,
+            @RequestParam(value = "officeId", required = false) Long officeId,
             @RequestParam(value = "service_id", required = false) String serviceId,
             @RequestParam("description") String description,
             @RequestParam("subject") String subject,

@@ -1,6 +1,7 @@
 package com.grs.api.mobileApp.service;
 
 import com.grs.api.mobileApp.dto.MobileGrievanceResponseDTO;
+import com.grs.api.model.UserType;
 import com.grs.api.model.request.FileDTO;
 import com.grs.api.model.request.GrievanceWithoutLoginRequestDTO;
 import com.grs.api.model.response.file.FileBaseDTO;
@@ -14,6 +15,7 @@ import com.grs.core.service.OfficeService;
 import com.grs.core.service.StorageService;
 import com.grs.utils.BanglaConverter;
 import com.grs.utils.DateTimeConverter;
+import com.grs.utils.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.Grievance;
@@ -155,32 +157,32 @@ public class MobileGrievanceService {
         grievanceDTO.setName(name);
         grievanceDTO.setEmail(email);
         grievanceDTO.setOfficeId(officeId);
-        grievanceDTO.setOfficeLayers(String.valueOf(officeService.findOne(Long.valueOf(officeId)).getOfficeLayer().getId()));
+        grievanceDTO.setOfficeLayers(StringUtil.isValidString(officeId) ? String.valueOf(officeService.findOne(Long.parseLong(officeId)).getOfficeLayer().getId()) : null);
         grievanceDTO.setServiceId("0");
         grievanceDTO.setSubmissionDate(DateTimeConverter.convertDateToString(new Date()));
         grievanceDTO.setSubject(subject);
         grievanceDTO.setBody(description);
         grievanceDTO.setRelation(null);
         grievanceDTO.setServiceReceiver(null);
-        grievanceDTO.setServiceOthers(null);
+        grievanceDTO.setServiceOthers("অন্যান্য");
         grievanceDTO.setIsAnonymous(false);
         grievanceDTO.setServiceType(ServiceType.NAGORIK);
         grievanceDTO.setOfflineGrievanceUpload(false);
         grievanceDTO.setPhoneNumber(null);
-        grievanceDTO.setIsSelfMotivated(null);
-        grievanceDTO.setSourceOfGrievance(null);
+        grievanceDTO.setIsSelfMotivated(false);
+        grievanceDTO.setSourceOfGrievance(UserType.COMPLAINANT.toString());
         grievanceDTO.setUser(null);
         grievanceDTO.setSecret(null);
         grievanceDTO.setSubmittedThroughApi(0);
         grievanceDTO.setGrievanceCategory(complaintCategory);
         grievanceDTO.setSpProgrammeId(spProgrammeId);
-        grievanceDTO.setDivision(null);
-        grievanceDTO.setDistrict(null);
-        grievanceDTO.setUpazila(null);
+        grievanceDTO.setDivision(divisionId != null ? divisionId.toString() : null);
+        grievanceDTO.setDistrict(districtId != null ? districtId.toString() : null);
+        grievanceDTO.setUpazila(upazilaId != null ? upazilaId.toString() : null);
         grievanceDTO.setSafetyNetId(0);
-        grievanceDTO.setDivisionId(divisionId);
-        grievanceDTO.setDistrictId(districtId);
-        grievanceDTO.setUpazilaId(upazilaId);
+        grievanceDTO.setDivisionId(divisionId != null ? divisionId : 0);
+        grievanceDTO.setDistrictId(districtId != null ? districtId : 0);
+        grievanceDTO.setUpazilaId(upazilaId != null ? upazilaId : 0);
 
         if (files != null && !files.isEmpty()) {
             FileContainerDTO fileContainerDTO = storageService.storeFileNew(principal, files.toArray(new MultipartFile[0]));
@@ -203,6 +205,8 @@ public class MobileGrievanceService {
         }
 
         WeakHashMap<String, Object> addedGrievance = grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
+
+        System.out.println("Added Grievance: " + addedGrievance);
 
         String trackingNumber = addedGrievance.get("trackingNumber").toString();
         Grievance g = grievanceDAO.findByTrackingNumber(trackingNumber);
