@@ -3,10 +3,7 @@ package com.grs.api.mobileApp.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grs.api.config.security.CustomAuthenticationToken;
 import com.grs.api.config.security.UserDetailsImpl;
-import com.grs.api.mobileApp.dto.DataDTO;
-import com.grs.api.mobileApp.dto.MobileAuthDTO;
-import com.grs.api.mobileApp.dto.MobileResponse;
-import com.grs.api.mobileApp.dto.MobileResponseNoList;
+import com.grs.api.mobileApp.dto.*;
 import com.grs.api.model.UserInformation;
 import com.grs.api.model.response.ErrorDTO;
 import com.grs.core.domain.grs.Complainant;
@@ -54,22 +51,47 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
         this.complainantService = complainantService;
     }
 
+//    @Override
+//    public Authentication attemptAuthentication(
+//            HttpServletRequest req, HttpServletResponse res)
+//            throws AuthenticationException {
+//
+//        String username = req.getParameter(USERNAME_REQUEST_PARAM);
+//        String password = req.getParameter(PASSWORD_REQUEST_PARAM);
+//
+//        return getAuthenticationManager().authenticate(
+//                new UsernamePasswordAuthenticationToken(
+//                        username,
+//                        password,
+//                        Collections.emptyList()
+//                )
+//        );
+//    }
+
     @Override
     public Authentication attemptAuthentication(
             HttpServletRequest req, HttpServletResponse res)
             throws AuthenticationException {
 
-        String username = req.getParameter(USERNAME_REQUEST_PARAM);
-        String password = req.getParameter(PASSWORD_REQUEST_PARAM);
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            LoginDTO authRequest = objectMapper.readValue(req.getInputStream(), LoginDTO.class);
 
-        return getAuthenticationManager().authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        username,
-                        password,
-                        Collections.emptyList()
-                )
-        );
+            String username = authRequest.getUsername();
+            String password = authRequest.getPassword();
+
+            return getAuthenticationManager().authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            username,
+                            password,
+                            Collections.emptyList()
+                    )
+            );
+        } catch (IOException e) {
+            throw new RuntimeException("Error reading request body", e);
+        }
     }
+
 
     @Override
     protected void successfulAuthentication(
@@ -111,7 +133,7 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
                 .user_info(
                         MobileAuthDTO.builder()
                                 .id(complainant.getId())
-                                .name(complainant.getUsername())
+                                .name(complainant.getName())
                                 .identification_value(complainant.getIdentificationValue())
                                 .identification_type(Optional.ofNullable(complainant.getIdentificationType()).map(String::valueOf).orElse(null))
                                 .mobile_number(complainant.getPhoneNumber())
@@ -159,7 +181,7 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
                                 .foreign_present_address_city(complainant.getForeignPresentAddressCity())
                                 .foreign_present_address_line2(complainant.getForeignPresentAddressLine2())
                                 .foreign_present_address_line1(complainant.getForeignPresentAddressLine1())
-                                .is_authenticated(complainant.isAuthenticated())
+                                .is_authenticated(complainant.isAuthenticated() ? 1L : 0L)
                                 .created_at(Optional.ofNullable(complainant.getCreatedAt()).map(String::valueOf).orElse(null))
                                 .modified_at(null)
                                 .created_by(Optional.ofNullable(complainant.getCreatedBy()).map(String::valueOf).orElse(null))
@@ -177,9 +199,9 @@ public class JWTLoginFilterForMobileAPI extends AbstractAuthenticationProcessing
                 .token(JWT)
                 .build();
 
-        MobileResponse mobileResponse = MobileResponse.builder()
+        MobileResponseNoList mobileResponse = MobileResponseNoList.builder()
                 .status("success")
-                .data(Collections.singletonList(responseDTO))
+                .data(responseDTO)
                 .build();
 
         response.addHeader(HEADER_STRING,  JWT);
