@@ -2,6 +2,8 @@ package com.grs.api.mobileApp.controller;
 
 import com.grs.api.mobileApp.dto.MobileResponse;
 import com.grs.api.mobileApp.service.MobileGrievanceService;
+import com.grs.core.domain.projapoti.Office;
+import com.grs.core.repo.projapoti.OfficeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import com.grs.api.mobileApp.dto.MobileGrievanceResponseDTO;
@@ -26,6 +28,7 @@ public class MobileGrievanceController {
     @Autowired
     private MobileGrievanceService mobileGrievanceService;
     private final ComplainantService complainantService;
+    private final OfficeRepo officeRepo;
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public MobileResponse savePublicGrievance(
@@ -251,11 +254,33 @@ public class MobileGrievanceController {
         complainantInfo.put("present_address_country_id", complainant.getPresentAddressCountryId());
         complainantInfo.put("permanent_address_country_id", complainant.getPermanentAddressCountryId());
 
+        Office office = officeRepo.findOfficeById(grievanceList.getOffice_id());
+
+        Map<String, Object> officeInfo = new HashMap<>();
+        officeInfo.put("id", grievanceList.getOffice_id());
+        officeInfo.put("nameBn", office.getNameBangla());
+        officeInfo.put("name", office.getNameEnglish());
+        officeInfo.put("code", "");
+        officeInfo.put("division", office.getDivisionId());
+        officeInfo.put("district", office.getDistrictId());
+        officeInfo.put("upazila", office.getUpazilaId());
+        officeInfo.put("phone", "");
+        officeInfo.put("mobile", "");
+        officeInfo.put("digitalNothiCode", "");
+        officeInfo.put("fax", "");
+        officeInfo.put("email", "");
+        officeInfo.put("website", office.getWebsiteUrl());
+        officeInfo.put("ministry", office.getOfficeMinistry().getId());
+        officeInfo.put("layer", office.getOfficeLayer().getId());
+        officeInfo.put("origin", office.getOfficeOriginId());
+        officeInfo.put("customLayer", office.getOfficeLayer().getCustomLayerId());
+        officeInfo.put("parentOfficeId", office.getParentOfficeId());
+
 
         Map<String, Object> data = new HashMap<>();
         data.put("complainant_info", complainantInfo);
         data.put("allComplaintDetails", grievanceDetails);
-        data.put("doptoroffice", "A");
+        data.put("doptoroffice", officeInfo);
 
         Map<String, Object> response = new HashMap<>();
         response.put("data", data);
