@@ -2,6 +2,7 @@ package com.grs.api.mobileApp.controller;
 
 import com.grs.api.mobileApp.dto.MobileResponse;
 import com.grs.api.mobileApp.service.MobileGrievanceService;
+import com.grs.api.model.UserType;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.repo.projapoti.OfficeRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -109,9 +110,19 @@ public class MobileGrievanceController {
     }
 
     @GetMapping("/api/grievance/list")
-    public MobileResponse getGrievances(Authentication authentication){
+    public MobileResponse getGrievances(
+            Authentication authentication,
+            @RequestParam("complainant_id") Long id
+    ){
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         Long complainantId = userInformation.getUserId();
+
+        if (!Objects.equals(complainantId, id)){
+            return MobileResponse.builder()
+                    .status("error")
+                    .data("Invalid token for complainant id")
+                    .build();
+        }
 
         if (complainantId == null){
             return MobileResponse.builder()
@@ -130,9 +141,21 @@ public class MobileGrievanceController {
 
     @GetMapping("/api/grievance/details")
     public Map<String, Object> getGrievanceDetails(
+            Authentication authentication,
             @RequestParam("complaint_id") Long complaintId
     ) {
         MobileGrievanceResponseDTO grievanceList = mobileGrievanceService.findGrievancesById(complaintId);
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        if (userInformation.getUserType() == UserType.COMPLAINANT){
+
+        }
+
+        System.out.println("userid "+userInformation.getUserId());
+        System.out.println("office info "+userInformation.getOfficeInformation());
+        System.out.println("is office admin "+userInformation.getIsOfficeAdmin());
+        System.out.println("username "+userInformation.getUsername());
+        System.out.println("user type "+userInformation.getUserType());
 
         if (grievanceList == null){
             Map<String, Object> response = new HashMap<>();
