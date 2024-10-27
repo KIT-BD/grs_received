@@ -4,12 +4,16 @@ import com.grs.api.mobileApp.dto.MobileGrievanceForwardingDTO;
 import com.grs.api.mobileApp.dto.MobileGrievanceSubmissionResponseDTO;
 import com.grs.api.mobileApp.dto.MobileResponse;
 import com.grs.api.mobileApp.service.MobileGrievanceService;
+import com.grs.api.mobileApp.service.MobilePublicAPIService;
 import com.grs.api.model.UserType;
 import com.grs.api.model.response.GrievanceForwardingEmployeeRecordsDTO;
+import com.grs.core.domain.grs.Education;
 import com.grs.core.domain.grs.Grievance;
+import com.grs.core.domain.grs.Occupation;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.GrievanceForwardingService;
+import com.grs.utils.BanglaConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import com.grs.api.mobileApp.dto.MobileGrievanceResponseDTO;
@@ -36,6 +40,7 @@ public class MobileGrievanceController {
     private final ComplainantService complainantService;
     private final OfficeRepo officeRepo;
     private final GrievanceForwardingService grievanceForwardingService;
+    private final MobilePublicAPIService mobilePublicAPIService;
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public MobileResponse savePublicGrievance(
@@ -230,17 +235,21 @@ public class MobileGrievanceController {
         }
 
         Complainant complainant = complainantService.findOne(grievanceList.getComplainant_id());
+        // Filter the occupations list to find the matching occupation ID
+
+        SimpleDateFormat isoDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
 
         Map<String, Object> grievanceDetails = new HashMap<>();
         grievanceDetails.put("id", grievanceList.getId());
         grievanceDetails.put("submission_date", grievanceList.getSubmission_date());
+        grievanceDetails.put("submission_date_bn", BanglaConverter.getDateBanglaFromEnglish(grievanceList.getSubmission_date()));
         grievanceDetails.put("complaint_type", grievanceList.getComplaint_type());
         grievanceDetails.put("current_status", grievanceList.getCurrent_status());
         grievanceDetails.put("subject", grievanceList.getSubject());
         grievanceDetails.put("details", grievanceList.getDetails());
         grievanceDetails.put("tracking_number", grievanceList.getTracking_number());
+        grievanceDetails.put("tracking_number_bn", BanglaConverter.convertToBanglaDigit(grievanceList.getTracking_number()));
         grievanceDetails.put("complainant_id", grievanceList.getComplainant_id());
-        grievanceDetails.put("is_grs_user", grievanceList.getIs_grs_user());
         grievanceDetails.put("office_id", grievanceList.getOffice_id());
         grievanceDetails.put("service_id", grievanceList.getService_id());
         grievanceDetails.put("service_id_before_forward", grievanceList.getService_id_before_forward());
@@ -259,11 +268,10 @@ public class MobileGrievanceController {
         grievanceDetails.put("ao_decision", grievanceList.getAo_decision());
         grievanceDetails.put("ao_identified_complaint_cause", grievanceList.getAo_identified_complaint_cause());
         grievanceDetails.put("ao_suggestion", grievanceList.getAo_suggestion());
-        grievanceDetails.put("created_at", grievanceList.getCreated_at());
-        grievanceDetails.put("modified_at", grievanceList.getUpdated_at());
+        grievanceDetails.put("created_at", isoDateFormat.format(new Date(grievanceList.getCreated_at().getTime())));
+        grievanceDetails.put("updated_at", isoDateFormat.format(new Date(grievanceList.getUpdated_at().getTime())));
         grievanceDetails.put("created_by", grievanceList.getCreated_by());
         grievanceDetails.put("modified_by", grievanceList.getModified_by());
-        grievanceDetails.put("status", grievanceList.getStatus());
         grievanceDetails.put("rating", grievanceList.getRating());
         grievanceDetails.put("appeal_rating", grievanceList.getAppeal_rating());
         grievanceDetails.put("is_rating_given", grievanceList.getIs_rating_given());
@@ -271,19 +279,27 @@ public class MobileGrievanceController {
         grievanceDetails.put("feedback_comments", grievanceList.getFeedback_comments());
         grievanceDetails.put("appeal_feedback_comments", grievanceList.getAppeal_feedback_comments());
         grievanceDetails.put("source_of_grievance", grievanceList.getSource_of_grievance());
-        grievanceDetails.put("is_offline_complaint", grievanceList.getIs_offline_complaint());
-        grievanceDetails.put("is_self_motivated_grievance", grievanceList.getIs_self_motivated_grievance());
+        grievanceDetails.put("status", (grievanceList.getStatus() != null && Boolean.parseBoolean(grievanceList.getStatus())) ? 1 : 0);
+        grievanceDetails.put("is_offline_complaint", (grievanceList.getIs_offline_complaint() != null && grievanceList.getIs_offline_complaint()) ? 1 : 0);
+        grievanceDetails.put("is_self_motivated_grievance", (grievanceList.getIs_self_motivated_grievance() != null && grievanceList.getIs_self_motivated_grievance()) ? 1 : 0);
+        grievanceDetails.put("is_safety_net", (grievanceList.getIs_safety_net() != null && grievanceList.getIs_safety_net()) ? 1 : 0);
+        grievanceDetails.put("is_grs_user", (grievanceList.getIs_grs_user() != null && grievanceList.getIs_grs_user()) ? 1 : 0);
         grievanceDetails.put("uploader_office_unit_organogram_id", grievanceList.getUploader_office_unit_organogram_id());
         grievanceDetails.put("complaint_category", grievanceList.getComplaint_category());
         grievanceDetails.put("sp_programme_id", grievanceList.getSp_programme_id());
         grievanceDetails.put("geo_division_id", grievanceList.getGeo_division_id());
         grievanceDetails.put("geo_district_id", grievanceList.getGeo_district_id());
         grievanceDetails.put("geo_upazila_id", grievanceList.getGeo_upazila_id());
-        grievanceDetails.put("is_safety_net", grievanceList.getIs_safety_net());
         grievanceDetails.put("medium_of_submission", null);
         grievanceDetails.put("complaint_attachment_info", null);
+        grievanceDetails.put("mygov_user_id", null);
+        grievanceDetails.put("triple_three_agent_id", null);
+        grievanceDetails.put("grievance_from", grievanceList.getGrievance_from());
+        grievanceDetails.put("possible_close_date", grievanceList.getPossible_close_date());
+        grievanceDetails.put("possible_close_date_bn", grievanceList.getPossible_close_date_bn());
+        grievanceDetails.put("is_evidence_provide", (grievanceList.getIs_evidence_provide() != null && grievanceList.getIs_evidence_provide()) ? 1 : 0);
+        grievanceDetails.put("is_see_hearing_date", (grievanceList.getIs_see_hearing_date() != null && grievanceList.getIs_see_hearing_date()) ? 1 : 0);
 
-        SimpleDateFormat isoDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
 
         Map<String, Object> complainantInfo = new HashMap<>();
         complainantInfo.put("id", complainant.getId());
@@ -293,8 +309,6 @@ public class MobileGrievanceController {
         complainantInfo.put("mobile_number", complainant.getPhoneNumber());
         complainantInfo.put("email", complainant.getEmail());
         complainantInfo.put("birth_date",  new SimpleDateFormat("yyyy-MM-dd").format(complainant.getBirthDate()));
-        complainantInfo.put("occupation", complainant.getOccupation());
-        complainantInfo.put("educational_qualification", complainant.getEducation());
         complainantInfo.put("gender", complainant.getGender() != null ? complainant.getGender().toString() : null);  // Assuming `Gender` is an enum
         complainantInfo.put("username", complainant.getUsername());
         complainantInfo.put("nationality_id", complainant.getCountryInfo() != null ? complainant.getCountryInfo().getId() : null);
@@ -334,12 +348,50 @@ public class MobileGrievanceController {
         complainantInfo.put("foreign_present_address_city", complainant.getForeignPresentAddressCity());
         complainantInfo.put("foreign_present_address_state", complainant.getForeignPresentAddressState());
         complainantInfo.put("foreign_present_address_zipcode", complainant.getForeignPresentAddressZipCode());
-        complainantInfo.put("is_authenticated", complainant.isAuthenticated());
+        complainantInfo.put("is_authenticated", complainant.isAuthenticated() ? 1 : 0);
         complainantInfo.put("created_at", isoDateFormat.format(new Date(complainant.getCreatedAt().getTime())));
         complainantInfo.put("modified_at", isoDateFormat.format(new Date(complainant.getUpdatedAt().getTime())));
         complainantInfo.put("status", complainant.getStatus());
         complainantInfo.put("present_address_country_id", complainant.getPresentAddressCountryId());
         complainantInfo.put("permanent_address_country_id", complainant.getPermanentAddressCountryId());
+        complainantInfo.put("is_blacklisted", complainantService.isBlacklistedUserByComplainantId(complainant.getId()) ? 1 : 0);
+        List<Occupation> occupations = mobilePublicAPIService.getOccupationList();
+        String complainantOccupation = complainant.getOccupation();
+        String occupationId = occupations.stream()
+                .filter(o -> complainantOccupation.equals(o.getOccupationBangla()) || complainantOccupation.equals(o.getOccupationEnglish()))
+                .map(o -> o.getId().toString())
+                .findFirst()
+                .orElse(null);
+        complainantInfo.put("occupation", occupationId);
+
+        List<Education> qualifications = mobilePublicAPIService.getQualificationList();
+        String complainantQualification = complainant.getEducation();
+        String qualificationId = qualifications.stream()
+                .filter(q -> complainantQualification.equals(q.getEducationBangla()) || complainantQualification.equals(q.getEducationEnglish()))
+                .map(q -> q.getId().toString())
+                .findFirst()
+                .orElse(null);
+        complainantInfo.put("educational_qualification", qualificationId);
+        complainantInfo.put("blacklister_office_id", null);
+        complainantInfo.put("blacklister_office_name", null);
+        complainantInfo.put("blacklist_reason", null);
+        complainantInfo.put("is_requested", null);
+
+
+
+//        Boolean isOccupation = false;
+//        for (Occupation o : occupations){
+//            if (complainant.getOccupation().equals(o.getOccupationBangla()) || complainant.getOccupation().equals(o.getOccupationEnglish())) {
+//                complainantInfo.put("occupation", o.getId().toString());
+//                isOccupation = true;
+//                break;
+//            }
+//        }
+//        if (!isOccupation) {
+//            complainantInfo.put("occupation", null);
+//        }
+
+
 
         Office office = officeRepo.findOfficeById(grievanceList.getOffice_id());
 

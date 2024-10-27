@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -45,10 +47,10 @@ public class MobileGrievanceResponseDTO {
     private String ao_decision;
     private String ao_identified_complaint_cause;
     private String ao_suggestion;
-    private String created_at;
-    private String updated_at;
-    private String created_by;
-    private String modified_by;
+    private Date created_at;
+    private Date updated_at;
+    private Long created_by;
+    private Long modified_by;
     private String status;
     private String rating;
     private String appeal_rating;
