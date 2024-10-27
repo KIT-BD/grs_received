@@ -146,7 +146,6 @@ public class MobileGrievanceController {
             @RequestParam("complaint_id") Long complaintId
     ) {
         MobileGrievanceResponseDTO grievanceList = mobileGrievanceService.findGrievancesById(complaintId);
-        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
         if (grievanceList == null){
             Map<String, Object> response = new HashMap<>();
