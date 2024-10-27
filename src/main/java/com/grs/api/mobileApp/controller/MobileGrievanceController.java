@@ -145,7 +145,7 @@ public class MobileGrievanceController {
                 .build();
     }
 
-    @GetMapping("api/grievance/movement")
+    @GetMapping("/api/grievance/movement")
     public Map<String,Object> getMovement(
             Authentication authentication,
             @RequestParam("complaint_id") Long id
