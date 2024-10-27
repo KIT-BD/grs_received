@@ -1,5 +1,6 @@
 package com.grs.api.mobileApp.controller;
 
+import com.grs.api.mobileApp.dto.MobileGrievanceSubmissionResponseDTO;
 import com.grs.api.mobileApp.dto.MobileResponse;
 import com.grs.api.mobileApp.service.MobileGrievanceService;
 import com.grs.core.domain.projapoti.Office;
@@ -48,7 +49,7 @@ public class MobileGrievanceController {
             Principal principal) throws Exception {
 
         // Call the service method
-        MobileGrievanceResponseDTO response = mobileGrievanceService.savePublicGrievanceService(
+        MobileGrievanceSubmissionResponseDTO response = mobileGrievanceService.savePublicGrievanceService(
                 officeId, description, subject, spProgrammeId, mobileNumber, name,
                 email, divisionId, districtId, upazilaId, complaintCategory,
                 fileNameByUser, files, principal
@@ -89,7 +90,7 @@ public class MobileGrievanceController {
         }
         Complainant complainant = complainantService.findOne(complainantId);
 
-        MobileGrievanceResponseDTO responseDTO = mobileGrievanceService.saveGrievanceWithLogin(
+        MobileGrievanceSubmissionResponseDTO responseDTO = mobileGrievanceService.saveGrievanceWithLogin(
                 authentication,
                 complainant,
                 officeId,
