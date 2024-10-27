@@ -1,11 +1,15 @@
 package com.grs.api.mobileApp.controller;
 
+import com.grs.api.mobileApp.dto.MobileGrievanceForwardingDTO;
 import com.grs.api.mobileApp.dto.MobileGrievanceSubmissionResponseDTO;
 import com.grs.api.mobileApp.dto.MobileResponse;
 import com.grs.api.mobileApp.service.MobileGrievanceService;
 import com.grs.api.model.UserType;
+import com.grs.api.model.response.GrievanceForwardingEmployeeRecordsDTO;
+import com.grs.core.domain.grs.Grievance;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.repo.projapoti.OfficeRepo;
+import com.grs.core.service.GrievanceForwardingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import com.grs.api.mobileApp.dto.MobileGrievanceResponseDTO;
@@ -31,6 +35,7 @@ public class MobileGrievanceController {
     private MobileGrievanceService mobileGrievanceService;
     private final ComplainantService complainantService;
     private final OfficeRepo officeRepo;
+    private final GrievanceForwardingService grievanceForwardingService;
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public MobileResponse savePublicGrievance(
@@ -138,6 +143,75 @@ public class MobileGrievanceController {
                 .status("success")
                 .data(grievanceList)
                 .build();
+    }
+
+    @GetMapping("api/grievance/movement")
+    public Map<String,Object> getMovement(
+            Authentication authentication,
+            @RequestParam("complaint_id") Long id
+    ){
+        if (id == null){
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", "Complaint could not be found");
+            response.put("status", "error");
+
+            return response;
+        }
+        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.searchAllComplaintMovementHistoryByGrievance(id);
+        List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
+
+        for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
+            forwardingDTOList.add(
+                    MobileGrievanceForwardingDTO.builder()
+                            .id(null)
+                            .complaint_id(Math.toIntExact(id))
+                            .note(g.getComment())
+                            .action(g.getAction())
+                            .to_employee_record_id(null)
+                            .from_employee_record_id(null)
+                            .to_office_unit_organogram_id(null)
+                            .from_office_unit_organogram_id(null)
+                            .to_office_id(null)
+                            .from_office_id(null)
+                            .to_office_unit_id(null)
+                            .from_office_unit_id(null)
+                            .is_current(null)
+                            .is_cc(g.getIsCC() ? 1 : 0)
+                            .is_committee_head(g.getIsCommitteeHead() ? 1 : 0)
+                            .is_committee_member(g.getIsCommitteeMember() ? 1 : 0)
+                            .to_employee_name_bng(g.getToGroNameBangla())
+                            .from_employee_name_bng(g.getFromGroNameBangla())
+                            .to_employee_name_eng(g.getToGroNameEnglish())
+                            .from_employee_name_eng(g.getFromGroNameEnglish())
+                            .to_employee_designation_bng(g.getToDesignationNameBangla())
+                            .from_employee_designation_bng(g.getFromDesignationNameBangla())
+                            .to_office_name_bng(g.getToOfficeNameBangla())
+                            .from_office_name_bng(g.getFromOfficeNameBangla())
+                            .to_employee_unit_name_bng(g.getToOfficeUnitNameBangla())
+                            .from_employee_unit_name_bng(g.getFromOfficeUnitNameBangla())
+                            .from_employee_username(g.getFromGroUsername())
+                            .from_employee_signature(null)
+                            .created_at(g.getCreatedAtEng())
+                            .updated_at(null)
+                            .created_by(null)
+                            .modified_by(null)
+                            .status(null)
+                            .deadline_date(null)
+                            .current_status(null)
+                            .is_seen(null)
+                            .assigned_role(g.getAssignedRole())
+                            .complain_movement_attachment(g.getFiles())
+                            .build()
+
+            );
+        }
+
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", forwardingDTOList);
+        response.put("status", "success");
+
+        return response;
     }
 
     @GetMapping("/api/grievance/details")
