@@ -148,12 +148,6 @@ public class MobileGrievanceController {
         MobileGrievanceResponseDTO grievanceList = mobileGrievanceService.findGrievancesById(complaintId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-        System.out.println("userid "+userInformation.getUserId());
-        System.out.println("office info "+userInformation.getOfficeInformation());
-        System.out.println("is office admin "+userInformation.getIsOfficeAdmin());
-        System.out.println("username "+userInformation.getUsername());
-        System.out.println("user type "+userInformation.getUserType());
-
         if (grievanceList == null){
             Map<String, Object> response = new HashMap<>();
             response.put("data", null);
