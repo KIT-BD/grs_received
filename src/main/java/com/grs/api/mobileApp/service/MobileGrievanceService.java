@@ -69,7 +69,7 @@ public class MobileGrievanceService {
                 .body(description)
                 .relation(null)
                 .serviceReceiver(null)
-                .serviceOthers(null)
+                .serviceOthers("অন্যান্য")
                 .isAnonymous(false)
                 .serviceType(ServiceType.NAGORIK)
                 .offlineGrievanceUpload(false)
