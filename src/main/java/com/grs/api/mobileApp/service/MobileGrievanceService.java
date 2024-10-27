@@ -1,6 +1,7 @@
 package com.grs.api.mobileApp.service;
 
 import com.grs.api.mobileApp.dto.MobileGrievanceResponseDTO;
+import com.grs.api.mobileApp.dto.MobileGrievanceSubmissionResponseDTO;
 import com.grs.api.model.UserType;
 import com.grs.api.model.request.FileDTO;
 import com.grs.api.model.request.GrievanceWithoutLoginRequestDTO;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 import java.util.List;
@@ -43,7 +45,7 @@ public class MobileGrievanceService {
     private final GrievanceDAO grievanceDAO;
     private final OfficeService officeService;
 
-    public MobileGrievanceResponseDTO saveGrievanceWithLogin(
+    public MobileGrievanceSubmissionResponseDTO saveGrievanceWithLogin(
             Authentication authentication,
             Complainant complainant,
             Long officeId,
@@ -112,9 +114,9 @@ public class MobileGrievanceService {
         Grievance g = grievanceDAO.findByTrackingNumber(trackingNumber);
 
         String submissionDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa").format(new Date(g.getSubmissionDate().getTime()));
-        String closedDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa").format(new Date(g.getSubmissionDate().getTime() + (30L * 24 * 60 * 60 * 1000)));
+        String closedDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date(g.getSubmissionDate().getTime() + (30L * 24 * 60 * 60 * 1000)));
 
-        return MobileGrievanceResponseDTO.builder()
+        return MobileGrievanceSubmissionResponseDTO.builder()
                 .id(g.getId())
                 .subject(g.getSubject())
                 .submission_date(submissionDate)
@@ -127,21 +129,21 @@ public class MobileGrievanceService {
                 .tracking_number(g.getTrackingNumber())
                 .tracking_number_bn(g.getTrackingNumber())
                 .complainant_id(g.getComplainantId())
-                .is_grs_user(g.isGrsUser())
+                .is_grs_user(g.isGrsUser() ? 1L : 0L)
                 .office_id(g.getOfficeId())
-                .is_self_motivated_grievance(g.getIsSelfMotivatedGrievance())
+                .is_self_motivated_grievance(g.getIsSelfMotivatedGrievance() ? 1L : 0L)
                 .other_service(g.getOtherService())
                 .service_id(Optional.ofNullable(g.getServiceOrigin()).map(ServiceOrigin::getId).orElse(null))
                 .source_of_grievance(g.getSourceOfGrievance())
-                .status(String.valueOf(g.getStatus()))
+                .status(g.getStatus() ? 1L : 0L)
                 .possible_close_date(closedDate)
                 .possible_close_date_bn(BanglaConverter.getDateBanglaFromEnglish(closedDate))
-                .created_at(String.valueOf(g.getCreatedAt()))
-                .updated_at(String.valueOf(g.getUpdatedAt()))
+                .created_at(new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(g.getCreatedAt()))
+                .updated_at(new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(g.getUpdatedAt()))
                 .build();
     }
 
-    public MobileGrievanceResponseDTO savePublicGrievanceService(
+    public MobileGrievanceSubmissionResponseDTO savePublicGrievanceService(
             String officeId, String description, String subject,
             String spProgrammeId, String mobileNumber, String name,
             String email, Integer divisionId, Integer districtId,
@@ -212,9 +214,9 @@ public class MobileGrievanceService {
         Grievance g = grievanceDAO.findByTrackingNumber(trackingNumber);
 
         String submissionDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa").format(new Date(g.getSubmissionDate().getTime()));
-        String closedDate = new SimpleDateFormat("yyyy-MM-dd hh:mm:ssa").format(new Date(g.getSubmissionDate().getTime() + (30L * 24 * 60 * 60 * 1000)));
+        String closedDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date(g.getSubmissionDate().getTime() + (30L * 24 * 60 * 60 * 1000)));
 
-        return MobileGrievanceResponseDTO.builder()
+        return MobileGrievanceSubmissionResponseDTO.builder()
                 .id(g.getId())
                 .subject(g.getSubject())
                 .submission_date(submissionDate)
@@ -227,17 +229,17 @@ public class MobileGrievanceService {
                 .tracking_number(g.getTrackingNumber())
                 .tracking_number_bn(BanglaConverter.convertToBanglaDigit(g.getTrackingNumber()))
                 .complainant_id(g.getComplainantId())
-                .is_grs_user(g.isGrsUser())
+                .is_grs_user(g.isGrsUser() ? 1L : 0L)
                 .office_id(g.getOfficeId())
-                .is_self_motivated_grievance(g.getIsSelfMotivatedGrievance())
+                .is_self_motivated_grievance(g.getIsSelfMotivatedGrievance() ? 1L : 0L)
                 .other_service(g.getOtherService())
                 .service_id(Optional.ofNullable(g.getServiceOrigin()).map(ServiceOrigin::getId).orElse(null))
                 .source_of_grievance(g.getSourceOfGrievance())
-                .status(String.valueOf(g.getStatus()))
+                .status(g.getStatus() ? 1L : 0L)
                 .possible_close_date(closedDate)
                 .possible_close_date_bn(BanglaConverter.getDateBanglaFromEnglish(closedDate))
-                .created_at(String.valueOf(g.getCreatedAt()))
-                .updated_at(String.valueOf(g.getUpdatedAt()))
+                .created_at(new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(g.getCreatedAt()))
+                .updated_at(new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(g.getUpdatedAt()))
                 .build();
         //return grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
     }
