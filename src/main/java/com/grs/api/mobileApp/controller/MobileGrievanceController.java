@@ -148,10 +148,6 @@ public class MobileGrievanceController {
         MobileGrievanceResponseDTO grievanceList = mobileGrievanceService.findGrievancesById(complaintId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-        if (userInformation.getUserType() == UserType.COMPLAINANT){
-
-        }
-
         System.out.println("userid "+userInformation.getUserId());
         System.out.println("office info "+userInformation.getOfficeInformation());
         System.out.println("is office admin "+userInformation.getIsOfficeAdmin());
