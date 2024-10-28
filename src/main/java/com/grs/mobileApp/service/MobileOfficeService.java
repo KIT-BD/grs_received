@@ -7,6 +7,7 @@ import com.grs.core.domain.projapoti.OfficeLayer;
 import com.grs.core.domain.projapoti.OfficeOrigin;
 import com.grs.core.repo.projapoti.CustomOfficeLayerRepo;
 import com.grs.core.repo.projapoti.OfficeLayerRepo;
+import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.OfficeService;
 import com.grs.mobileApp.dto.*;
 import com.grs.utils.MessageUtils;
@@ -29,6 +30,9 @@ public class MobileOfficeService {
 
     @Autowired
     private OfficeDAO officeDAO;
+
+    @Autowired
+    private OfficeRepo officeRepo;
 
 
 
@@ -148,4 +152,12 @@ public class MobileOfficeService {
         return this.convertToMobileOfficeDto(offices);
     }
 
+    public List<Office> searchOffices(String name, String nameBn) {
+        if (name != null) {
+            return officeRepo.findByOfficeNameEng(name);
+        }
+        else {
+            return officeRepo.findByOfficeNameBng(nameBn);
+        }
+    }
 }

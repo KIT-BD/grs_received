@@ -66,4 +66,10 @@ public interface OfficeRepo extends JpaRepository<Office, Long> {
                     "x.geo_district_id=:geoDistrictId\n" +
                     "and y.layer_level=:layerLevel\n")
     List<Long> getOfficeIdListByGeoDistrictId(@Param("geoDistrictId") Long geoDistrictId, @Param("layerLevel") Long layerLevel);
+
+    @Query(value = "SELECT * FROM offices o WHERE LOWER(o.office_name_eng) LIKE LOWER(CONCAT('%', :name, '%'))", nativeQuery = true)
+    List<Office> findByOfficeNameEng(@Param("name") String name);
+
+    @Query(value = "SELECT * FROM offices o WHERE LOWER(o.office_name_bng) LIKE LOWER(CONCAT('%', :nameBn, '%'))", nativeQuery = true)
+    List<Office> findByOfficeNameBng(@Param("nameBn") String nameBn);
 }
