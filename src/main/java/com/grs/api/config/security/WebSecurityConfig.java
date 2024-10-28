@@ -1,6 +1,6 @@
 package com.grs.api.config.security;
 
-import com.grs.api.mobileApp.config.JWTLoginFilterForMobileAPI;
+import com.grs.mobileApp.config.JWTLoginFilterForMobileAPI;
 import com.grs.core.service.ComplainantService;
 import com.grs.utils.CookieUtil;
 import org.springframework.beans.factory.annotation.Autowired;
