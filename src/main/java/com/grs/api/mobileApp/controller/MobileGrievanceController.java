@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
@@ -124,7 +125,7 @@ public class MobileGrievanceController {
     public MobileResponse getGrievances(
             Authentication authentication,
             @RequestParam("complainant_id") Long id
-    ){
+    ) throws ParseException {
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         Long complainantId = userInformation.getUserId();
 
@@ -154,7 +155,7 @@ public class MobileGrievanceController {
     public Map<String,Object> getMovement(
             Authentication authentication,
             @RequestParam("complaint_id") Long id
-    ){
+    ) throws ParseException {
         if (id == null){
             Map<String, Object> response = new HashMap<>();
             response.put("data", "Complaint could not be found");
@@ -196,7 +197,7 @@ public class MobileGrievanceController {
                             .from_employee_unit_name_bng(g.getFromOfficeUnitNameBangla())
                             .from_employee_username(g.getFromGroUsername())
                             .from_employee_signature(null)
-                            .created_at(g.getCreatedAtEng())
+                            .created_at(String.valueOf(new Date() {{ String[] p=g.getCreatedAtEng().split("/"); int d=Integer.parseInt(p[0]),m=Integer.parseInt(p[1])-1,y=Integer.parseInt(p[2]); Calendar c=Calendar.getInstance(TimeZone.getTimeZone("UTC")); c.set(y,m,d,6,45,2); c.set(Calendar.MILLISECOND,0); setTime(c.getTimeInMillis()); } @Override public String toString(){ return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(this); }}))
                             .updated_at(null)
                             .created_by(null)
                             .modified_by(null)
@@ -223,7 +224,7 @@ public class MobileGrievanceController {
     public Map<String, Object> getGrievanceDetails(
             Authentication authentication,
             @RequestParam("complaint_id") Long complaintId
-    ) {
+    ) throws ParseException {
         MobileGrievanceResponseDTO grievanceList = mobileGrievanceService.findGrievancesById(complaintId);
 
         if (grievanceList == null){
@@ -268,8 +269,10 @@ public class MobileGrievanceController {
         grievanceDetails.put("ao_decision", grievanceList.getAo_decision());
         grievanceDetails.put("ao_identified_complaint_cause", grievanceList.getAo_identified_complaint_cause());
         grievanceDetails.put("ao_suggestion", grievanceList.getAo_suggestion());
-        grievanceDetails.put("created_at", isoDateFormat.format(new Date(grievanceList.getCreated_at().getTime())));
-        grievanceDetails.put("updated_at", isoDateFormat.format(new Date(grievanceList.getUpdated_at().getTime())));
+//        grievanceDetails.put("created_at", isoDateFormat.format(new Date(grievanceList.getCreated_at().getTime())));
+//        grievanceDetails.put("updated_at", isoDateFormat.format(new Date(grievanceList.getUpdated_at().getTime())));
+        grievanceDetails.put("created_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievanceList.getCreated_at())));
+        grievanceDetails.put("updated_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievanceList.getUpdated_at())));
         grievanceDetails.put("created_by", grievanceList.getCreated_by());
         grievanceDetails.put("modified_by", grievanceList.getModified_by());
         grievanceDetails.put("rating", grievanceList.getRating());
@@ -279,11 +282,11 @@ public class MobileGrievanceController {
         grievanceDetails.put("feedback_comments", grievanceList.getFeedback_comments());
         grievanceDetails.put("appeal_feedback_comments", grievanceList.getAppeal_feedback_comments());
         grievanceDetails.put("source_of_grievance", grievanceList.getSource_of_grievance());
-        grievanceDetails.put("status", (grievanceList.getStatus() != null && Boolean.parseBoolean(grievanceList.getStatus())) ? 1 : 0);
-        grievanceDetails.put("is_offline_complaint", (grievanceList.getIs_offline_complaint() != null && grievanceList.getIs_offline_complaint()) ? 1 : 0);
-        grievanceDetails.put("is_self_motivated_grievance", (grievanceList.getIs_self_motivated_grievance() != null && grievanceList.getIs_self_motivated_grievance()) ? 1 : 0);
-        grievanceDetails.put("is_safety_net", (grievanceList.getIs_safety_net() != null && grievanceList.getIs_safety_net()) ? 1 : 0);
-        grievanceDetails.put("is_grs_user", (grievanceList.getIs_grs_user() != null && grievanceList.getIs_grs_user()) ? 1 : 0);
+        grievanceDetails.put("status", grievanceList.getStatus());
+        grievanceDetails.put("is_offline_complaint", grievanceList.getIs_offline_complaint());
+        grievanceDetails.put("is_self_motivated_grievance", grievanceList.getIs_self_motivated_grievance());
+        grievanceDetails.put("is_safety_net", grievanceList.getIs_safety_net());
+        grievanceDetails.put("is_grs_user", grievanceList.getIs_grs_user());
         grievanceDetails.put("uploader_office_unit_organogram_id", grievanceList.getUploader_office_unit_organogram_id());
         grievanceDetails.put("complaint_category", grievanceList.getComplaint_category());
         grievanceDetails.put("sp_programme_id", grievanceList.getSp_programme_id());
@@ -297,8 +300,8 @@ public class MobileGrievanceController {
         grievanceDetails.put("grievance_from", grievanceList.getGrievance_from());
         grievanceDetails.put("possible_close_date", grievanceList.getPossible_close_date());
         grievanceDetails.put("possible_close_date_bn", grievanceList.getPossible_close_date_bn());
-        grievanceDetails.put("is_evidence_provide", (grievanceList.getIs_evidence_provide() != null && grievanceList.getIs_evidence_provide()) ? 1 : 0);
-        grievanceDetails.put("is_see_hearing_date", (grievanceList.getIs_see_hearing_date() != null && grievanceList.getIs_see_hearing_date()) ? 1 : 0);
+        grievanceDetails.put("is_evidence_provide", grievanceList.getIs_evidence_provide());
+        grievanceDetails.put("is_see_hearing_date", grievanceList.getIs_see_hearing_date());
 
 
         Map<String, Object> complainantInfo = new HashMap<>();
@@ -350,7 +353,7 @@ public class MobileGrievanceController {
         complainantInfo.put("foreign_present_address_zipcode", complainant.getForeignPresentAddressZipCode());
         complainantInfo.put("is_authenticated", complainant.isAuthenticated() ? 1 : 0);
         complainantInfo.put("created_at", isoDateFormat.format(new Date(complainant.getCreatedAt().getTime())));
-        complainantInfo.put("modified_at", isoDateFormat.format(new Date(complainant.getUpdatedAt().getTime())));
+        complainantInfo.put("updated_at", isoDateFormat.format(new Date(complainant.getUpdatedAt().getTime())));
         complainantInfo.put("status", complainant.getStatus());
         complainantInfo.put("present_address_country_id", complainant.getPresentAddressCountryId());
         complainantInfo.put("permanent_address_country_id", complainant.getPermanentAddressCountryId());
