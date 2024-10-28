@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/doptor/api")
 public class MobileOfficeController {
 
     @Autowired
@@ -22,7 +21,7 @@ public class MobileOfficeController {
     @Autowired
     private OfficeService officeService;
 
-    @GetMapping
+    @GetMapping("/api/doptor/api")
     public ResponseEntity<Map<String, Object>> handleApiRequests(
             @RequestParam("api_url") String apiUrl,
             @RequestParam(value = "layer_levels", required = false) String layerLevelsParam,
@@ -102,137 +101,43 @@ public class MobileOfficeController {
             return ResponseEntity.status(500).body(response);
         }
     }
+
+    @GetMapping("/api/doptor/office")
+    public Map<String, Object> searchOfficeByName(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String nameBn) {
+        List<Office> offices = mobileOfficeService.searchOffices(name, nameBn);
+
+        List<Map<String, Object>> searchedOfficesList = new ArrayList<>();
+
+        for (Office office : offices) {
+            Map<String, Object> officeInfo = new HashMap<>();
+            officeInfo.put("id", office.getId());
+            officeInfo.put("nameBn", office.getNameBangla());
+            officeInfo.put("name", office.getNameEnglish());
+            officeInfo.put("code", "");
+            officeInfo.put("division", office.getDivisionId());
+            officeInfo.put("district", office.getDistrictId());
+            officeInfo.put("upazila", office.getUpazilaId());
+            officeInfo.put("phone", "");
+            officeInfo.put("mobile", "");
+            officeInfo.put("digitalNothiCode", "");
+            officeInfo.put("fax", "");
+            officeInfo.put("email", "");
+            officeInfo.put("website", office.getWebsiteUrl());
+            officeInfo.put("ministry", office.getOfficeMinistry().getId());
+            officeInfo.put("layer", office.getOfficeLayer().getId());
+            officeInfo.put("origin", office.getOfficeOriginId());
+            officeInfo.put("customLayer", office.getOfficeLayer().getCustomLayerId());
+            officeInfo.put("parentOfficeId", office.getParentOfficeId());
+
+            searchedOfficesList.add(officeInfo);
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("data", searchedOfficesList);
+
+        return response;
+    }
 }
-
-
-
-
-
-
-
-
-
-
-//package com.grs.api.mobileApp.controller;
-//
-//import com.grs.api.mobileApp.dto.MobileCustomOfficeLayerDTO;
-//import com.grs.api.mobileApp.dto.MobileOfficeDTO;
-//import com.grs.api.mobileApp.dto.MobileOfficeLayerDTO;
-//import com.grs.api.mobileApp.dto.MobileOfficeOriginDTO;
-//import com.grs.api.mobileApp.service.MobileOfficeService;
-//import com.grs.core.domain.projapoti.Office;
-//import com.grs.core.service.OfficeService;
-//import lombok.experimental.var;
-//import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.http.ResponseEntity;
-//import org.springframework.web.bind.annotation.*;
-//
-//import java.util.HashMap;
-//import java.util.List;
-//import java.util.Map;
-//
-//@RestController
-//@RequestMapping("/api/doptor/api")
-//public class MobileOfficeController {
-//
-//    @Autowired
-//    private MobileOfficeService mobileOfficeService;
-//
-//    @Autowired
-//    private OfficeService officeService;
-//
-//    @GetMapping
-//    public ResponseEntity<?> getOffice(
-//            @RequestParam("api_url") String apiUrl,
-//            @RequestParam(value = "layer_levels", required = false) Integer layerLevels,
-//            @RequestParam(value = "office_origin_ids", required = false) Integer officeOriginIds,
-//            @RequestParam(value = "custom_layer_ids", required = false) Integer customLayerIds
-//    ){
-//        Map<String,Object> response = mobileOfficeService.getResponse(apiUrl, layerLevels, officeOriginIds, customLayerIds);
-//        return null;
-//    }
-//
-//    @GetMapping("/office-layers")
-//    public ResponseEntity<Map<String, Object>> getOfficeLayers() {
-//        List<MobileOfficeLayerDTO> officeLayers = mobileOfficeService.getOfficeLayers();
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("status", "success");
-//        response.put("data", officeLayers);
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    @GetMapping("/office-layers/{layer_level}")
-//    public ResponseEntity<Map<String, Object>> getMobileOfficeLayers(
-//            @PathVariable("layer_level") Integer layerLevel) {
-//
-//        List<Office> offices = officeService.getOfficesByLayerLevel(layerLevel, true, false);
-//        System.out.println(offices);
-//        Map<Integer, MobileOfficeDTO> mobileOffices = mobileOfficeService.convertToMobileOfficeDto(offices);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("status", "success");
-//        response.put("data", mobileOffices);
-//
-//        return ResponseEntity.ok(response);
-//    }
-//
-//
-//    @GetMapping("/layer-level/{layer_level}/custom-layers")
-//    public ResponseEntity<Map<String, Object>> getCustomOfficeLayersForMobile(
-//            @PathVariable("layer_level") Integer layerLevel) {
-//
-//        List<MobileCustomOfficeLayerDTO> mobileOfficeLayers = mobileOfficeService.getCustomOfficeLayersForMobileByLayerLevel(layerLevel);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("status", "success");
-//        response.put("data", mobileOfficeLayers);
-//
-//        return ResponseEntity.ok(response);
-//    }
-//
-//    @GetMapping("/layer-level/custom-layers/{custom_layer_id}/offices")
-//    public ResponseEntity<Map<String, Object>> getOfficesByCustomLayerIdForMobile(
-//            @PathVariable("custom_layer_id") Long customLayerId) {
-//
-//        List<Office> offices = mobileOfficeService.getOfficesByCustomLayerId(customLayerId);
-//
-//        Map<Integer, MobileOfficeDTO> mobileOffices = mobileOfficeService.convertToMobileOfficeDto(offices);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("status", "success");
-//        response.put("data", mobileOffices);
-//
-//        return ResponseEntity.ok(response);
-//    }
-//
-//
-//    @GetMapping("/office-origin/{layer_level}")
-//    public ResponseEntity<Map<String, Object>> getOfficeOriginsForMobile(
-//            @PathVariable("layer_level") Integer layerLevel) {
-//
-//        List<MobileOfficeOriginDTO> mobileOfficeOrigins = mobileOfficeService.getOfficeOriginsForMobile(layerLevel);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("status", "success");
-//        response.put("data", mobileOfficeOrigins);
-//
-//        return ResponseEntity.ok(response);
-//    }
-//
-//
-//    @GetMapping("/office-origin/{office_origin_id}/offices")
-//    public ResponseEntity<Map<String, Object>> getOfficesForMobile(
-//            @PathVariable("office_origin_id") Long officeOriginId) {
-//
-//        Map<Integer, MobileOfficeDTO> mobileOffices = mobileOfficeService.findByOfficeOriginIdForMobile(officeOriginId);
-//
-//        Map<String, Object> response = new HashMap<>();
-//        response.put("status", "success");
-//        response.put("data", mobileOffices);
-//
-//        return ResponseEntity.ok(response);
-//    }
-//
-//
-//
-//}
