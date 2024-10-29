@@ -451,21 +451,15 @@ public class MobileGrievanceController {
     ){
         List<MobileGrievanceResponseDTO> grievanceList = mobileGrievanceService.findGrievancesByTrackingNumber(trx);
 
-        if (grievanceList == null){
+        if (grievanceList == null || grievanceList.isEmpty()){
             return MobileResponse.builder()
                     .status("empty")
-                    .data(new ArrayList<>())
-                    .build();
-        }
-        if (grievanceList.size() > 1){
-            return MobileResponse.builder()
-                    .status("success")
-                    .data(grievanceList.get(0))
+                    .data(null)
                     .build();
         }
         return MobileResponse.builder()
                 .status("success")
-                .data(grievanceList)
+                .data(grievanceList.get(0))
                 .build();
     }
 }
