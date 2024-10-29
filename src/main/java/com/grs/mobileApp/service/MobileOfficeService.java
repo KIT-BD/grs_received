@@ -1,6 +1,11 @@
 package com.grs.mobileApp.service;
 
+import com.grs.api.model.response.CitizenCharterDTO;
+import com.grs.api.model.response.ServiceOriginDTO;
+import com.grs.core.dao.CitizenCharterOriginDAO;
 import com.grs.core.dao.OfficeDAO;
+import com.grs.core.domain.grs.CitizenCharter;
+import com.grs.core.domain.grs.CitizensCharterOrigin;
 import com.grs.core.domain.projapoti.CustomOfficeLayer;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.domain.projapoti.OfficeLayer;
@@ -34,6 +39,8 @@ public class MobileOfficeService {
     @Autowired
     private OfficeRepo officeRepo;
 
+    @Autowired
+    private CitizenCharterOriginDAO citizenCharterOriginDAO;
 
 
     public List<MobileOfficeLayerDTO> getOfficeLayers() {
@@ -160,4 +167,84 @@ public class MobileOfficeService {
             return officeRepo.findByOfficeNameBng(nameBn);
         }
     }
+
+    public MobileServiceListDTO mapToMobileServiceListDTO(ServiceOriginDTO serviceOriginDTO) {
+        MobileServiceListDTO dto = new MobileServiceListDTO();
+        dto.setId(serviceOriginDTO.getServiceId());
+        dto.setOffice_origin_id(serviceOriginDTO.getOfficeOriginId());
+        dto.setOffice_origin_unit_id(serviceOriginDTO.getOfficeOriginUnitId());
+        dto.setOffice_origin_unit_organogram_id(serviceOriginDTO.getOfficeOriginUnitOrganogramId());
+        dto.setOffice_origin_name_bng(serviceOriginDTO.getOfficeOriginName());
+        dto.setOffice_origin_name_eng(null); // Assuming English name is not available
+        dto.setService_type(serviceOriginDTO.getServiceType() != null ? serviceOriginDTO.getServiceType().name() : null);
+        dto.setService_name_bng(serviceOriginDTO.getServiceNameBangla());
+        dto.setService_name_eng(serviceOriginDTO.getServiceNameEnglish());
+        dto.setService_procedure_bng(serviceOriginDTO.getServiceProcedureBangla());
+        dto.setService_procedure_eng(serviceOriginDTO.getServiceProcedureEnglish());
+        dto.setDocuments_and_location_bng(serviceOriginDTO.getDocumentAndLocationBangla());
+        dto.setDocuments_and_location_eng(serviceOriginDTO.getDocumentAndLocationEnglish());
+        dto.setPayment_method_bng(serviceOriginDTO.getPaymentMethodBangla());
+        dto.setPayment_method_eng(serviceOriginDTO.getPaymentMethodEnglish());
+        dto.setService_time(serviceOriginDTO.getServiceTime());
+        dto.setStatus(serviceOriginDTO.getStatus() != null && serviceOriginDTO.getStatus() ? 1 : 0);
+        dto.setCreated_by(null); // Assuming created_by is not available
+        dto.setModified_by(null); // Assuming modified_by is not available
+        dto.setCreated_at(null); // Assuming created_at is not available
+        dto.setModified_at(null); // Assuming modified_at is not available
+        return dto;
+    }
+
+    public MobileCitizenCharterDetailsInfoDTO mapToCitizenCharterDetailsInfoDTO(CitizenCharter dto) {
+        MobileCitizenCharterDetailsInfoDTO infoDTO = new MobileCitizenCharterDetailsInfoDTO();
+        infoDTO.setId(dto.getId());
+        infoDTO.setOffice_id(dto.getOfficeId());
+        infoDTO.setOffice_origin_id(dto.getOfficeOriginId());
+        infoDTO.setService_id(dto.getServiceOrigin().getId());
+        infoDTO.setSo_office_id(dto.getSoOfficeId());
+        infoDTO.setSo_office_unit_id(dto.getSoOfficeUnitId());
+        infoDTO.setSo_office_unit_organogram_id(dto.getSoOfficeUnitOrganogramId());
+        infoDTO.setService_name_bng(dto.getServiceNameBangla());
+        infoDTO.setService_name_eng(dto.getServiceNameEnglish());
+        infoDTO.setService_procedure_bng(dto.getServiceProcedureBangla());
+        infoDTO.setService_procedure_eng(dto.getServiceProcedureEnglish());
+        infoDTO.setDocuments_and_location_bng(dto.getDocumentAndLocationBangla());
+        infoDTO.setDocuments_and_location_eng(dto.getDocumentAndLocationEnglish());
+        infoDTO.setPayment_method_bng(dto.getPaymentMethodBangla());
+        infoDTO.setPayment_method_eng(dto.getPaymentMethodEnglish());
+        infoDTO.setService_time(dto.getServiceTime());
+        infoDTO.setService_type(dto.getServiceOrigin() != null ? dto.getServiceOrigin().getServiceType().name() : null);
+        infoDTO.setIs_disabled_for_admin(null); // Assuming not available
+        infoDTO.setStatus(dto.getStatus() != null && dto.getStatus() ? 1 : 0);
+        infoDTO.setOrigin_status(dto.getOriginStatus() != null && dto.getOriginStatus() ? 1 : 0);
+        infoDTO.setCreated_at(null); // Assuming not available
+        infoDTO.setModified_at(null); // Assuming not available
+        infoDTO.setCreated_by(null); // Assuming not available
+        infoDTO.setModified_by(null); // Assuming not available
+        return infoDTO;
+    }
+
+    public MobileVisionDTO getVisionByOfficeId(Long officeId) {
+
+        CitizensCharterOrigin origin = citizenCharterOriginDAO.findByOfficeOriginId(officeService.getOffice(officeId).getOfficeOriginId());
+
+        if (origin != null) {
+            MobileVisionDTO visionDTO = new MobileVisionDTO();
+            visionDTO.setId(origin.getId());
+            visionDTO.setOffice_origin_id(origin.getOfficeOriginId());
+            visionDTO.setOffice_origin_name_bng(origin.getOfficeOriginNameBangla());
+            visionDTO.setOffice_origin_name_eng(origin.getOfficeOriginNameEnglish());
+            visionDTO.setLayer_level(origin.getLayerLevel() != null ? origin.getLayerLevel().intValue() : null);
+            visionDTO.setVision_bng(origin.getVisionBangla());
+            visionDTO.setVision_eng(origin.getVisionEnglish());
+            visionDTO.setMission_bng(origin.getMissionBangla());
+            visionDTO.setMission_eng(origin.getMissionEnglish());
+            visionDTO.setExpectations_bng(origin.getExpectationBangla());
+            visionDTO.setExpectations_eng(origin.getExpectationEnglish());
+            return visionDTO;
+        } else {
+            return null;
+        }
+    }
+
+
 }
