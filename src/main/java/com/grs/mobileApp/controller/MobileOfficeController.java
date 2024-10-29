@@ -1,16 +1,21 @@
 package com.grs.mobileApp.controller;
 
-import com.grs.mobileApp.dto.MobileCustomOfficeLayerDTO;
-import com.grs.mobileApp.dto.MobileOfficeDTO;
-import com.grs.mobileApp.dto.MobileOfficeLayerDTO;
-import com.grs.mobileApp.dto.MobileOfficeOriginDTO;
+import com.grs.api.model.response.CitizenCharterDTO;
+import com.grs.api.model.response.ServiceOriginDTO;
+import com.grs.core.dao.CitizenCharterDAO;
+import com.grs.core.domain.grs.CitizenCharter;
+import com.grs.mobileApp.dto.*;
 import com.grs.mobileApp.service.MobileOfficeService;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.service.OfficeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class MobileOfficeController {
@@ -20,6 +25,9 @@ public class MobileOfficeController {
 
     @Autowired
     private OfficeService officeService;
+
+    @Autowired
+    private CitizenCharterDAO citizenCharterDAO;
 
     @GetMapping("/api/doptor/api")
     public ResponseEntity<Map<String, Object>> handleApiRequests(
@@ -139,5 +147,52 @@ public class MobileOfficeController {
         response.put("data", searchedOfficesList);
 
         return response;
+    }
+
+    @RequestMapping(value = "/api/service/list", method = RequestMethod.GET)
+    public ResponseEntity<?> getServiceList(@RequestParam("office_id") Long officeId) {
+        List<ServiceOriginDTO> services = this.officeService.getServices(officeId);
+
+        List<MobileServiceListDTO> data = services.stream()
+                .map(mobileOfficeService::mapToMobileServiceListDTO)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("data", data);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @RequestMapping(value = "/api/citizen-charter/infoNew", method = RequestMethod.GET)
+    public ResponseEntity<?> getCitizenCharterInfoNew(@RequestParam("office_id") Long officeId) {
+
+        // Fetch visions data
+        MobileVisionDTO vision = mobileOfficeService.getVisionByOfficeId(officeId);
+
+        List<CitizenCharter> citizenCharters = citizenCharterDAO.findByOffice(officeId);
+//        System.out.println("CitizenCharters: " + citizenCharters.get(0));
+
+        // Map citizen charter details
+        List<MobileCitizenCharterDetailsInfoDTO> listCitizenCharters = citizenCharters.stream()
+                .map(mobileOfficeService::mapToCitizenCharterDetailsInfoDTO)
+                .collect(Collectors.toList());
+
+        // Prepare CitizenCharterDetailsInfo response
+        Map<String, Object> citizenCharterDetailsInfo = new HashMap<>();
+        citizenCharterDetailsInfo.put("status", "success");
+        citizenCharterDetailsInfo.put("data", listCitizenCharters);
+
+        // Prepare response
+        Map<String, Object> data = new HashMap<>();
+        data.put("visions", vision);
+        data.put("CitizenCharterDetailsInfo", citizenCharterDetailsInfo);
+
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("data", data);
+
+        return ResponseEntity.ok(response);
     }
 }
