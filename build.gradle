@@ -61,6 +61,7 @@ dependencies {
     compile files('libs/jackson-core-2.11.0.jar')
     compile files('libs/jackson-core-2.11.0.jar')
     compile files('libs/java-jwt-3.16.0.jar')
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
 //	providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
 //	implementation "jakarta.xml.bind:jakarta.xml.bind-api:2.3.2"
 //	implementation "org.glassfish.jaxb:jaxb-runtime:2.3.2"

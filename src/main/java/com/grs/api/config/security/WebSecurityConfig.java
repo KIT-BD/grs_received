@@ -1,5 +1,6 @@
 package com.grs.api.config.security;
 
+import com.grs.mobileApp.config.JWTAdminLoginFilterForMobileAPI;
 import com.grs.mobileApp.config.JWTLoginFilterForMobileAPI;
 import com.grs.core.service.ComplainantService;
 import com.grs.utils.CookieUtil;
@@ -78,6 +79,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilterBefore(new JWTLoginFilter("/login", authenticationManager(), bCryptPasswordEncoder), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JWTLoginFilterForAPI("/api/login", authenticationManager(), bCryptPasswordEncoder), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JWTLoginFilterForMobileAPI("/api/mobile/login", authenticationManager(), bCryptPasswordEncoder, complainantService), UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(new JWTAdminLoginFilterForMobileAPI("/api/auth/mobile-administrative-login", authenticationManager(), bCryptPasswordEncoder), UsernamePasswordAuthenticationFilter.class)
                 .addFilterBefore(new JWTAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
     }
 
