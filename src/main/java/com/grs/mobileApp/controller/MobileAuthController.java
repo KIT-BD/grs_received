@@ -1,5 +1,8 @@
 package com.grs.mobileApp.controller;
 
+import com.grs.api.model.response.GenericResponse;
+import com.grs.core.service.EmailService;
+import com.grs.core.service.ShortMessageService;
 import com.grs.mobileApp.dto.MobileAuthDTO;
 import com.grs.mobileApp.dto.MobileResponse;
 import com.grs.mobileApp.service.MobileAuthService;
@@ -8,7 +11,9 @@ import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.CountryInfo;
 import com.grs.core.service.ComplainantService;
 import com.grs.core.service.OccupationService;
+import com.grs.utils.StringUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
@@ -21,6 +26,9 @@ public class MobileAuthController {
     private final MobileAuthService mobileAuthService;
     private final ComplainantService complainantService;
     private final OccupationService occupationService;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
+    private final ShortMessageService shortMessageService;
+    private final EmailService emailService;
 
     @PostMapping("/save")
     public MobileResponse registerComplainant(@RequestBody MobileAuthDTO mobileAuthDTO){
@@ -164,6 +172,32 @@ public class MobileAuthController {
         return MobileResponse.builder()
                 .status("success")
                 .data(responseDTO)
+                .build();
+    }
+
+
+    @RequestMapping(value = "/mobile/reset/pincode/{phoneNumber}", method = RequestMethod.PUT)
+    public MobileResponse resetCitizenPinCode(@PathVariable("phoneNumber") String  phoneNumber) {
+        Complainant complainant = this.complainantService.findComplainantByPhoneNumber(phoneNumber);
+        if (complainant == null) {
+            return MobileResponse.builder()
+                    .data("এই ফোন নম্বরের কোন ব্যবহারকারী নেই")
+                    .status("error")
+                    .build();
+        }
+        String newPincode = complainantService.getRandomPinNumber();
+        complainant.setPassword(bCryptPasswordEncoder.encode(newPincode));
+        this.complainantService.save(complainant);
+
+        // System.out.println("New Pin Code: " + newPincode);
+        shortMessageService.sendSMS(complainant.getPhoneNumber(), String.format("আপনার জিআরএস লগইন পিনকোড রিসেট করা হয়েছে, নতুন পিনকোড : %s.", newPincode));
+        if(StringUtil.isValidString(complainant.getEmail())) {
+            emailService.sendEmail(complainant.getEmail(), "GRS login new pincode", "Dear " + complainant.getName() + ",\n\nYour GRS login pincode has been successfully reset. \nNew pincode is " + newPincode + ". \nPlease keep it secret and do not disclose to anyone.\n\n- From GRS System");
+        }
+
+        return MobileResponse.builder()
+                .data("পিনকোড রিসেট সফল। নতুন পিনকোড এসএমএস ও ইমেইল এর মাধ্যমে পাঠানো হবে")
+                .status("success")
                 .build();
     }
 }
