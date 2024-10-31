@@ -6,20 +6,31 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.grs.api.config.security.CustomAuthenticationToken;
+import com.grs.api.config.security.GrantedAuthorityImpl;
+import com.grs.api.config.security.OISFUserDetailsServiceImpl;
 import com.grs.api.config.security.UserDetailsImpl;
 import com.grs.api.model.UserInformation;
 import com.grs.api.sso.LoginRequest;
+import com.grs.core.dao.GrsRoleDAO;
+import com.grs.core.dao.UserDAO;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.CountryInfo;
+import com.grs.core.domain.grs.GrsRole;
+import com.grs.core.domain.projapoti.User;
 import com.grs.core.service.ComplainantService;
 import com.grs.mobileApp.dto.*;
+import com.grs.utils.BanglaConverter;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.impl.client.BasicCookieStore;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -36,9 +47,11 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -58,24 +71,8 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
         setAuthenticationManager(authManager);
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
     }
-
-//    @Override
-//    public Authentication attemptAuthentication(
-//            HttpServletRequest req, HttpServletResponse res)
-//            throws AuthenticationException {
-//
-//        String username = req.getParameter(USERNAME_REQUEST_PARAM);
-//        String password = req.getParameter(PASSWORD_REQUEST_PARAM);
-//
-//        return getAuthenticationManager().authenticate(
-//                new UsernamePasswordAuthenticationToken(
-//                        username,
-//                        password,
-//                        Collections.emptyList()
-//                )
-//        );
-//    }
-
+    @Getter
+    @Setter
     private static ResponseEntity<String> responseBody;
 
     @Override
@@ -101,6 +98,8 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
             HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(formData, headers);
 
             RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getMessageConverters()
+                    .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(
                     "https://api-stage.doptor.gov.bd/api/user/verify",
                     requestEntity,
@@ -108,15 +107,15 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
             );
 
             if (responseEntity.getStatusCode() == HttpStatus.OK) {
-                // Create the Authentication object
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         username,
                         password,
                         Collections.emptyList()
                 );
 
-                // Attach the responseEntity as details
-                authToken.setDetails(responseEntity);
+                setResponseBody(responseEntity);
+
+                log.info(username + password + authToken);
 
                 return authToken;
             } else {
@@ -129,6 +128,34 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
         }
     }
 
+    private Authentication doAuthentication(Authentication authentication) throws AuthenticationException {
+        String name = authentication.getName();
+        String password = authentication.getCredentials().toString();
+        User user = this.userDAO.findByUsername(BanglaConverter.convertToEnglish(name));
+
+        if (user != null) {
+            UserInformation userInformation = this.oisfUserDetailsService.getUserInfo(user);
+            String roleName = null;
+            if(userInformation.getGrsUserType() != null) {
+                roleName = userInformation.getGrsUserType().name();
+            } else {
+                roleName = userInformation.getOisfUserType().name();
+            }
+            GrsRole grsRole = this.grsRoleDAO.findByRole(roleName);
+            List<GrantedAuthorityImpl> grantedAuthorities = grsRole
+                    .getPermissions()
+                    .stream()
+                    .map(permission -> {
+                        return GrantedAuthorityImpl.builder()
+                                .role(permission.getName())
+                                .build();
+                    }).collect(Collectors.toList());
+            return new CustomAuthenticationToken(name, password, grantedAuthorities, userInformation);
+        } else {
+            return null;
+        }
+    }
+
 
     @Override
     protected void successfulAuthentication(
@@ -138,44 +165,39 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
 
         String username = authentication.getName();
         Object principal = authentication.getPrincipal();
+
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Set<String> permissionNamesSet = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
 
         String JWT = constuctJwtToken(username, permissionNamesSet, null);
 
-        ResponseEntity<String> responseEntity = (ResponseEntity<String>) authentication.getDetails();
+        ResponseEntity<String> responseEntity = getResponseBody();
         String responseBody = responseEntity.getBody();
 
         ObjectMapper objectMapper = new ObjectMapper();
         Map<String, Object> responseMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
 
-        Object value = responseMap.get("data");
-
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        APIResponse apiResponse = objectMapper.readValue(body, APIResponse.class);
+        Map<String, Object> userInfo = Optional.ofNullable(responseMap)
+                .map(map -> (Map<String, Object>) map.get("data"))
+                .orElse(Collections.emptyMap());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Map<String,Object> userInfo = new HashMap<>();
-
         Map<String,Object> data = new HashMap<>();
-        data.put("user_info",value);
+        data.put("user_info",userInfo);
         data.put("l","gro");
         data.put("token", JWT);
 
 
         Map<String,Object> mobileResponse = new HashMap<>();
         mobileResponse.put("status","success");
-        mobileResponse.put("data",data);
+        mobileResponse.put("data", data);
 
-        response.addHeader(HEADER_STRING, JWT);
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setContentType("application/json;charset=UTF-8");
+        response.setCharacterEncoding("UTF-8");
         ObjectMapper mapper = new ObjectMapper();
-        response.addHeader("content-type", "application/json;charset=UTF-8");
         mapper.writeValue(response.getWriter(), mobileResponse);
     }
-
-
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request,
