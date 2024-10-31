@@ -46,4 +46,78 @@ public class MessageUtils {
         result.put("clickAction", clickAction);
         return result;
     }
+
+    public static String getCustomLayerEnglishName(String nameBng) {
+        switch (nameBng) {
+            case "কর্তৃপক্ষ / অথোরিটি":
+                return "Authority";
+            case "ইনস্টিটিউট":
+                return "Institute";
+            case "অন্যান্য প্রতিষ্ঠান":
+                return "Other Institutions";
+            case "একাডেমি/ প্রশিক্ষণ কেন্দ্র":
+                return "Academy / Training Center";
+            case "ব্যুরো":
+                return "Bureau";
+            case "কর্পোরেশন":
+                return "Corporation";
+            case "কাউন্সিল":
+                return "Council";
+            case "কমিশন":
+                return "Commission";
+            case "কোম্পানি":
+                return "Company";
+            case "পরিদপ্তর":
+                return "Directorate";
+            case "পরিষদ":
+                return "Council";
+            case "প্লান্ট/স্টেশন/ফিল্ড":
+                return "Plant / Station / Field";
+            case "প্রোগ্রাম / প্রকল্প":
+                return "Program / Project";
+            case "মন্ত্রণালয়":
+                return "Ministry";
+            case "অধিদপ্তর":
+                return "Department";
+            case "বিভাগীয় কার্যালয়":
+                return "Divisional Office";
+            case "জেলা কার্যালয়":
+                return "District Office";
+            case "উপজেলা কার্যালয়":
+                return "Upazila Office";
+            case "উপজেলা ভূমি অফিস":
+                return "Upazila Land Office";
+            case "বিভাগ":
+                return "Division";
+            case "সংস্থা":
+                return "Agency";
+            case "ইউনিট":
+                return "Unit";
+            case "বোর্ড":
+                return "Board";
+            case "আঞ্চলিক কার্যালয়":
+                return "Regional Office";
+            case "ফাউন্ডেশন":
+                return "Foundation";
+            case "বিশ্ববিদ্যালয়":
+                return "University";
+            case "কলেজ":
+                return "College";
+            case "স্কুল":
+                return "School";
+            case "টেকনিক্যাল/ভোকেশনাল প্রতিষ্ঠান":
+                return "Technical / Vocational Institution";
+            case "জোনাল অফিস":
+                return "Zonal Office";
+            case "মেট্রোপলিটন":
+                return "Metropolitan";
+            case "মিশন ও অন্যান্য":
+                return "Mission and Others";
+            case "সার্কেল অফিস":
+                return "Circle Office";
+            default:
+                return ""; // Fallback for unknown entries
+        }
+    }
+
 }

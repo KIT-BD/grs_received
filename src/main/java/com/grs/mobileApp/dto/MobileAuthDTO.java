@@ -1,0 +1,70 @@
+package com.grs.mobileApp.dto;
+
+import lombok.Builder;
+import lombok.Data;
+
+@Data
+@Builder
+public class MobileAuthDTO {
+    private Long id;
+    private String name;
+    private String identification_value;
+    private String identification_type;
+    private String mobile_number;
+    private String email;
+    private String birth_date;
+    private String occupation;
+    private String educational_qualification;
+    private String gender;
+    private String username;
+    private Long nationality_id;
+    private String present_address_street;
+    private String present_address_house;
+    private Long present_address_division_id;
+    private String present_address_division_name_bng;
+    private String present_address_division_name_eng;
+    private Long present_address_district_id;
+    private String present_address_district_name_bng;
+    private String present_address_district_name_eng;
+    private Long present_address_type_id;
+    private String present_address_type_name_bng;
+    private String present_address_type_name_eng;
+    private String present_address_type_value;
+    private String present_address_postal_code;
+    private Boolean is_blacklisted;
+    private String permanent_address_street;
+    private String permanent_address_house;
+    private Long permanent_address_division_id;
+    private String permanent_address_division_name_bng;
+    private String permanent_address_division_name_eng;
+    private Long permanent_address_district_id;
+    private String permanent_address_district_name_bng;
+    private String permanent_address_district_name_eng;
+    private Long permanent_address_type_id;
+    private String permanent_address_type_name_bng;
+    private String permanent_address_type_name_eng;
+    private String permanent_address_type_value;
+    private String permanent_address_postal_code;
+    private String foreign_permanent_address_zipcode;
+    private String foreign_permanent_address_state;
+    private String foreign_permanent_address_city;
+    private String foreign_permanent_address_line2;
+    private String foreign_permanent_address_line1;
+    private String foreign_present_address_zipcode;
+    private String foreign_present_address_state;
+    private String foreign_present_address_city;
+    private String foreign_present_address_line2;
+    private String foreign_present_address_line1;
+    private Long is_authenticated;
+    private String created_at;
+    private String modified_at;
+    private String created_by;
+    private String modified_by;
+    private String status;
+    private Long present_address_country_id;
+    private Long permanent_address_country_id;
+    private Long blacklister_office_id;
+    private String blacklister_office_name;
+    private String blacklist_reason;
+    private Boolean is_requested;
+}
