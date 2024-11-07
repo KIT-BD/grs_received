@@ -1342,6 +1342,8 @@ public class ViewPageController {
         return new ModelAndView("redirect:/error-page");
     }
 
+
+
     @RequestMapping(value = "dashboard.do", method = RequestMethod.GET)
     public ModelAndView getGeneralDashboard(Authentication authentication, Model model, HttpServletRequest request) {
         if (authentication != null) {
@@ -1353,6 +1355,21 @@ public class ViewPageController {
                 }
                 String requestParams = request.getParameter("params");
                 OfficeInformation officeInformation = userInformation.getOfficeInformation();
+
+                // Setting Office Information of Ministry Division for SUPER_ADMIN
+                if (officeInformation == null && userInformation.getUserType().equals(UserType.SYSTEM_USER)) {
+                    officeInformation = new OfficeInformation();
+                    officeInformation.setOfficeId(28L);
+                    officeInformation.setOfficeNameBangla("মন্ত্রিপরিষদ বিভাগ ");
+                    officeInformation.setOfficeNameEnglish("Ministry Division");
+                    officeInformation.setLayerLevel(1L);
+                    officeInformation.setGeoDivisionId(3L);
+                    officeInformation.setGeoDistrictId(18L);
+
+                    userInformation.setOfficeInformation(officeInformation);
+                    userInformation.setIsCentralDashboardUser(true);
+                }
+
                 Boolean isCentralDashboardUser = userInformation.getIsCentralDashboardUser();
                 Long layerLevel = officeInformation.getLayerLevel();
                 Long officeId = officeInformation.getOfficeId();
@@ -1420,6 +1437,8 @@ public class ViewPageController {
         }
         return new ModelAndView("redirect:/error-page");
     }
+
+
 
     @RequestMapping(value = "grsApplicationPrivacyPolicy.do", method = RequestMethod.GET)
     public ModelAndView getGrsApplicationPrivacyPolicy(Authentication authentication, Model model, HttpServletRequest request) {

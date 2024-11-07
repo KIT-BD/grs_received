@@ -216,10 +216,40 @@ public class GrievanceController {
             Boolean soAppealOption = null;
             Boolean isComplainantBlacklisted = false;
             Boolean canRetakeComplaint = false;
+
+            log.info("Field values:\n" +
+                            "isGrsUser: {}\n" +
+                            "isOthersComplainant: {}\n" +
+                            "isGROUser: {}\n" +
+                            "appealButtonFlag: {}\n" +
+                            "isOISFComplainant: {}\n" +
+                            "serviceIsNull: {}\n" +
+                            "isNagorik: {}\n" +
+                            "isBlacklisted: {}\n" +
+                            "isFeedbackEnabled: {}\n" +
+                            "isAnonymousUser: {}\n" +
+                            "soAppealOption: {}\n" +
+                            "isComplainantBlacklisted: {}\n" +
+                            "canRetakeComplaint: {}",
+                    isGrsUser,
+                    isOthersComplainant,
+                    isGROUser,
+                    appealButtonFlag,
+                    isOISFComplainant,
+                    serviceIsNull,
+                    isNagorik,
+                    isBlacklisted,
+                    isFeedbackEnabled,
+                    isAnonymousUser,
+                    soAppealOption,
+                    isComplainantBlacklisted,
+                    canRetakeComplaint
+            );
+
             if (Utility.isServiceOfficer(authentication)) {
                 soAppealOption = this.grievanceService.soAppealActivationFlag(id);
             }
-            if(!isGrsUser) {
+            if(!isGrsUser || !UserType.SYSTEM_USER.equals(Utility.extractUserInformationFromAuthentication(authentication).getUserType())) {
                 isComplainantBlacklisted = grievanceService.isComplainantBlackListedByGrievanceId(id);
                 canRetakeComplaint = grievanceForwardingService.getComplaintRetakeFlag(id, authentication);
             }

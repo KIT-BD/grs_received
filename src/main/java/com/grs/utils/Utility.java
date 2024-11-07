@@ -81,7 +81,8 @@ public class Utility {
         return !isUserAnGRSUser(authentication) && (isUserAnGROUser(authentication)
                 || isUserAHOOUser(authentication)
                 || isUserACentralDashboardRecipient(authentication)
-                || isCellGRO(authentication));
+                || isCellGRO(authentication)
+                || isUserASuperAdmin(authentication));
     }
 
     public static Boolean isServiceOfficer(Authentication authentication) {

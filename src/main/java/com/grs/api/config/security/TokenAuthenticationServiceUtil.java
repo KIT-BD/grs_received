@@ -144,6 +144,27 @@ public class TokenAuthenticationServiceUtil {
     }
 
     public static String constuctJwtToken(String username, Set<String> permissionNames, UserInformation userInformation) {
+
+        if(userInformation.getUserType().equals(UserType.SYSTEM_USER)) {
+            OfficeInformation officeInformation = OfficeInformation.builder()
+                    .officeId(28L)
+                    .officeNameBangla("মন্ত্রিপরিষদ বিভাগ")
+                    .officeNameEnglish("Ministry Division")
+                    .officeMinistryId(4L)
+                    .officeOriginId(42L)
+                    .name("Super Admin")
+                    .designation("Super Admin")
+                    .employeeRecordId(null)
+                    .officeUnitOrganogramId(null)
+                    .layerLevel(1L)
+                    .geoDivisionId(3L)
+                    .geoDistrictId(18L)
+                    .build();
+            userInformation.setOfficeInformation(officeInformation);
+            userInformation.setIsCentralDashboardUser(true);
+            userInformation.setOisfUserType(OISFUserType.HEAD_OF_OFFICE);
+        }
+
         Claims claims = Jwts.claims().setSubject(username);
         claims.put(Constant.AUTHORITY, permissionNames);
         claims.put(Constant.USER_INFO, userInformation);

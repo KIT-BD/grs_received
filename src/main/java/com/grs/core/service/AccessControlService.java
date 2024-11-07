@@ -35,7 +35,8 @@ public class AccessControlService {
 
         if(userInformation.getUserType().equals(UserType.COMPLAINANT)) {
             return userInformation.getUserId().equals(grievance.getComplainantId());
-        } else if(userInformation.getUserType().equals(UserType.OISF_USER)) {
+        }
+        else if(userInformation.getUserType().equals(UserType.OISF_USER)) {
 
             Long officeId = userInformation.getOfficeInformation().getOfficeId();
             Long officeUnitOrganogramId = userInformation.getOfficeInformation().getOfficeUnitOrganogramId();
@@ -62,7 +63,11 @@ public class AccessControlService {
                 permittedOrganogramIdList.add(grievanceForwarding.getToOfficeUnitOrganogramId());
             });
             return permittedOrganogramIdList.contains(userInformation.getOfficeInformation().getOfficeUnitOrganogramId());
-        } else {
+        }
+        else if (userInformation.getUserType().equals(UserType.SYSTEM_USER)) {
+            return true;
+        }
+        else {
             return false;
         }
     }

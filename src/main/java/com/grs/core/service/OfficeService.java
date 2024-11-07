@@ -1250,11 +1250,24 @@ public class OfficeService {
         return userInformation;
     }
 
+//    public Boolean hasAccessToAoAndSubOfficesDashboard(UserInformation userInformation, Long officeId) {
+//        Office office = officeDAO.findOne(officeId);
+//        Boolean aboveDistrictLevelOffice = (office.getOfficeLayer() != null && office.getOfficeLayer().getLayerLevel() < Constant.districtLayerLevel);
+//        Boolean hasChildOffice = hasChildOffice(officeId);
+//        Boolean validUser = (userInformation.getIsAppealOfficer() || userInformation.getOisfUserType().equals(OISFUserType.HEAD_OF_OFFICE) || userInformation.getIsCentralDashboardUser());
+//        return validUser && hasChildOffice && aboveDistrictLevelOffice;
+//    }
+
     public Boolean hasAccessToAoAndSubOfficesDashboard(UserInformation userInformation, Long officeId) {
         Office office = officeDAO.findOne(officeId);
         Boolean aboveDistrictLevelOffice = (office.getOfficeLayer() != null && office.getOfficeLayer().getLayerLevel() < Constant.districtLayerLevel);
         Boolean hasChildOffice = hasChildOffice(officeId);
-        Boolean validUser = (userInformation.getIsAppealOfficer() || userInformation.getOisfUserType().equals(OISFUserType.HEAD_OF_OFFICE) || userInformation.getIsCentralDashboardUser());
+        Boolean validUser = (
+                Boolean.TRUE.equals(userInformation.getIsAppealOfficer())
+                        || OISFUserType.HEAD_OF_OFFICE.equals(userInformation.getOisfUserType())
+                        || Boolean.TRUE.equals(userInformation.getIsCentralDashboardUser())
+                        || UserType.SYSTEM_USER.equals(userInformation.getUserType()) // Safe check for SUPER_ADMIN
+        );
         return validUser && hasChildOffice && aboveDistrictLevelOffice;
     }
 
