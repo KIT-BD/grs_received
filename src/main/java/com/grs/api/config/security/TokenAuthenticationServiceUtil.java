@@ -132,6 +132,8 @@ public class TokenAuthenticationServiceUtil {
         cookie.setMaxAge(Constant.COOKIE_EXPIRATION_TIME);
         response.addCookie(cookie);
 
+        log.info(JWT);
+
 //        String redirectUrl = request.getParameter("redirectUrl");
 //        if (redirectUrl != null && !redirectUrl.isEmpty()) {
 //            response.sendRedirect("/" + redirectUrl);
@@ -140,6 +142,36 @@ public class TokenAuthenticationServiceUtil {
 //        }
 
         response.sendRedirect("/login/success");
+
+    }
+
+    public static String addAuthenticationForMyGovMobile(UserDetailsImpl userDetails,
+                                                 HttpServletRequest request,
+                                                 HttpServletResponse response) throws Exception {
+        UserInformation userInformation;
+        String name;
+        Set<String> permissionNamesSet;
+        try {
+            permissionNamesSet = userDetails.getAuthorities()
+                    .stream()
+                    .map(GrantedAuthority::getAuthority)
+                    .collect(Collectors.toSet());
+            userInformation = userDetails.getUserInformation();
+            name = userDetails.getUsername();
+
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
+        }
+
+        String deviceToken = request.getParameter("device_token");
+        if (StringUtil.isValidString(deviceToken)) {
+            FcmService fcmService = BeanUtil.bean(FcmService.class);
+            fcmService.registerDeviceToken(deviceToken, name);
+            userInformation.setIsMobileLogin(true);
+        } else {
+            userInformation.setIsMobileLogin(false);
+        }
+        return constuctJwtToken(name, permissionNamesSet, userInformation);
 
     }
 
