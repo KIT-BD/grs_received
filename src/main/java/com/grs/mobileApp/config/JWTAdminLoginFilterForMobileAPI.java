@@ -195,7 +195,7 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
 
             Map<String,Object> data = new HashMap<>();
             data.put("user_info",responseData.get("data"));
-            data.put("user_type",grsRole.getRole());
+            data.put("user_type",userInformation.getOisfUserType());
             data.put("token", TokenAuthenticationServiceUtil.addAuthenticationForMyGovMobile(userDetails, request, response));
 
 
