@@ -1,22 +1,20 @@
 package com.grs.mobileApp.config;
 
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.grs.api.config.security.CustomAuthenticationToken;
-import com.grs.api.config.security.GrantedAuthorityImpl;
-import com.grs.api.config.security.OISFUserDetailsServiceImpl;
-import com.grs.api.config.security.UserDetailsImpl;
+import com.grs.api.config.security.*;
 import com.grs.api.model.UserInformation;
 import com.grs.api.sso.LoginRequest;
 import com.grs.core.dao.GrsRoleDAO;
 import com.grs.core.dao.UserDAO;
+import com.grs.core.domain.doptor.*;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.CountryInfo;
 import com.grs.core.domain.grs.GrsRole;
-import com.grs.core.domain.projapoti.User;
 import com.grs.core.service.ComplainantService;
 import com.grs.mobileApp.dto.*;
 import com.grs.utils.BanglaConverter;
@@ -66,10 +64,17 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
     private final String USERNAME_REQUEST_PARAM = "username";
     private final String PASSWORD_REQUEST_PARAM = "password";
 
-    public JWTAdminLoginFilterForMobileAPI(String url, AuthenticationManager authManager, BCryptPasswordEncoder bCryptPasswordEncoder) {
+    private final OISFUserDetailsServiceImpl oisfUserDetailsService;
+
+    private final GrsRoleDAO grsRoleDAO;
+
+
+    public JWTAdminLoginFilterForMobileAPI(String url, AuthenticationManager authManager, BCryptPasswordEncoder bCryptPasswordEncoder, OISFUserDetailsServiceImpl oisfUserDetailsService, GrsRoleDAO grsRoleDAO) {
         super(new AntPathRequestMatcher(url, "POST"));
+        this.grsRoleDAO = grsRoleDAO;
         setAuthenticationManager(authManager);
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.oisfUserDetailsService = oisfUserDetailsService;
     }
     @Getter
     @Setter
@@ -105,8 +110,18 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
                     requestEntity,
                     String.class
             );
+            if (responseEntity == null){
+                UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                        username,
+                        password,
+                        Collections.emptyList()
+                );
 
-            if (responseEntity.getStatusCode() == HttpStatus.OK) {
+                setResponseBody(null);
+                return authToken;
+            }
+
+            else if (responseEntity.getStatusCode() == HttpStatus.OK) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         username,
                         password,
@@ -114,9 +129,6 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
                 );
 
                 setResponseBody(responseEntity);
-
-                log.info(username + password + authToken);
-
                 return authToken;
             } else {
                 throw new BadCredentialsException("Authentication failed");
@@ -128,81 +140,94 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
         }
     }
 
-    private Authentication doAuthentication(Authentication authentication) throws AuthenticationException {
-        String name = authentication.getName();
-        String password = authentication.getCredentials().toString();
-        User user = this.userDAO.findByUsername(BanglaConverter.convertToEnglish(name));
-
-        if (user != null) {
-            UserInformation userInformation = this.oisfUserDetailsService.getUserInfo(user);
-            String roleName = null;
-            if(userInformation.getGrsUserType() != null) {
-                roleName = userInformation.getGrsUserType().name();
-            } else {
-                roleName = userInformation.getOisfUserType().name();
-            }
-            GrsRole grsRole = this.grsRoleDAO.findByRole(roleName);
-            List<GrantedAuthorityImpl> grantedAuthorities = grsRole
-                    .getPermissions()
-                    .stream()
-                    .map(permission -> {
-                        return GrantedAuthorityImpl.builder()
-                                .role(permission.getName())
-                                .build();
-                    }).collect(Collectors.toList());
-            return new CustomAuthenticationToken(name, password, grantedAuthorities, userInformation);
-        } else {
-            return null;
-        }
-    }
-
-
     @Override
     protected void successfulAuthentication(
             HttpServletRequest request,
             HttpServletResponse response, FilterChain chain,
             Authentication authentication) throws IOException {
+        
+//        String username = authentication.getName();
+//        Object principal = authentication.getPrincipal();
 
-        String username = authentication.getName();
-        Object principal = authentication.getPrincipal();
-
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        Set<String> permissionNamesSet = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
-
-        String JWT = constuctJwtToken(username, permissionNamesSet, null);
-
+//        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
+//        Set<String> permissionNamesSet = authorities.stream().map(GrantedAuthority::getAuthority).collect(Collectors.toSet());
+        
         ResponseEntity<String> responseEntity = getResponseBody();
         String responseBody = responseEntity.getBody();
 
         ObjectMapper objectMapper = new ObjectMapper();
-        Map<String, Object> responseMap = objectMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
+        objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        MobileAdminLoginResponse responseMap = objectMapper.readValue(responseBody, MobileAdminLoginResponse.class);
 
-        Map<String, Object> userInfo = Optional.ofNullable(responseMap)
-                .map(map -> (Map<String, Object>) map.get("data"))
-                .orElse(Collections.emptyMap());
+        User user = responseMap.getData().getUser();
+//        List<OfficeInfo> officeInfos = responseMap.getUser_info().getOffice_info();
+//        EmployeeInfo employeeInfo = responseMap.getUser_info().getEmployee_info();
+//        HashMap<String, OfficeOrganogram> organogramInfo = responseMap.getUser_info().getOrganogram_info();
+
+        UserInformation userInformation = this.oisfUserDetailsService.getUserInfo(responseMap.getData());
+        String roleName = null;
+        if (userInformation.getGrsUserType() != null) {
+            roleName = userInformation.getGrsUserType().name();
+        } else {
+            roleName = userInformation.getOisfUserType().name();
+        }
+        GrsRole grsRole = this.grsRoleDAO.findByRole(roleName);
+        List<GrantedAuthorityImpl> grantedAuthorities = grsRole
+                .getPermissions()
+                .stream()
+                .map(permission -> {
+                    return GrantedAuthorityImpl.builder()
+                            .role(permission.getName())
+                            .build();
+                }).collect(Collectors.toList());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        Map<String,Object> data = new HashMap<>();
-        data.put("user_info",userInfo);
-        data.put("l","gro");
-        data.put("token", JWT);
+        UserDetailsImpl userDetails = UserDetailsImpl.builder()
+                .username(user.getUsername())
+                .isAccountAuthenticated(true)
+                .grantedAuthorities(grantedAuthorities).userInformation(userInformation).build();
 
 
-        Map<String,Object> mobileResponse = new HashMap<>();
-        mobileResponse.put("status","success");
-        mobileResponse.put("data", data);
+        try {
+            ObjectMapper responseMapper = new ObjectMapper();
+            Map<String, Object> responseData = responseMapper.readValue(responseBody, new TypeReference<Map<String, Object>>() {});
 
-        response.setContentType("application/json;charset=UTF-8");
-        response.setCharacterEncoding("UTF-8");
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.writeValue(response.getWriter(), mobileResponse);
+            Map<String,Object> data = new HashMap<>();
+            data.put("user_info",responseData.get("data"));
+            data.put("user_type",grsRole.getRole());
+            data.put("token", TokenAuthenticationServiceUtil.addAuthenticationForMyGovMobile(userDetails, request, response));
+
+
+            Map<String,Object> mobileResponse = new HashMap<>();
+            mobileResponse.put("status","success");
+            mobileResponse.put("data", data);
+
+            response.setContentType("application/json;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(response.getWriter(), mobileResponse);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request,
                                               HttpServletResponse response,
                                               AuthenticationException failed) throws IOException {
+
+        if (getResponseBody() == null){
+            Map<String,Object> mobileResponse = new HashMap<>();
+            mobileResponse.put("status","error");
+            mobileResponse.put("data", "n-doptor is not responding");
+
+            response.setContentType("application/json;charset=UTF-8");
+            response.setCharacterEncoding("UTF-8");
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(response.getWriter(), mobileResponse);
+            return;
+        }
 
         MobileResponse error = MobileResponse.builder()
                 .status("error")
