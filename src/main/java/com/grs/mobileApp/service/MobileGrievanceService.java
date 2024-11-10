@@ -1,5 +1,8 @@
 package com.grs.mobileApp.service;
 
+import com.grs.api.model.UserInformation;
+import com.grs.api.model.response.grievance.GrievanceDTO;
+import com.grs.core.model.ListViewType;
 import com.grs.mobileApp.dto.MobileGrievanceResponseDTO;
 import com.grs.mobileApp.dto.MobileGrievanceSubmissionResponseDTO;
 import com.grs.api.model.UserType;
@@ -14,14 +17,18 @@ import com.grs.core.domain.grs.ServiceOrigin;
 import com.grs.core.service.GrievanceService;
 import com.grs.core.service.OfficeService;
 import com.grs.core.service.StorageService;
+import com.grs.mobileApp.dto.MobileResponse;
 import com.grs.utils.BanglaConverter;
 import com.grs.utils.DateTimeConverter;
+import com.grs.utils.ListViewConditionOnCurrentStatusGenerator;
 import com.grs.utils.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.grs.core.domain.grs.Complainant;
 import com.grs.core.domain.grs.Grievance;
 import com.grs.core.repo.grs.GrievanceRepo;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +39,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -460,4 +468,92 @@ public class MobileGrievanceService {
         }
         return grievanceDTOList;
     }
+
+    public Map<String, Object> findOutboxGrievances(UserInformation userInformation, Pageable pageable) {
+        Page<GrievanceDTO> listViewWithSearching = grievanceService.getListViewWithSearching(
+                userInformation, null, ListViewType.NORMAL_OUTBOX, pageable
+        );
+
+        List<GrievanceDTO> grievanceDTOList = listViewWithSearching.getContent();
+        Integer noOfPages = listViewWithSearching.getTotalPages();
+
+        List<MobileGrievanceResponseDTO> grievanceResponseList = grievanceDTOList.stream()
+                .map(this::mapGrievanceDTOToMobileResponse)
+                .collect(Collectors.toList());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("status", "success");
+        response.put("data", grievanceResponseList);
+        response.put("noOfPages", noOfPages);
+
+        return response;
+    }
+
+
+    public MobileGrievanceResponseDTO mapGrievanceDTOToMobileResponse(GrievanceDTO grievanceDTO) {
+        MobileGrievanceResponseDTO mobileGrievanceResponseDTO = MobileGrievanceResponseDTO
+                .builder()
+                .id(Long.parseLong(grievanceDTO.getId()))
+                .submission_date(grievanceDTO.getSubmissionDateEnglish())
+                .submission_date_bn(grievanceDTO.getSubmissionDateBangla())
+                .complaint_type(grievanceDTO.getTypeEnglish())
+                .complaint_type_bn(grievanceDTO.getTypeBangla())
+                .current_status(grievanceDTO.getStatusEnglish())
+                .current_status_bn(grievanceDTO.getStatusBangla())
+                .subject(grievanceDTO.getSubject())
+                .details(null)
+                .grievance_from(null)
+                .tracking_number(grievanceDTO.getTrackingNumberEnglish())
+                .tracking_number_bn(grievanceDTO.getTrackingNumberBangla())
+                .complainant_id(null)
+                .mygov_user_id(null)
+                .triple_three_agent_id(null)
+                .is_grs_user(null)
+                .office_id(null)
+                .service_id(null)
+                .service_id_before_forward(null)
+                .current_appeal_office_id(null)
+                .current_appeal_office_unit_organogram_id(null)
+                .send_to_ao_office_id(null)
+                .is_anonymous(null)
+                .case_number(grievanceDTO.getCaseNumberEnglish() != null && !grievanceDTO.getCaseNumberEnglish().isEmpty() ? Long.parseLong(grievanceDTO.getCaseNumberEnglish()) : null)
+                .other_service(null)
+                .other_service_before_forward(null)
+                .service_receiver(null)
+                .service_receiver_relation(null)
+                .gro_decision(null)
+                .gro_identified_complaint_cause(null)
+                .gro_suggestion(null)
+                .ao_decision(null)
+                .ao_identified_complaint_cause(null)
+                .ao_suggestion(null)
+                .created_at(null)
+                .updated_at(null)
+                .created_by(null)
+                .modified_by(null)
+                .status(null)
+                .rating(grievanceDTO.getRating() != null ? String.valueOf(grievanceDTO.getRating()) : null)
+                .appeal_rating(grievanceDTO.getAppealRating() != null ? String.valueOf(grievanceDTO.getAppealRating()) : null)
+                .is_rating_given(null)
+                .is_appeal_rating_given(null)
+                .feedback_comments(grievanceDTO.getFeedbackComments() != null ? grievanceDTO.getFeedbackComments() : null)
+                .appeal_feedback_comments(grievanceDTO.getAppealFeedbackComments() != null ? grievanceDTO.getAppealFeedbackComments() : null)
+                .source_of_grievance(null)
+                .is_offline_complaint(null)
+                .is_self_motivated_grievance(null)
+                .uploader_office_unit_organogram_id(null)
+                .possible_close_date(grievanceDTO.getExpectedDateOfClosingEnglish())
+                .possible_close_date_bn(grievanceDTO.getExpectedDateOfClosingBangla())
+                .is_evidence_provide(null)
+                .is_see_hearing_date(null)
+                .is_safety_net(grievanceDTO.isSafetyNet() ? 1L : 0)
+                .complaint_category(grievanceDTO.getComplaintCategoryDetails() != null && grievanceDTO.getComplaintCategoryDetails().matches("-?\\d+") ? Long.parseLong(grievanceDTO.getComplaintCategoryDetails()) : null)
+                .sp_programme_id(null)
+                .geo_division_id(null)
+                .geo_district_id(null)
+                .geo_upazila_id(null)
+                .build();
+        return mobileGrievanceResponseDTO;
+    }
+
 }

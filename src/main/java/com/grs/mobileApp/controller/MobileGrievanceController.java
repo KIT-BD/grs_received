@@ -2,6 +2,8 @@ package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.response.GenericResponse;
+import com.grs.api.model.response.grievance.GrievanceDTO;
+import com.grs.core.model.ListViewType;
 import com.grs.mobileApp.dto.*;
 import com.grs.mobileApp.service.MobileGrievanceService;
 import com.grs.mobileApp.service.MobilePublicAPIService;
@@ -12,7 +14,11 @@ import com.grs.core.domain.projapoti.Office;
 import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.GrievanceForwardingService;
 import com.grs.utils.BanglaConverter;
+import com.grs.utils.ListViewConditionOnCurrentStatusGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import com.grs.api.model.UserInformation;
 import com.grs.core.domain.grs.Complainant;
@@ -461,5 +467,16 @@ public class MobileGrievanceController {
                 .status("success")
                 .data(grievanceList.get(0))
                 .build();
+    }
+
+    @RequestMapping(value = "/api/grievance/list/from-employee", method = RequestMethod.GET)
+    public Map<String, Object> searchNormalGrievances(Authentication authentication,
+                                                     @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findOutboxGrievances(userInformation, pageable);
+
+        return mobileGrievanceResponse;
     }
 }
