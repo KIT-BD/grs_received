@@ -476,9 +476,7 @@ public class MobileGrievanceController {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_INBOX);
-
-        return mobileGrievanceResponse;
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_INBOX);
     }
 
     @RequestMapping(value = "/api/grievance/list/from-employee", method = RequestMethod.GET)
@@ -487,9 +485,43 @@ public class MobileGrievanceController {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_OUTBOX);
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_OUTBOX);
+    }
 
-        return mobileGrievanceResponse;
+    @RequestMapping(value = "/api/grievance/list/closed_grievances", method = RequestMethod.GET)
+    public Map<String, Object> getResolvedGrievances(Authentication authentication,
+                                                         @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_CLOSED);
+    }
+
+    @RequestMapping(value = "/api/grievance/list/forwarded_to_other_office", method = RequestMethod.GET)
+    public Map<String, Object> getForwardedGrievances(Authentication authentication,
+                                                     @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_FORWARDED);
+    }
+
+    @RequestMapping(value = "/api/grievance/list/expired_grievances", method = RequestMethod.GET)
+    public Map<String, Object> getExpiredGrievances(Authentication authentication,
+                                                      @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_EXPIRED);
+    }
+
+    @RequestMapping(value = "/api/grievance/list/cc", method = RequestMethod.GET)
+    public Map<String, Object> getCC(Authentication authentication,
+                                                    @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_CC);
     }
 
     @RequestMapping(value = "/api/grievance/list/incoming-appeal", method = RequestMethod.GET)
