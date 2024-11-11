@@ -469,9 +469,9 @@ public class MobileGrievanceService {
         return grievanceDTOList;
     }
 
-    public Map<String, Object> findOutboxGrievances(UserInformation userInformation, Pageable pageable) {
+    public Map<String, Object> findGrievances(UserInformation userInformation, Pageable pageable, ListViewType listViewType) {
         Page<GrievanceDTO> listViewWithSearching = grievanceService.getListViewWithSearching(
-                userInformation, null, ListViewType.NORMAL_OUTBOX, pageable
+                userInformation, "", listViewType, pageable
         );
 
         List<GrievanceDTO> grievanceDTOList = listViewWithSearching.getContent();
