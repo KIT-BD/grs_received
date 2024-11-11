@@ -36,7 +36,7 @@ public class MobileGrievanceResponseDTO {
     private Long current_appeal_office_unit_organogram_id;
     private Long send_to_ao_office_id;
     private Long is_anonymous;
-    private Long case_number;
+    private String case_number;
     private String other_service;
     private String other_service_before_forward;
     private String service_receiver;
