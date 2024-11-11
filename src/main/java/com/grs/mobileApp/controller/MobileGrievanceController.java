@@ -331,7 +331,7 @@ public class MobileGrievanceController {
         complainantInfo.put("identification_type", complainant.getIdentificationType().toString());  // Assuming `IdentificationType` is an enum
         complainantInfo.put("mobile_number", complainant.getPhoneNumber());
         complainantInfo.put("email", complainant.getEmail());
-        complainantInfo.put("birth_date",  new SimpleDateFormat("yyyy-MM-dd").format(complainant.getBirthDate()));
+        complainantInfo.put("birth_date", complainant.getBirthDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(complainant.getBirthDate()) : null);
         complainantInfo.put("gender", complainant.getGender() != null ? complainant.getGender().toString() : null);  // Assuming `Gender` is an enum
         complainantInfo.put("username", complainant.getUsername());
         complainantInfo.put("nationality_id", complainant.getCountryInfo() != null ? complainant.getCountryInfo().getId() : null);
@@ -381,7 +381,9 @@ public class MobileGrievanceController {
         List<Occupation> occupations = mobilePublicAPIService.getOccupationList();
         String complainantOccupation = complainant.getOccupation();
         String occupationId = occupations.stream()
-                .filter(o -> complainantOccupation.equals(o.getOccupationBangla()) || complainantOccupation.equals(o.getOccupationEnglish()))
+                .filter(o -> complainantOccupation != null
+                        && ((o.getOccupationBangla() != null && complainantOccupation.equals(o.getOccupationBangla()))
+                        || (o.getOccupationEnglish() != null && complainantOccupation.equals(o.getOccupationEnglish()))))
                 .map(o -> o.getId().toString())
                 .findFirst()
                 .orElse(null);
@@ -390,7 +392,9 @@ public class MobileGrievanceController {
         List<Education> qualifications = mobilePublicAPIService.getQualificationList();
         String complainantQualification = complainant.getEducation();
         String qualificationId = qualifications.stream()
-                .filter(q -> complainantQualification.equals(q.getEducationBangla()) || complainantQualification.equals(q.getEducationEnglish()))
+                .filter(q -> complainantQualification != null
+                        && ((q.getEducationBangla() != null && complainantQualification.equals(q.getEducationBangla()))
+                        || (q.getEducationEnglish() != null && complainantQualification.equals(q.getEducationEnglish()))))
                 .map(q -> q.getId().toString())
                 .findFirst()
                 .orElse(null);
@@ -534,4 +538,24 @@ public class MobileGrievanceController {
 
         return mobileGrievanceResponse;
     }
+    @RequestMapping(value = "/api/grievance/list/closed-appeal", method = RequestMethod.GET)
+        public Map<String, Object> getClosedAppeals(Authentication authentication,
+                                                      @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+            UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+            Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_CLOSED);
+
+            return mobileGrievanceResponse;
+        }
+    @RequestMapping(value = "/api/grievance/list/sent-appeal", method = RequestMethod.GET)
+        public Map<String, Object> getSentAppeal(Authentication authentication,
+                                                      @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+            UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+            Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_OUTBOX);
+
+            return mobileGrievanceResponse;
+        }
 }
