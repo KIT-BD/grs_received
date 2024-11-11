@@ -491,4 +491,15 @@ public class MobileGrievanceController {
 
         return mobileGrievanceResponse;
     }
+
+    @RequestMapping(value = "/api/grievance/list/incoming-appeal", method = RequestMethod.GET)
+    public Map<String, Object> getIncomingAppeals(Authentication authentication,
+                                                  @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_INBOX);
+
+        return mobileGrievanceResponse;
+    }
 }

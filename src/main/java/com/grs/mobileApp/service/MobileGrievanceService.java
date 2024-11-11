@@ -555,5 +555,4 @@ public class MobileGrievanceService {
                 .build();
         return mobileGrievanceResponseDTO;
     }
-
 }
