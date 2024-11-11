@@ -469,13 +469,25 @@ public class MobileGrievanceController {
                 .build();
     }
 
+
+    @RequestMapping(value = "/api/grievance/list/to-employee", method = RequestMethod.GET)
+    public Map<String, Object> getToEmployeeGrievances(Authentication authentication,
+                                                       @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_INBOX);
+
+        return mobileGrievanceResponse;
+    }
+
     @RequestMapping(value = "/api/grievance/list/from-employee", method = RequestMethod.GET)
-    public Map<String, Object> searchNormalGrievances(Authentication authentication,
+    public Map<String, Object> getFromEmployeeGrievances(Authentication authentication,
                                                      @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findOutboxGrievances(userInformation, pageable);
+        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.NORMAL_OUTBOX);
 
         return mobileGrievanceResponse;
     }
