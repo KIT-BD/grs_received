@@ -171,6 +171,75 @@ public class MobileGrievanceController {
         return response;
     }
 
+    @GetMapping("/api/grievance/complainant/movement")
+    public Map<String,Object> getMovementForComplainant(
+            Authentication authentication,
+            @RequestParam("complaint_id") Long id
+    ) throws ParseException {
+        if (id == null){
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", "Complaint could not be found");
+            response.put("status", "error");
+
+            return response;
+        }
+        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.getAllComplaintMovementHistoryByGrievance(id, authentication);
+        List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
+
+        for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
+            forwardingDTOList.add(
+                    MobileGrievanceForwardingDTO.builder()
+                            .id(null)
+                            .complaint_id(Math.toIntExact(id))
+                            .note(g.getComment())
+                            .action(g.getAction())
+                            .to_employee_record_id(null)
+                            .from_employee_record_id(null)
+                            .to_office_unit_organogram_id(null)
+                            .from_office_unit_organogram_id(null)
+                            .to_office_id(null)
+                            .from_office_id(null)
+                            .to_office_unit_id(null)
+                            .from_office_unit_id(null)
+                            .is_current(null)
+                            .is_cc(g.getIsCC() ? 1 : 0)
+                            .is_committee_head(g.getIsCommitteeHead() ? 1 : 0)
+                            .is_committee_member(g.getIsCommitteeMember() ? 1 : 0)
+                            .to_employee_name_bng(g.getToGroNameBangla())
+                            .from_employee_name_bng(g.getFromGroNameBangla())
+                            .to_employee_name_eng(g.getToGroNameEnglish())
+                            .from_employee_name_eng(g.getFromGroNameEnglish())
+                            .to_employee_designation_bng(g.getToDesignationNameBangla())
+                            .from_employee_designation_bng(g.getFromDesignationNameBangla())
+                            .to_office_name_bng(g.getToOfficeNameBangla())
+                            .from_office_name_bng(g.getFromOfficeNameBangla())
+                            .to_employee_unit_name_bng(g.getToOfficeUnitNameBangla())
+                            .from_employee_unit_name_bng(g.getFromOfficeUnitNameBangla())
+                            .from_employee_username(g.getFromGroUsername())
+                            .from_employee_signature(null)
+                            .created_at(String.valueOf(new Date() {{ String[] p=g.getCreatedAtEng().split("/"); int d=Integer.parseInt(p[0]),m=Integer.parseInt(p[1])-1,y=Integer.parseInt(p[2]); Calendar c=Calendar.getInstance(TimeZone.getTimeZone("UTC")); c.set(y,m,d,6,45,2); c.set(Calendar.MILLISECOND,0); setTime(c.getTimeInMillis()); } @Override public String toString(){ return new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(this); }}))
+                            .updated_at(null)
+                            .created_by(null)
+                            .modified_by(null)
+                            .status(null)
+                            .deadline_date(null)
+                            .current_status(null)
+                            .is_seen(null)
+                            .assigned_role(g.getAssignedRole())
+                            .complain_movement_attachment(g.getFiles())
+                            .build()
+
+            );
+        }
+
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("data", forwardingDTOList);
+        response.put("status", "success");
+
+        return response;
+    }
+
     @GetMapping("/api/grievance/movement")
     public Map<String,Object> getMovement(
             Authentication authentication,
@@ -183,7 +252,7 @@ public class MobileGrievanceController {
 
             return response;
         }
-        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.searchAllComplaintMovementHistoryByGrievance(id);
+        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.getAllComplainantComplaintMovementHistoryByGrievance(id, authentication);
         List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
 
         for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
