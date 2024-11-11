@@ -494,7 +494,19 @@ public class MobileGrievanceService {
         MobileGrievanceResponseDTO mobileGrievanceResponseDTO = MobileGrievanceResponseDTO
                 .builder()
                 .id(Long.parseLong(grievanceDTO.getId()))
-                .submission_date(grievanceDTO.getSubmissionDateEnglish())
+                .submission_date(
+                        Optional.ofNullable(grievanceDTO.getSubmissionDateEnglish())
+                                .map(date -> {
+                                    try {
+                                        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
+                                                .format(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a").parse(date));
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                        return null;
+                                    }
+                                })
+                                .orElse(null)
+                )
                 .submission_date_bn(grievanceDTO.getSubmissionDateBangla())
                 .complaint_type(grievanceDTO.getTypeEnglish())
                 .complaint_type_bn(grievanceDTO.getTypeBangla())
@@ -542,8 +554,32 @@ public class MobileGrievanceService {
                 .is_offline_complaint(null)
                 .is_self_motivated_grievance(null)
                 .uploader_office_unit_organogram_id(null)
-                .possible_close_date(grievanceDTO.getExpectedDateOfClosingEnglish())
-                .possible_close_date_bn(grievanceDTO.getExpectedDateOfClosingBangla())
+                .possible_close_date(
+                        Optional.ofNullable(grievanceDTO.getExpectedDateOfClosingEnglish())
+                                .map(date -> {
+                                    try {
+                                        return new SimpleDateFormat("yyyy-MM-dd")
+                                                .format(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a").parse(date));
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                        return null; // Fallback in case of error
+                                    }
+                                })
+                                .orElse(null)
+                )
+                .possible_close_date_bn(
+                        BanglaConverter.getDateBanglaFromEnglish(Optional.ofNullable(grievanceDTO.getExpectedDateOfClosingEnglish())
+                                .map(date -> {
+                                    try {
+                                        return new SimpleDateFormat("yyyy-MM-dd")
+                                                .format(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a").parse(date));
+                                    } catch (ParseException e) {
+                                        e.printStackTrace();
+                                        return null; // Fallback in case of error
+                                    }
+                                })
+                                .orElse(null))
+                )
                 .is_evidence_provide(null)
                 .is_see_hearing_date(null)
                 .is_safety_net(grievanceDTO.isSafetyNet() ? 1L : 0)
