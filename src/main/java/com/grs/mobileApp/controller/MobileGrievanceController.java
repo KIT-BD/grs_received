@@ -2,8 +2,9 @@ package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.response.GenericResponse;
-import com.grs.api.model.response.grievance.GrievanceDTO;
+import com.grs.api.model.response.file.FileDerivedDTO;
 import com.grs.core.model.ListViewType;
+import com.grs.core.service.GrievanceService;
 import com.grs.mobileApp.dto.*;
 import com.grs.mobileApp.service.MobileGrievanceService;
 import com.grs.mobileApp.service.MobilePublicAPIService;
@@ -14,9 +15,7 @@ import com.grs.core.domain.projapoti.Office;
 import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.GrievanceForwardingService;
 import com.grs.utils.BanglaConverter;
-import com.grs.utils.ListViewConditionOnCurrentStatusGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
@@ -45,6 +44,7 @@ public class MobileGrievanceController {
     private final OfficeRepo officeRepo;
     private final GrievanceForwardingService grievanceForwardingService;
     private final MobilePublicAPIService mobilePublicAPIService;
+    private final GrievanceService grievanceService;
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public MobileResponse savePublicGrievance(
@@ -314,9 +314,9 @@ public class MobileGrievanceController {
             Authentication authentication,
             @RequestParam("complaint_id") Long complaintId
     ) throws ParseException {
-        MobileGrievanceResponseDTO grievanceList = mobileGrievanceService.findGrievancesById(complaintId);
+        MobileGrievanceResponseDTO grievance = mobileGrievanceService.findGrievancesById(complaintId);
 
-        if (grievanceList == null){
+        if (grievance == null){
             Map<String, Object> response = new HashMap<>();
             response.put("data", null);
             response.put("status", "success");
@@ -324,73 +324,71 @@ public class MobileGrievanceController {
             return response;
         }
 
-        Complainant complainant = complainantService.findOne(grievanceList.getComplainant_id());
+        Complainant complainant = complainantService.findOne(grievance.getComplainant_id());
         // Filter the occupations list to find the matching occupation ID
 
         SimpleDateFormat isoDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
 
         Map<String, Object> grievanceDetails = new HashMap<>();
-        grievanceDetails.put("id", grievanceList.getId());
-        grievanceDetails.put("submission_date", grievanceList.getSubmission_date());
-        grievanceDetails.put("submission_date_bn", BanglaConverter.getDateBanglaFromEnglish(grievanceList.getSubmission_date()));
-        grievanceDetails.put("complaint_type", grievanceList.getComplaint_type());
-        grievanceDetails.put("current_status", grievanceList.getCurrent_status());
-        grievanceDetails.put("subject", grievanceList.getSubject());
-        grievanceDetails.put("details", grievanceList.getDetails());
-        grievanceDetails.put("tracking_number", grievanceList.getTracking_number());
-        grievanceDetails.put("tracking_number_bn", BanglaConverter.convertToBanglaDigit(grievanceList.getTracking_number()));
-        grievanceDetails.put("complainant_id", grievanceList.getComplainant_id());
-        grievanceDetails.put("office_id", grievanceList.getOffice_id());
-        grievanceDetails.put("service_id", grievanceList.getService_id());
-        grievanceDetails.put("service_id_before_forward", grievanceList.getService_id_before_forward());
-        grievanceDetails.put("current_appeal_office_id", grievanceList.getCurrent_appeal_office_id());
-        grievanceDetails.put("current_appeal_office_unit_organogram_id", grievanceList.getCurrent_appeal_office_unit_organogram_id());
-        grievanceDetails.put("send_to_ao_office_id", grievanceList.getSend_to_ao_office_id());
-        grievanceDetails.put("is_anonymous", grievanceList.getIs_anonymous());
-        grievanceDetails.put("case_number", grievanceList.getCase_number());
-        grievanceDetails.put("other_service", grievanceList.getOther_service());
-        grievanceDetails.put("other_service_before_forward", grievanceList.getOther_service_before_forward());
-        grievanceDetails.put("service_receiver", grievanceList.getService_receiver());
-        grievanceDetails.put("service_receiver_relation", grievanceList.getService_receiver_relation());
-        grievanceDetails.put("gro_decision", grievanceList.getGro_decision());
-        grievanceDetails.put("gro_identified_complaint_cause", grievanceList.getGro_identified_complaint_cause());
-        grievanceDetails.put("gro_suggestion", grievanceList.getGro_suggestion());
-        grievanceDetails.put("ao_decision", grievanceList.getAo_decision());
-        grievanceDetails.put("ao_identified_complaint_cause", grievanceList.getAo_identified_complaint_cause());
-        grievanceDetails.put("ao_suggestion", grievanceList.getAo_suggestion());
-//        grievanceDetails.put("created_at", isoDateFormat.format(new Date(grievanceList.getCreated_at().getTime())));
-//        grievanceDetails.put("updated_at", isoDateFormat.format(new Date(grievanceList.getUpdated_at().getTime())));
-        grievanceDetails.put("created_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievanceList.getCreated_at())));
-        grievanceDetails.put("updated_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievanceList.getUpdated_at())));
-        grievanceDetails.put("created_by", grievanceList.getCreated_by());
-        grievanceDetails.put("modified_by", grievanceList.getModified_by());
-        grievanceDetails.put("rating", grievanceList.getRating());
-        grievanceDetails.put("appeal_rating", grievanceList.getAppeal_rating());
-        grievanceDetails.put("is_rating_given", grievanceList.getIs_rating_given());
-        grievanceDetails.put("is_appeal_rating_given", grievanceList.getIs_appeal_rating_given());
-        grievanceDetails.put("feedback_comments", grievanceList.getFeedback_comments());
-        grievanceDetails.put("appeal_feedback_comments", grievanceList.getAppeal_feedback_comments());
-        grievanceDetails.put("source_of_grievance", grievanceList.getSource_of_grievance());
-        grievanceDetails.put("status", grievanceList.getStatus());
-        grievanceDetails.put("is_offline_complaint", grievanceList.getIs_offline_complaint());
-        grievanceDetails.put("is_self_motivated_grievance", grievanceList.getIs_self_motivated_grievance());
-        grievanceDetails.put("is_safety_net", grievanceList.getIs_safety_net());
-        grievanceDetails.put("is_grs_user", grievanceList.getIs_grs_user());
-        grievanceDetails.put("uploader_office_unit_organogram_id", grievanceList.getUploader_office_unit_organogram_id());
-        grievanceDetails.put("complaint_category", grievanceList.getComplaint_category());
-        grievanceDetails.put("sp_programme_id", grievanceList.getSp_programme_id());
-        grievanceDetails.put("geo_division_id", grievanceList.getGeo_division_id());
-        grievanceDetails.put("geo_district_id", grievanceList.getGeo_district_id());
-        grievanceDetails.put("geo_upazila_id", grievanceList.getGeo_upazila_id());
+        grievanceDetails.put("id", grievance.getId());
+        grievanceDetails.put("submission_date", grievance.getSubmission_date());
+        grievanceDetails.put("submission_date_bn", BanglaConverter.getDateBanglaFromEnglish(grievance.getSubmission_date()));
+        grievanceDetails.put("complaint_type", grievance.getComplaint_type());
+        grievanceDetails.put("current_status", grievance.getCurrent_status());
+        grievanceDetails.put("subject", grievance.getSubject());
+        grievanceDetails.put("details", grievance.getDetails());
+        grievanceDetails.put("tracking_number", grievance.getTracking_number());
+        grievanceDetails.put("tracking_number_bn", BanglaConverter.convertToBanglaDigit(grievance.getTracking_number()));
+        grievanceDetails.put("complainant_id", grievance.getComplainant_id());
+        grievanceDetails.put("office_id", grievance.getOffice_id());
+        grievanceDetails.put("service_id", grievance.getService_id());
+        grievanceDetails.put("service_id_before_forward", grievance.getService_id_before_forward());
+        grievanceDetails.put("current_appeal_office_id", grievance.getCurrent_appeal_office_id());
+        grievanceDetails.put("current_appeal_office_unit_organogram_id", grievance.getCurrent_appeal_office_unit_organogram_id());
+        grievanceDetails.put("send_to_ao_office_id", grievance.getSend_to_ao_office_id());
+        grievanceDetails.put("is_anonymous", grievance.getIs_anonymous());
+        grievanceDetails.put("case_number", grievance.getCase_number());
+        grievanceDetails.put("other_service", grievance.getOther_service());
+        grievanceDetails.put("other_service_before_forward", grievance.getOther_service_before_forward());
+        grievanceDetails.put("service_receiver", grievance.getService_receiver());
+        grievanceDetails.put("service_receiver_relation", grievance.getService_receiver_relation());
+        grievanceDetails.put("gro_decision", grievance.getGro_decision());
+        grievanceDetails.put("gro_identified_complaint_cause", grievance.getGro_identified_complaint_cause());
+        grievanceDetails.put("gro_suggestion", grievance.getGro_suggestion());
+        grievanceDetails.put("ao_decision", grievance.getAo_decision());
+        grievanceDetails.put("ao_identified_complaint_cause", grievance.getAo_identified_complaint_cause());
+        grievanceDetails.put("ao_suggestion", grievance.getAo_suggestion());
+        grievanceDetails.put("created_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievance.getCreated_at())));
+        grievanceDetails.put("updated_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievance.getUpdated_at())));
+        grievanceDetails.put("created_by", grievance.getCreated_by());
+        grievanceDetails.put("modified_by", grievance.getModified_by());
+        grievanceDetails.put("rating", grievance.getRating());
+        grievanceDetails.put("appeal_rating", grievance.getAppeal_rating());
+        grievanceDetails.put("is_rating_given", grievance.getIs_rating_given());
+        grievanceDetails.put("is_appeal_rating_given", grievance.getIs_appeal_rating_given());
+        grievanceDetails.put("feedback_comments", grievance.getFeedback_comments());
+        grievanceDetails.put("appeal_feedback_comments", grievance.getAppeal_feedback_comments());
+        grievanceDetails.put("source_of_grievance", grievance.getSource_of_grievance());
+        grievanceDetails.put("status", grievance.getStatus());
+        grievanceDetails.put("is_offline_complaint", grievance.getIs_offline_complaint());
+        grievanceDetails.put("is_self_motivated_grievance", grievance.getIs_self_motivated_grievance());
+        grievanceDetails.put("is_safety_net", grievance.getIs_safety_net());
+        grievanceDetails.put("is_grs_user", grievance.getIs_grs_user());
+        grievanceDetails.put("uploader_office_unit_organogram_id", grievance.getUploader_office_unit_organogram_id());
+        grievanceDetails.put("complaint_category", grievance.getComplaint_category());
+        grievanceDetails.put("sp_programme_id", grievance.getSp_programme_id());
+        grievanceDetails.put("geo_division_id", grievance.getGeo_division_id());
+        grievanceDetails.put("geo_district_id", grievance.getGeo_district_id());
+        grievanceDetails.put("geo_upazila_id", grievance.getGeo_upazila_id());
         grievanceDetails.put("medium_of_submission", null);
-        grievanceDetails.put("complaint_attachment_info", null);
+        grievanceDetails.put("complaint_attachment_info", this.getComplainAttachments(grievance.getId()));
         grievanceDetails.put("mygov_user_id", null);
         grievanceDetails.put("triple_three_agent_id", null);
-        grievanceDetails.put("grievance_from", grievanceList.getGrievance_from());
-        grievanceDetails.put("possible_close_date", grievanceList.getPossible_close_date());
-        grievanceDetails.put("possible_close_date_bn", grievanceList.getPossible_close_date_bn());
-        grievanceDetails.put("is_evidence_provide", grievanceList.getIs_evidence_provide());
-        grievanceDetails.put("is_see_hearing_date", grievanceList.getIs_see_hearing_date());
+        grievanceDetails.put("grievance_from", grievance.getGrievance_from());
+        grievanceDetails.put("possible_close_date", grievance.getPossible_close_date());
+        grievanceDetails.put("possible_close_date_bn", grievance.getPossible_close_date_bn());
+        grievanceDetails.put("is_evidence_provide", grievance.getIs_evidence_provide());
+        grievanceDetails.put("is_see_hearing_date", grievance.getIs_see_hearing_date());
 
 
         Map<String, Object> complainantInfo = new HashMap<>();
@@ -489,10 +487,10 @@ public class MobileGrievanceController {
 
 
 
-        Office office = officeRepo.findOfficeById(grievanceList.getOffice_id());
+        Office office = officeRepo.findOfficeById(grievance.getOffice_id());
 
         Map<String, Object> officeInfo = new HashMap<>();
-        officeInfo.put("id", grievanceList.getOffice_id());
+        officeInfo.put("id", grievance.getOffice_id());
         officeInfo.put("nameBn", office.getNameBangla());
         officeInfo.put("name", office.getNameEnglish());
         officeInfo.put("code", "");
@@ -521,6 +519,18 @@ public class MobileGrievanceController {
         response.put("data", data);
         response.put("status", "success");
 
+        return response;
+    }
+
+    List<MobileComplainAttachmentInfoDTO> getComplainAttachments(Long complainId) {
+        List<FileDerivedDTO> complainAttachments = grievanceService.getGrievancesFiles(complainId);
+        List<MobileComplainAttachmentInfoDTO> response = new ArrayList<>();
+        for (FileDerivedDTO f : complainAttachments){
+            response.add(MobileComplainAttachmentInfoDTO.builder()
+                            .filePath(f.getUrl())
+                            .fileTitle(f.getName())
+                    .build());
+        }
         return response;
     }
 
