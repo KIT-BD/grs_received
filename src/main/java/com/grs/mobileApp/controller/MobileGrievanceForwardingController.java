@@ -23,8 +23,11 @@ public class MobileGrievanceForwardingController {
     @RequestMapping(value = "/api/administrative-grievance/send-for-opinion", method = RequestMethod.POST)
     public Map<String,Object> sendForOpinion(Authentication authentication, @RequestBody MobileGrievanceForwardingRequest grievanceOpinionRequestDTO) throws IOException {
 
-        Map<String,Object> som = mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
+        return mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
+    }
 
-        return null;
+    @RequestMapping(value = "/api/administrative-grievance/send-to-another-office", method = RequestMethod.POST)
+    public  Map<String, Object> forwardToAnotherOffice(Authentication authentication, @RequestBody MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest) {
+        return mobileGrievanceForwardingService.forwardToAnotherOffice(authentication, mobileGrievanceForwardingRequest);
     }
 }

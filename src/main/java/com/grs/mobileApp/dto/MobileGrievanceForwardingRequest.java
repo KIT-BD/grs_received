@@ -20,4 +20,6 @@ public class MobileGrievanceForwardingRequest {
     private List<MobileOfficerDTO> officers;
     private List<FileDTO> files;
     private List<String> file_name_by_user;
+    private String other_service;
+    private Long service_id;
 }
