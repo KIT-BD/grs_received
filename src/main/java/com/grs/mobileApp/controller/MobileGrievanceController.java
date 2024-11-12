@@ -522,7 +522,7 @@ public class MobileGrievanceController {
         return response;
     }
 
-    List<MobileComplainAttachmentInfoDTO> getComplainAttachments(Long complainId) {
+    MobileComplainAttachmentInfoDTO getComplainAttachments(Long complainId) {
         List<FileDerivedDTO> complainAttachments = grievanceService.getGrievancesFiles(complainId);
         List<MobileComplainAttachmentInfoDTO> response = new ArrayList<>();
         for (FileDerivedDTO f : complainAttachments){
@@ -531,7 +531,7 @@ public class MobileGrievanceController {
                             .fileTitle(f.getName())
                     .build());
         }
-        return response;
+        return response.get(0);
     }
 
     @GetMapping("/api/grievance-track")
