@@ -613,28 +613,22 @@ public class MobileGrievanceController {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-        Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_INBOX);
-
-        return mobileGrievanceResponse;
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_INBOX);
     }
     @RequestMapping(value = "/api/grievance/list/closed-appeal", method = RequestMethod.GET)
-        public Map<String, Object> getClosedAppeals(Authentication authentication,
-                                                      @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+    public Map<String, Object> getClosedAppeals(Authentication authentication,
+                                                  @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
 
-            UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-            Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_CLOSED);
-
-            return mobileGrievanceResponse;
-        }
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_CLOSED);
+    }
     @RequestMapping(value = "/api/grievance/list/sent-appeal", method = RequestMethod.GET)
-        public Map<String, Object> getSentAppeal(Authentication authentication,
-                                                      @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
+    public Map<String, Object> getSentAppeal(Authentication authentication,
+                                                  @PageableDefault(value = Integer.MAX_VALUE) Pageable pageable) {
 
-            UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
-            Map<String, Object> mobileGrievanceResponse = mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_OUTBOX);
-
-            return mobileGrievanceResponse;
-        }
+        return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_OUTBOX);
+    }
 }
