@@ -9,14 +9,14 @@ import lombok.Setter;
 @Builder
 public class MobileComplainAttachmentInfoDTO {
     private Long id;
-    private Long complaintId;
-    private String filePath;
-    private String fileType;
-    private String fileTitle;
-    private String fileOriginalName;
-    private Long createdBy;
-    private Long modifiedBy;
-    private String createdAt;
-    private String updatedAt;
+    private Long complaint_Id;
+    private String file_path;
+    private String file_type;
+    private String file_title;
+    private String file_original_name;
+    private Long created_by;
+    private Long modified_by;
+    private String created_at;
+    private String updated_at;
     private String status;
 }
