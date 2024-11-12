@@ -522,16 +522,17 @@ public class MobileGrievanceController {
         return response;
     }
 
-    MobileComplainAttachmentInfoDTO getComplainAttachments(Long complainId) {
+    List<MobileComplainAttachmentInfoDTO> getComplainAttachments(Long complainId) {
         List<FileDerivedDTO> complainAttachments = grievanceService.getGrievancesFiles(complainId);
         List<MobileComplainAttachmentInfoDTO> response = new ArrayList<>();
         for (FileDerivedDTO f : complainAttachments){
             response.add(MobileComplainAttachmentInfoDTO.builder()
-                            .filePath(f.getUrl())
-                            .fileTitle(f.getName())
-                    .build());
+                            .file_path(f.getUrl())
+                            .file_title(f.getName())
+                            .file_type(f.getUrl().substring(f.getUrl().lastIndexOf('.') + 1).toUpperCase().replaceAll("/$", ""))
+                            .build());
         }
-        return response.get(0);
+        return response;
     }
 
     @GetMapping("/api/grievance-track")
