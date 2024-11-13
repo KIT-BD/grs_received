@@ -13,6 +13,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
 import java.util.HashMap;
+import java.io.IOException;
+import java.security.Principal;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +60,20 @@ public class MobileGrievanceForwardingController {
     }
 
     @RequestMapping(value = "/api/administrative-grievance/send-to-another-office", method = RequestMethod.POST)
-    public  Map<String, Object> forwardToAnotherOffice(Authentication authentication, @RequestBody MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest) {
+    public Map<String, Object> forwardToAnotherOffice(Authentication authentication, @RequestBody MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest) {
         return mobileGrievanceForwardingService.forwardToAnotherOffice(authentication, mobileGrievanceForwardingRequest);
+    }
+
+    @RequestMapping(value = "/api/administrative-grievance/reject-grievance", method = RequestMethod.POST)
+    public Map<String, Object> rejectGrievance(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam Long office_id,
+            @RequestParam Long username,
+            @RequestParam String note,
+            @RequestParam String fileNameByUser,
+            @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
+            Principal principal) {
+        return mobileGrievanceForwardingService.rejectGrievance(authentication, complaint_id, office_id, username, note, fileNameByUser, files, principal);
     }
 }

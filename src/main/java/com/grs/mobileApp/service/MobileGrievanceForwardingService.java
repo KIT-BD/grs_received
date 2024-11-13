@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grs.api.model.UserInformation;
 import com.grs.api.model.request.FileDTO;
 import com.grs.api.model.request.ForwardToAnotherOfficeDTO;
+import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.request.OpinionRequestDTO;
 import com.grs.api.model.response.GenericResponse;
 import com.grs.core.domain.GrievanceCurrentStatus;
@@ -15,11 +16,13 @@ import com.grs.mobileApp.dto.MobileOfficerDTO;
 import com.grs.utils.Utility;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.security.Principal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -99,12 +102,37 @@ public class MobileGrievanceForwardingService {
         Map<String, Object> response = new HashMap<>();
         if (genericResponse.isSuccess()){
             response.put("status", "success");
-            response.put("message", "Forwarded Successfully.");
+            response.put("message", "The grievance has been forwarded successfully.");
             return response;
         }
         else {
+            response.put("status", "error");
+            response.put("message", "Grievance forwarding error while forwarding to another office.");
+            return response;
+        }
+    }
+
+    public Map<String, Object> rejectGrievance(Authentication authentication,
+                                               Long complaint_id,
+                                               Long office_id,
+                                               Long username,
+                                               String note,
+                                               String fileNameByUser,
+                                               List<MultipartFile> files,
+                                               Principal principal) {
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+        GrievanceForwardingNoteDTO comment = GrievanceForwardingNoteDTO.builder().build();
+        GenericResponse genericResponse = grievanceForwardingService.rejectGrievance(userInformation, comment);
+        Map<String, Object> response = new HashMap<>();
+        if (genericResponse.isSuccess()){
             response.put("status", "success");
-            response.put("message", "Grievance Movement Error.");
+            response.put("message", "The grievance has been rejected successfully.");
+            return response;
+        }
+        else {
+            response.put("status", "error");
+            response.put("message", "Grievance rejection error.");
             return response;
         }
     }
