@@ -1,15 +1,15 @@
 package com.grs.mobileApp.dto;
 
 import com.grs.api.model.request.FileDTO;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.List;
 
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class MobileGrievanceForwardingRequest {
     private Long complaint_id;
@@ -17,9 +17,9 @@ public class MobileGrievanceForwardingRequest {
     private String username;
     private String note;
     private String deadline;
-    private List<MobileOfficerDTO> officers;
+    private String officers;
     private List<FileDTO> files;
-    private List<String> file_name_by_user;
+    private String file_name_by_user;
     private String other_service;
     private Long service_id;
 }

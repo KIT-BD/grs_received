@@ -17,6 +17,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,60 +28,57 @@ public class MobileGrievanceForwardingService {
 
     private GrievanceForwardingService grievanceForwardingService;
 
-    public Map<String,Object> sendForOpinion(Authentication authentication, MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest) throws IOException {
+    public Map<String,Object> sendForOpinion(
+            Authentication authentication,
+            MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest)
+    {
 
         ObjectMapper objectMapper = new ObjectMapper();
-        List<MobileOfficerDTO> listMobileOfficerDTO = objectMapper.readValue(
-                (JsonParser) mobileGrievanceForwardingRequest.getOfficers(),
-                new TypeReference<List<MobileOfficerDTO>>() {}
-        );
+        List<MobileOfficerDTO> officerDTOList = null;
+        try {
+            officerDTOList = objectMapper.readValue(mobileGrievanceForwardingRequest.getOfficers(), new TypeReference<List<MobileOfficerDTO>>() {});
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
-        List<String> primaryRecipient;
+        Optional<MobileOfficerDTO> primary = officerDTOList.stream().filter(officer -> officer.getReceiverCheck() && !officer.getCcCheck()).findFirst();
 
-        Optional<MobileOfficerDTO> primary = listMobileOfficerDTO.stream().filter(officer -> officer.getReceiver_check() && !officer.getCc_check()).findFirst();
-
-        List<MobileOfficerDTO> filteredList = listMobileOfficerDTO.stream()
-                .filter(officer -> !officer.getReceiver_check() && officer.getCc_check())
+        List<MobileOfficerDTO> filteredList = officerDTOList.stream()
+                .filter(officer -> !officer.getReceiverCheck() && officer.getCcCheck())
                 .collect(Collectors.toList());
 
 
-        if (primary.isPresent()){
-            primary.get();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        LocalDate localDate = LocalDate.parse(mobileGrievanceForwardingRequest.getDeadline(), formatter);
+        Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
+
+        OpinionRequestDTO ReqToOp = OpinionRequestDTO.builder()
+                .grievanceId(mobileGrievanceForwardingRequest.getComplaint_id())
+                .comment(mobileGrievanceForwardingRequest.getNote())
+                .files(mobileGrievanceForwardingRequest.getFiles())
+                .postNode(null)
+                .ccNode(null)
+                .deadline(date)
+                .referredFiles(null)
+                .build();
+
+        if (!(ReqToOp.getPostNode() != null
+                && !ReqToOp.getPostNode().isEmpty()
+                && ReqToOp.getPostNode().size() <= 1
+                && ReqToOp.getPostNode().get(0) != null)) {
+                System.out.println("অনুগ্রহ করে মতামতের জন্য অন্ততপক্ষে যে কোন একজনকে নির্বাচন করুন");
         }
 
-        if (!filteredList.isEmpty()){
-
+        if (ReqToOp.getCcNode() != null) {
+            List<String> ccNodeList = ReqToOp.getCcNode();
+            for (String ccNode : ccNodeList) {
+                if (ccNode.equals(ReqToOp.getPostNode().get(0))) {
+                    System.out.println("অনুগ্রহ করে প্রধান প্রাপক ব্যতীত অন্য একজনকে অনুলিপি প্রাপক হিসেবে নির্বাচন করুন");
+                }
+            }
         }
-
-
-
-
-//        OpinionRequestDTO ReqToOp = OpinionRequestDTO.builder()
-//                .grievanceId(mobileGrievanceForwardingRequest.getComplaint_id())
-//                .comment(mobileGrievanceForwardingRequest.getNote())
-//                .files(mobileGrievanceForwardingRequest.getFiles())
-//                .postNode()
-//                .ccNode()
-//                .deadline(mobileGrievanceForwardingRequest.getDeadline())
-//                .referredFiles()
-//                .build();
-
-//        if (!(grievanceOpinionRequestDTO.getPostNode() != null
-//                && !grievanceOpinionRequestDTO.getPostNode().isEmpty()
-//                && grievanceOpinionRequestDTO.getPostNode().size() <= 1
-//                && grievanceOpinionRequestDTO.getPostNode().get(0) != null)) {
-//            return new GenericResponse(false, "অনুগ্রহ করে মতামতের জন্য অন্ততপক্ষে যে কোন একজনকে নির্বাচন করুন");
-//        }
-//
-//        if (grievanceOpinionRequestDTO.getCcNode() != null) {
-//            List<String> ccNodeList = grievanceOpinionRequestDTO.getCcNode();
-//            for (String ccNode : ccNodeList) {
-//                if (ccNode.equals(grievanceOpinionRequestDTO.getPostNode().get(0))) {
-//                    return new GenericResponse(false, "অনুগ্রহ করে প্রধান প্রাপক ব্যতীত অন্য একজনকে অনুলিপি প্রাপক হিসেবে নির্বাচন করুন");
-//                }
-//            }
-//        }
-//        return this.grievanceForwardingService.sendForOpinion(authentication, grievanceOpinionRequestDTO);
+        grievanceForwardingService.sendForOpinion(authentication, ReqToOp);
 
         return null;
     }

@@ -18,6 +18,6 @@ public class MobileOfficerDTO {
     private String unit_name_bng;
     private String name;
     private String name_en;
-    private Boolean receiver_check;
-    private Boolean cc_check;
+    private Boolean receiverCheck;
+    private Boolean ccCheck;
 }
