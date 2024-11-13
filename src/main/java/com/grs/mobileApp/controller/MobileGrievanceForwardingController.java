@@ -50,11 +50,9 @@ public class MobileGrievanceForwardingController {
                 .files(fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal))
                 .build();
 
-        Map<String,Object> opinionResponse = mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
-
-        Map<String,Object> response = new HashMap<>();
-        response.put("data",grievanceOpinionRequestDTO);
-        return response;
+//        Map<String,Object> response = new HashMap<>();
+//        response.put("data",grievanceOpinionRequestDTO);
+        return mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
 
 //        return mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
     }
