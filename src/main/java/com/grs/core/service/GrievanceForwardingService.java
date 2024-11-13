@@ -607,6 +607,8 @@ public class GrievanceForwardingService {
         List<String> postNodeList = opinionRequestDTO.getPostNode();
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
+        System.out.println(opinionRequestDTO);
+
         List<OpinionReceiverDTO> opinionReceiverDTOS = new ArrayList<>();
         List<OpinionReceiverDTO> opinionReceiverCcDTOS = new ArrayList<>();
 
