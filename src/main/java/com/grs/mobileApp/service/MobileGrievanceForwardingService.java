@@ -14,6 +14,7 @@ import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.GrievanceForwardingService;
 import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileOfficerDTO;
+import com.grs.utils.FileUploadUtil;
 import com.grs.utils.Utility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -36,7 +37,7 @@ public class MobileGrievanceForwardingService {
 
     @Autowired
     private OfficeRepo officeRepo;
-
+    private FileUploadUtil fileUploadUtil;
     public Map<String,Object> sendForOpinion(
             Authentication authentication,
             MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest)
@@ -149,8 +150,16 @@ public class MobileGrievanceForwardingService {
                                                Principal principal) {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
-        GrievanceForwardingNoteDTO comment = GrievanceForwardingNoteDTO.builder().build();
-        GenericResponse genericResponse = grievanceForwardingService.rejectGrievance(userInformation, comment);
+        List<FileDTO> convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        GrievanceForwardingNoteDTO grievanceRejectionForwardingNote = GrievanceForwardingNoteDTO.builder()
+                .grievanceId(complaint_id)
+                .note(note)
+                .currentStatus(null)
+                .files(convertedFiles)
+                .referredFiles(null)
+                .build();
+        GenericResponse genericResponse = grievanceForwardingService.rejectGrievance(userInformation, grievanceRejectionForwardingNote);
+
         Map<String, Object> response = new HashMap<>();
         if (genericResponse.isSuccess()){
             response.put("status", "success");
