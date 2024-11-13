@@ -93,8 +93,31 @@ public class MobileGrievanceForwardingService {
 
 
 
-    public Map<String, Object> forwardToAnotherOffice(Authentication authentication, MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest) {
+    public Map<String, Object> forwardToAnotherOffice(Authentication authentication,
+                                                      Long complaint_id,
+                                                      Long office_id,
+                                                      String note,
+                                                      String other_service,
+                                                      Long service_id,
+                                                      String username,
+                                                      List<MultipartFile> files,
+                                                      String file_name_by_user,
+                                                      Principal principal) {
+
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+        List<FileDTO> convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
+
+        MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest = MobileGrievanceForwardingRequest.builder()
+                .complaint_id(complaint_id)
+                .office_id(office_id)
+                .note(note)
+                .other_service(other_service)
+                .service_id(service_id)
+                .username(username)
+                .files(convertedFiles)
+                .file_name_by_user(file_name_by_user)
+                .build();
+
         ForwardToAnotherOfficeDTO forwardToAnotherOfficeDTO = ForwardToAnotherOfficeDTO.builder()
                 .grievanceId(mobileGrievanceForwardingRequest.getComplaint_id())
                 .officeId(mobileGrievanceForwardingRequest.getOffice_id())

@@ -60,8 +60,19 @@ public class MobileGrievanceForwardingController {
     }
 
     @RequestMapping(value = "/api/administrative-grievance/send-to-another-office", method = RequestMethod.POST)
-    public Map<String, Object> forwardToAnotherOffice(Authentication authentication, @RequestBody MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest) {
-        return mobileGrievanceForwardingService.forwardToAnotherOffice(authentication, mobileGrievanceForwardingRequest);
+    public Map<String, Object> forwardToAnotherOffice(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam Long office_id,
+            @RequestParam String note,
+            @RequestParam(value = "other_service", required = false) String other_service,
+            @RequestParam(value = "service_id", required = false) Long service_id,
+            @RequestParam String username,
+            @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser", required = false) String fileNameByUser,
+            Principal principal) {
+
+        return mobileGrievanceForwardingService.forwardToAnotherOffice(authentication, complaint_id, office_id, note, other_service, service_id, username, files, fileNameByUser, principal);
     }
 
     @RequestMapping(value = "/api/administrative-grievance/reject-grievance", method = RequestMethod.POST)
@@ -71,7 +82,7 @@ public class MobileGrievanceForwardingController {
             @RequestParam Long office_id,
             @RequestParam Long username,
             @RequestParam String note,
-            @RequestParam String fileNameByUser,
+            @RequestParam(value = "fileNameByUser", required = false) String fileNameByUser,
             @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
             Principal principal) {
         return mobileGrievanceForwardingService.rejectGrievance(authentication, complaint_id, office_id, username, note, fileNameByUser, files, principal);
