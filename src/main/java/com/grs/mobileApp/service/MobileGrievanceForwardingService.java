@@ -136,7 +136,11 @@ public class MobileGrievanceForwardingService {
                                                       Principal principal) {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
-        List<FileDTO> convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
+        }
+
 
         MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest = MobileGrievanceForwardingRequest.builder()
                 .complaint_id(complaint_id)
