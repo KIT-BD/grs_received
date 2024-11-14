@@ -9,6 +9,7 @@ import com.grs.api.model.request.ForwardToAnotherOfficeDTO;
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.request.OpinionRequestDTO;
 import com.grs.api.model.response.GenericResponse;
+import com.grs.api.model.response.grievanceForwarding.GrievanceForwardingInvestigationDTO;
 import com.grs.core.domain.GrievanceCurrentStatus;
 import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.GrievanceForwardingService;
@@ -19,6 +20,8 @@ import com.grs.utils.Utility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -51,6 +54,7 @@ public class MobileGrievanceForwardingService {
             e.printStackTrace();
         }
 
+        assert officerDTOList != null;
         Optional<MobileOfficerDTO> primary = officerDTOList.stream().filter(officer -> officer.getReceiverCheck() && !officer.getCcCheck()).findFirst();
 
         List<MobileOfficerDTO> ccList = officerDTOList.stream()
@@ -63,6 +67,7 @@ public class MobileGrievanceForwardingService {
         LocalDate localDate = LocalDate.parse(mobileGrievanceForwardingRequest.getDeadline(), formatter);
         Date date = Date.from(localDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
+        assert primary.isPresent();
         Long postNodeMinistryId = officeRepo.findOfficeById(primary.get().getOffice_id()).getOfficeMinistry().getId();
         List<String> postNodeList = new ArrayList<>();
         postNodeList.add("post_"+postNodeMinistryId+"_"+primary.get().getOffice_id()+"_"+primary.get().getOffice_unit_organogram_id());
@@ -73,7 +78,6 @@ public class MobileGrievanceForwardingService {
             Long ccMinistry = officeRepo.findOfficeById(m.getOffice_id()).getOfficeMinistry().getId();
             ccNodeList.add("post_"+ccMinistry+"_"+m.getOffice_id()+"_"+m.getOffice_unit_organogram_id());
         }
-//        List<Long> referred = new ArrayList<>();
 
         OpinionRequestDTO ReqToOp = OpinionRequestDTO.builder()
                 .grievanceId(mobileGrievanceForwardingRequest.getComplaint_id())
@@ -82,34 +86,38 @@ public class MobileGrievanceForwardingService {
                 .postNode(postNodeList)
                 .ccNode(ccNodeList)
                 .deadline(date)
-                .referredFiles(null) // todo: to be checked later
+                .referredFiles(null)
                 .build();
 
+        Map<String, Object> errorMsg = new HashMap<>();
         if (!(ReqToOp.getPostNode() != null
                 && ReqToOp.getPostNode().size() == 1
                 && ReqToOp.getPostNode().get(0) != null)) {
-                System.out.println("অনুগ্রহ করে মতামতের জন্য অন্ততপক্ষে যে কোন একজনকে নির্বাচন করুন");
+                errorMsg.put("status","error");
+                errorMsg.put("message","অনুগ্রহ করে মতামতের জন্য অন্ততপক্ষে যে কোন একজনকে নির্বাচন করুন");
+                return errorMsg;
         }
 
         if (ReqToOp.getCcNode() != null) {
             for (String ccNode : ReqToOp.getCcNode()) {
                 if (ccNode.equals(ReqToOp.getPostNode().get(0))) {
-                    System.out.println("অনুগ্রহ করে প্রধান প্রাপক ব্যতীত অন্য একজনকে অনুলিপি প্রাপক হিসেবে নির্বাচন করুন");
+                    errorMsg.put("status","error");
+                    errorMsg.put("message","অনুগ্রহ করে প্রধান প্রাপক ব্যতীত অন্য একজনকে অনুলিপি প্রাপক হিসেবে নির্বাচন করুন");
+                    return errorMsg;
                 }
             }
         }
-        System.out.println(ReqToOp);
         GenericResponse genericResponse = grievanceForwardingService.sendForOpinion(authentication, ReqToOp);
         Map<String, Object> response = new HashMap<>();
 
         if (genericResponse.isSuccess()){
             response.put("status", "success");
-            response.put("message", "The grievance has been forwarded successfully.");
+            response.put("message", "The grievance has been sent for opinion successfully.");
             return response;
         }
         else {
             response.put("status", "error");
-            response.put("message", "Grievance forwarding error while forwarding to another office.");
+            response.put("message", "Error while sending for opinion.");
             return response;
         }
     }
@@ -195,4 +203,30 @@ public class MobileGrievanceForwardingService {
             return response;
         }
     }
+
+    public Map<String,Object> sendToAppealOfficer(
+            Authentication authentication,
+            Long complaint_id,
+            String note
+    ){
+        GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
+                .grievanceId(complaint_id)
+                .note(note)
+                .build();
+
+        GenericResponse genericResponse = grievanceForwardingService.sendToAppealOfficer(authentication,grievanceForwardingNoteDTO);
+
+        Map<String, Object> response = new HashMap<>();
+        if (genericResponse.isSuccess()){
+            response.put("status", "success");
+            response.put("message", "The grievance has been sent to appeal officer successfully.");
+            return response;
+        }
+        else {
+            response.put("status", "error");
+            response.put("message", "Grievance could not be send to appeal officer.");
+            return response;
+        }
+    }
+
 }
