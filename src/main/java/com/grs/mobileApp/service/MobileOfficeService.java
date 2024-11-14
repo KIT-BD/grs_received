@@ -252,31 +252,15 @@ public class MobileOfficeService {
         }
     }
 
-
-//    public MobileResponse getOfficeUnitDesignationEmployeeMap(Authentication authentication, Long officeId) {
-//        Office office = officeRepo.findOfficeById(officeId);
-//        String rootNodeId = "units_" + office.getOfficeMinistry().getId() + "_" + office.getId() + "_" + office.getParentOfficeId() + "_root";
-//
-//        List<TreeNodeOfficerDTO> treeRootNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(rootNodeId, authentication);
-//
-//        List<List<TreeNodeOfficerDTO>> allPostNodesList = new ArrayList<>();
-//
-//        for (TreeNodeOfficerDTO rootNode : treeRootNodeOfficerDTOList) {
-//            String postNodeId = rootNode.getId();
-//            List<TreeNodeOfficerDTO> postNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(postNodeId, authentication);
-//
-//            allPostNodesList.add(postNodeOfficerDTOList);
-//        }
-//
-//        // Assuming you want to wrap this list in a MobileResponse
-//        return MobileResponse.builder()
-//                .data(allPostNodesList)
-//                .status("success")
-//                .build();
-//    }
-
-
     public MobileResponse getOfficeUnitDesignationEmployeeMap(Authentication authentication, Long officeId) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return MobileResponse.builder()
+                    .data("Please login.")
+                    .status("error")
+                    .build();
+        }
+
         Office office = officeRepo.findOfficeById(officeId);
         String rootNodeId = "units_" + office.getOfficeMinistry().getId() + "_" + office.getId() + "_" + office.getParentOfficeId() + "_root";
 
@@ -299,14 +283,10 @@ public class MobileOfficeService {
                 postNodeData.put("office_unit_id", Long.valueOf(rootNode.getId().split("_")[3]));
                 postNodeData.put("employee_record_id", null);
                 postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
-//                postNodeData.put("unit_name_bng", rootNode.getOfficeUnitName());
                 postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
                 postNodeData.put("designation", officer.getDesignation());
                 postNodeData.put("name", officer.getName());
                 postNodeData.put("name_en", "");
-
-                System.out.println("officer.getDesignation(): " + officer.getDesignation() + " officer.getName()" + officer.getName());
-                System.out.println(officer.getText());
                 postNodes.add(postNodeData);
             }
 
