@@ -2,6 +2,7 @@ package com.grs.mobileApp.service;
 
 import com.grs.api.model.response.CitizenCharterDTO;
 import com.grs.api.model.response.ServiceOriginDTO;
+import com.grs.api.model.response.organogram.TreeNodeOfficerDTO;
 import com.grs.core.dao.CitizenCharterOriginDAO;
 import com.grs.core.dao.OfficeDAO;
 import com.grs.core.domain.grs.CitizenCharter;
@@ -13,10 +14,12 @@ import com.grs.core.domain.projapoti.OfficeOrigin;
 import com.grs.core.repo.projapoti.CustomOfficeLayerRepo;
 import com.grs.core.repo.projapoti.OfficeLayerRepo;
 import com.grs.core.repo.projapoti.OfficeRepo;
+import com.grs.core.service.OfficeOrganogramService;
 import com.grs.core.service.OfficeService;
 import com.grs.mobileApp.dto.*;
 import com.grs.utils.MessageUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -41,6 +44,9 @@ public class MobileOfficeService {
 
     @Autowired
     private CitizenCharterOriginDAO citizenCharterOriginDAO;
+
+    @Autowired
+    private OfficeOrganogramService officeOrganogramService;
 
 
     public List<MobileOfficeLayerDTO> getOfficeLayers() {
@@ -246,5 +252,27 @@ public class MobileOfficeService {
         }
     }
 
+
+    public MobileResponse getOfficeUnitDesignationEmployeeMap(Authentication authentication, Long officeId) {
+        Office office = officeRepo.findOfficeById(officeId);
+        String rootNodeId = "units_" + office.getOfficeMinistry().getId() + "_" + office.getId() + "_" + office.getParentOfficeId() + "_root";
+
+        List<TreeNodeOfficerDTO> treeRootNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(rootNodeId, authentication);
+
+        List<List<TreeNodeOfficerDTO>> allPostNodesList = new ArrayList<>();
+
+        for (TreeNodeOfficerDTO rootNode : treeRootNodeOfficerDTOList) {
+            String postNodeId = rootNode.getId();
+            List<TreeNodeOfficerDTO> postNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(postNodeId, authentication);
+
+            allPostNodesList.add(postNodeOfficerDTOList);
+        }
+
+        // Assuming you want to wrap this list in a MobileResponse
+        return MobileResponse.builder()
+                .data(allPostNodesList)
+                .status("SUCCESS")
+                .build();
+    }
 
 }
