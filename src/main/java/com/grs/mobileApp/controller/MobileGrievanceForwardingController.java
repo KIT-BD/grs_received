@@ -50,11 +50,7 @@ public class MobileGrievanceForwardingController {
                 .files(fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal))
                 .build();
 
-//        Map<String,Object> response = new HashMap<>();
-//        response.put("data",grievanceOpinionRequestDTO);
         return mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
-
-//        return mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
     }
 
     @RequestMapping(value = "/api/administrative-grievance/send-to-another-office", method = RequestMethod.POST)
@@ -84,5 +80,14 @@ public class MobileGrievanceForwardingController {
             @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
             Principal principal) {
         return mobileGrievanceForwardingService.rejectGrievance(authentication, complaint_id, office_id, username, note, fileNameByUser, files, principal);
+    }
+
+    @RequestMapping(value = "/api/administrative-grievance/send-to-subordinate-office", method = RequestMethod.POST)
+    public Map<String,Object> sendToAppealOfficer(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam String note
+    ){
+        return mobileGrievanceForwardingService.sendToAppealOfficer(authentication, complaint_id, note);
     }
 }
