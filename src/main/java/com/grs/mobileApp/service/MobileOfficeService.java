@@ -252,27 +252,63 @@ public class MobileOfficeService {
         }
     }
 
-
     public MobileResponse getOfficeUnitDesignationEmployeeMap(Authentication authentication, Long officeId) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return MobileResponse.builder()
+                    .data("Please login.")
+                    .status("error")
+                    .build();
+        }
+
         Office office = officeRepo.findOfficeById(officeId);
         String rootNodeId = "units_" + office.getOfficeMinistry().getId() + "_" + office.getId() + "_" + office.getParentOfficeId() + "_root";
 
         List<TreeNodeOfficerDTO> treeRootNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(rootNodeId, authentication);
 
-        List<List<TreeNodeOfficerDTO>> allPostNodesList = new ArrayList<>();
+        List<Map<String, Object>> formattedData = new ArrayList<>();
 
         for (TreeNodeOfficerDTO rootNode : treeRootNodeOfficerDTOList) {
-            String postNodeId = rootNode.getId();
+            String postNodeId = rootNode.getId().replace("_root", "_post");
+
             List<TreeNodeOfficerDTO> postNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(postNodeId, authentication);
 
-            allPostNodesList.add(postNodeOfficerDTOList);
+            List<Map<String, Object>> postNodes = new ArrayList<>();
+            for (TreeNodeOfficerDTO officer : postNodeOfficerDTOList) {
+                Map<String, Object> postNodeData = new HashMap<>();
+                postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3]));
+                postNodeData.put("office_id", officeId);
+                postNodeData.put("office_name_bng", office.getNameBangla());
+                postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
+                postNodeData.put("office_unit_id", Long.valueOf(rootNode.getId().split("_")[3]));
+                postNodeData.put("employee_record_id", null);
+                postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
+                postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
+                postNodeData.put("designation", officer.getDesignation());
+                postNodeData.put("name", officer.getName());
+                postNodeData.put("name_en", "");
+                postNodes.add(postNodeData);
+            }
+
+            // Format root node data
+            Map<String, Object> rootNodeData = new HashMap<>();
+            rootNodeData.put("id", Long.valueOf(rootNode.getId().split("_")[3]));
+            rootNodeData.put("label", rootNode.getText().replaceAll("<[^>]*>", ""));
+            rootNodeData.put("nodes", postNodes);
+
+            formattedData.add(rootNodeData);
         }
 
-        // Assuming you want to wrap this list in a MobileResponse
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("id", officeId);
+        responseData.put("label", "শাখাসমূহ");
+        responseData.put("nodes", formattedData);
+
         return MobileResponse.builder()
-                .data(allPostNodesList)
-                .status("SUCCESS")
+                .data(Collections.singletonList(responseData))
+                .status("success")
                 .build();
     }
+
 
 }
