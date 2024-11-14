@@ -2,6 +2,7 @@ package com.grs.mobileApp.service;
 
 import com.grs.api.model.response.CitizenCharterDTO;
 import com.grs.api.model.response.ServiceOriginDTO;
+import com.grs.api.model.response.organogram.TreeNodeDTO;
 import com.grs.api.model.response.organogram.TreeNodeOfficerDTO;
 import com.grs.core.dao.CitizenCharterOriginDAO;
 import com.grs.core.dao.OfficeDAO;
@@ -14,6 +15,7 @@ import com.grs.core.domain.projapoti.OfficeOrigin;
 import com.grs.core.repo.projapoti.CustomOfficeLayerRepo;
 import com.grs.core.repo.projapoti.OfficeLayerRepo;
 import com.grs.core.repo.projapoti.OfficeRepo;
+import com.grs.core.service.GrievanceForwardingService;
 import com.grs.core.service.OfficeOrganogramService;
 import com.grs.core.service.OfficeService;
 import com.grs.mobileApp.dto.*;
@@ -47,6 +49,9 @@ public class MobileOfficeService {
 
     @Autowired
     private OfficeOrganogramService officeOrganogramService;
+
+    @Autowired
+    private GrievanceForwardingService grievanceForwardingService;
 
 
     public List<MobileOfficeLayerDTO> getOfficeLayers() {
@@ -311,4 +316,58 @@ public class MobileOfficeService {
     }
 
 
+//    public MobileResponse getSubordinateOfficesOrganogram(Authentication authentication, Long grievanceId) {
+//
+//        if (authentication == null || !authentication.isAuthenticated()) {
+//            return MobileResponse.builder()
+//                    .data("Please login.")
+//                    .status("error")
+//                    .build();
+//        }
+//
+//        List<TreeNodeDTO> treeRootNodeOfficerDTOList = grievanceForwardingService.getRootOfSubOffice(grievanceId, authentication);
+//
+//        List<Map<String, Object>> formattedData = new ArrayList<>();
+//
+//        for (TreeNodeDTO rootNode : treeRootNodeOfficerDTOList) {
+//            String postNodeId = rootNode.getId().replace("_root", "_post");
+//
+//            List<TreeNodeOfficerDTO> postNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(postNodeId, authentication);
+//
+//            List<Map<String, Object>> postNodes = new ArrayList<>();
+//            for (TreeNodeOfficerDTO officer : postNodeOfficerDTOList) {
+//                Map<String, Object> postNodeData = new HashMap<>();
+//                postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3]));
+//                postNodeData.put("office_id", officeId);
+//                postNodeData.put("office_name_bng", office.getNameBangla());
+//                postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
+//                postNodeData.put("office_unit_id", Long.valueOf(rootNode.getId().split("_")[3]));
+//                postNodeData.put("employee_record_id", null);
+//                postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
+//                postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
+//                postNodeData.put("designation", officer.getDesignation());
+//                postNodeData.put("name", officer.getName());
+//                postNodeData.put("name_en", "");
+//                postNodes.add(postNodeData);
+//            }
+//
+//            // Format root node data
+//            Map<String, Object> rootNodeData = new HashMap<>();
+//            rootNodeData.put("id", Long.valueOf(rootNode.getId().split("_")[3]));
+//            rootNodeData.put("label", rootNode.getText().replaceAll("<[^>]*>", ""));
+//            rootNodeData.put("nodes", postNodes);
+//
+//            formattedData.add(rootNodeData);
+//        }
+//
+//        Map<String, Object> responseData = new HashMap<>();
+//        responseData.put("id", officeId);
+//        responseData.put("label", "শাখাসমূহ");
+//        responseData.put("nodes", formattedData);
+//
+//        return MobileResponse.builder()
+//                .data(Collections.singletonList(responseData))
+//                .status("success")
+//                .build();
+//    }
 }
