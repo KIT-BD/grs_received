@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.security.Principal;
+import java.text.ParseException;
 import java.util.HashMap;
 import java.io.IOException;
 import java.security.Principal;
@@ -37,7 +38,7 @@ public class MobileGrievanceForwardingController {
             @RequestParam("fileNameByUser") String file_name_by_user,
             Authentication authentication,
             Principal principal
-    ){
+    ) throws ParseException {
 
         MobileGrievanceForwardingRequest grievanceOpinionRequestDTO = MobileGrievanceForwardingRequest.builder()
                 .complaint_id(complaint_id)

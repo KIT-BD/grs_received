@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -41,10 +42,13 @@ public class MobileGrievanceForwardingService {
     @Autowired
     private OfficeRepo officeRepo;
     private FileUploadUtil fileUploadUtil;
+
+    @Autowired
+    private MobileGrievanceService mobileGrievanceService;
+
     public Map<String,Object> sendForOpinion(
             Authentication authentication,
-            MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest)
-    {
+            MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest) throws ParseException {
 
         ObjectMapper objectMapper = new ObjectMapper();
         List<MobileOfficerDTO> officerDTOList = null;
@@ -111,6 +115,12 @@ public class MobileGrievanceForwardingService {
         Map<String, Object> response = new HashMap<>();
 
         if (genericResponse.isSuccess()){
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceForwardingRequest.getComplaint_id());
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
             response.put("status", "success");
             response.put("message", "The grievance has been sent for opinion successfully.");
             return response;
@@ -118,6 +128,7 @@ public class MobileGrievanceForwardingService {
         else {
             response.put("status", "error");
             response.put("message", "Error while sending for opinion.");
+            response.put("data", null);
             return response;
         }
     }
