@@ -41,6 +41,8 @@ public class MobileGrievanceForwardingService {
 
     @Autowired
     private OfficeRepo officeRepo;
+
+    @Autowired
     private FileUploadUtil fileUploadUtil;
 
     @Autowired
@@ -144,9 +146,10 @@ public class MobileGrievanceForwardingService {
                                                       String username,
                                                       List<MultipartFile> files,
                                                       String file_name_by_user,
-                                                      Principal principal) {
+                                                      Principal principal) throws ParseException {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
         List<FileDTO> convertedFiles = null;
         if (files != null && !files.isEmpty()) {
             convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
@@ -174,7 +177,14 @@ public class MobileGrievanceForwardingService {
                 .build();
         GenericResponse genericResponse = grievanceForwardingService.forwardGrievanceToAnotherOffice(forwardToAnotherOfficeDTO, userInformation);
         Map<String, Object> response = new HashMap<>();
+
         if (genericResponse.isSuccess()){
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceForwardingRequest.getComplaint_id());
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
             response.put("status", "success");
             response.put("message", "The grievance has been forwarded successfully.");
             return response;
@@ -189,14 +199,29 @@ public class MobileGrievanceForwardingService {
     public Map<String, Object> rejectGrievance(Authentication authentication,
                                                Long complaint_id,
                                                Long office_id,
-                                               Long username,
+                                               String username,
                                                String note,
                                                String fileNameByUser,
                                                List<MultipartFile> files,
-                                               Principal principal) {
+                                               Principal principal) throws ParseException {
 
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
-        List<FileDTO> convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
+
+        MobileGrievanceForwardingRequest mobileGrievanceForwardingRequest = MobileGrievanceForwardingRequest.builder()
+                .complaint_id(complaint_id)
+                .office_id(office_id)
+                .note(note)
+                .username(username)
+                .files(convertedFiles)
+                .file_name_by_user(fileNameByUser)
+                .build();
+
+
         GrievanceForwardingNoteDTO grievanceRejectionForwardingNote = GrievanceForwardingNoteDTO.builder()
                 .grievanceId(complaint_id)
                 .note(note)
@@ -208,6 +233,11 @@ public class MobileGrievanceForwardingService {
 
         Map<String, Object> response = new HashMap<>();
         if (genericResponse.isSuccess()){
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceForwardingRequest.getComplaint_id());
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
             response.put("status", "success");
             response.put("message", "The grievance has been rejected successfully.");
             return response;
