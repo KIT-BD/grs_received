@@ -34,8 +34,8 @@ public class MobileGrievanceForwardingController {
             @RequestParam String note,
             @RequestParam String deadline,
             @RequestParam String officers,
-            @RequestParam("files") List<MultipartFile> files,
-            @RequestParam("fileNameByUser") String file_name_by_user,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser", required = false) String file_name_by_user,
             Authentication authentication,
             Principal principal
     ) throws ParseException {
@@ -63,9 +63,9 @@ public class MobileGrievanceForwardingController {
             @RequestParam(value = "other_service", required = false) String other_service,
             @RequestParam(value = "service_id", required = false) Long service_id,
             @RequestParam String username,
-            @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
+            @RequestPart(value = "files", required = false) List<MultipartFile> files,
             @RequestParam(value = "fileNameByUser", required = false) String fileNameByUser,
-            Principal principal) {
+            Principal principal) throws ParseException {
 
         return mobileGrievanceForwardingService.forwardToAnotherOffice(authentication, complaint_id, office_id, note, other_service, service_id, username, files, fileNameByUser, principal);
     }
@@ -75,11 +75,11 @@ public class MobileGrievanceForwardingController {
             Authentication authentication,
             @RequestParam Long complaint_id,
             @RequestParam Long office_id,
-            @RequestParam Long username,
+            @RequestParam String username,
             @RequestParam String note,
             @RequestParam(value = "fileNameByUser", required = false) String fileNameByUser,
             @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
-            Principal principal) {
+            Principal principal) throws ParseException {
         return mobileGrievanceForwardingService.rejectGrievance(authentication, complaint_id, office_id, username, note, fileNameByUser, files, principal);
     }
 
