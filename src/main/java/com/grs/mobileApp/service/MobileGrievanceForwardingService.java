@@ -219,27 +219,70 @@ public class MobileGrievanceForwardingService {
         }
     }
 
-    public Map<String,Object> sendToAppealOfficer(
+    public Map<String,Object> sendToAppealOfficerOrSubordinateOffice(
             Authentication authentication,
             Long complaint_id,
-            String note
-    ){
+            String note,
+            Long office_id,
+            String other_service,
+            Long service_id,
+            List<MultipartFile> files,
+            String fileNameByUser
+    ) throws ParseException {
         GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
                 .grievanceId(complaint_id)
                 .note(note)
                 .build();
 
-        GenericResponse genericResponse = grievanceForwardingService.sendToAppealOfficer(authentication,grievanceForwardingNoteDTO);
+        if (office_id == null){
+            GenericResponse genericResponse = grievanceForwardingService.sendToAppealOfficer(authentication,grievanceForwardingNoteDTO);
+
+            Map<String, Object> response = new HashMap<>();
+            if (genericResponse.isSuccess()){
+
+                Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(complaint_id);
+                Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+                Object allComplaintDetails = data.get("allComplaintDetails");
+
+                response.put("data", allComplaintDetails);
+                response.put("status", "success");
+                response.put("message", "The grievance has been sent to appeal officer successfully.");
+                return response;
+            }
+            else {
+                response.put("status", "error");
+                response.put("data", null);
+                response.put("message", "Grievance could not be send to appeal officer.");
+                return response;
+            }
+        }
+
+        ForwardToAnotherOfficeDTO forwardToAnotherOfficeDTO = ForwardToAnotherOfficeDTO.builder()
+                .grievanceId(complaint_id)
+                .officeId(office_id)
+                .note(note)
+                .otherServiceName(other_service)
+                .currentStatus(GrievanceCurrentStatus.FORWARDED_IN)
+                .build();
+
+        GenericResponse genericResponse = grievanceForwardingService.forwardGrievanceToAnotherOffice(forwardToAnotherOfficeDTO,Utility.extractUserInformationFromAuthentication(authentication));
 
         Map<String, Object> response = new HashMap<>();
         if (genericResponse.isSuccess()){
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(complaint_id);
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
             response.put("status", "success");
-            response.put("message", "The grievance has been sent to appeal officer successfully.");
+            response.put("message", "The grievance has been sent to subordinate office successfully.");
             return response;
         }
         else {
             response.put("status", "error");
-            response.put("message", "Grievance could not be send to appeal officer.");
+            response.put("data", null);
+            response.put("message", "Grievance could not be send to subordinate office.");
             return response;
         }
     }

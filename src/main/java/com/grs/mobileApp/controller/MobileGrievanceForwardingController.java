@@ -84,11 +84,24 @@ public class MobileGrievanceForwardingController {
     }
 
     @RequestMapping(value = "/api/administrative-grievance/send-to-subordinate-office", method = RequestMethod.POST)
-    public Map<String,Object> sendToAppealOfficer(
+    public Map<String,Object> sendToAppealOfficerOrSubordinateOffice(
             Authentication authentication,
-            @RequestParam Long complaint_id,
-            @RequestParam String note
-    ){
-        return mobileGrievanceForwardingService.sendToAppealOfficer(authentication, complaint_id, note);
+            @RequestParam(value = "complaint_id") Long complaint_id,
+            @RequestParam(value = "note") String note,
+            @RequestParam(value = "office_id", required = false) Long office_id,
+            @RequestParam(value = "other_service", required = false) String other_service,
+            @RequestParam(value = "service_id", required = false) Long service_id,
+            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser", required = false) String fileNameByUser
+    ) throws ParseException {
+        return mobileGrievanceForwardingService.sendToAppealOfficerOrSubordinateOffice(
+                authentication,
+                complaint_id,
+                note,
+                office_id,
+                other_service,
+                service_id,
+                files,
+                fileNameByUser);
     }
 }
