@@ -8,10 +8,12 @@ import com.grs.core.dao.CitizenCharterOriginDAO;
 import com.grs.core.dao.OfficeDAO;
 import com.grs.core.domain.grs.CitizenCharter;
 import com.grs.core.domain.grs.CitizensCharterOrigin;
+import com.grs.core.domain.grs.Grievance;
 import com.grs.core.domain.projapoti.CustomOfficeLayer;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.domain.projapoti.OfficeLayer;
 import com.grs.core.domain.projapoti.OfficeOrigin;
+import com.grs.core.repo.grs.GrievanceRepo;
 import com.grs.core.repo.projapoti.CustomOfficeLayerRepo;
 import com.grs.core.repo.projapoti.OfficeLayerRepo;
 import com.grs.core.repo.projapoti.OfficeRepo;
@@ -31,6 +33,9 @@ public class MobileOfficeService {
 
     @Autowired
     private OfficeService officeService;
+
+    @Autowired
+    private GrievanceRepo grievanceRepo;
 
     @Autowired
     private OfficeLayerRepo officeLayerRepo;
@@ -326,6 +331,8 @@ public class MobileOfficeService {
 //        }
 //
 //        List<TreeNodeDTO> treeRootNodeOfficerDTOList = grievanceForwardingService.getRootOfSubOffice(grievanceId, authentication);
+//        Grievance grievance = grievanceRepo.findOne(grievanceId);
+//        Office office = officeRepo.findOfficeById(grievance.getOfficeId());
 //
 //        List<Map<String, Object>> formattedData = new ArrayList<>();
 //
@@ -338,7 +345,7 @@ public class MobileOfficeService {
 //            for (TreeNodeOfficerDTO officer : postNodeOfficerDTOList) {
 //                Map<String, Object> postNodeData = new HashMap<>();
 //                postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3]));
-//                postNodeData.put("office_id", officeId);
+//                postNodeData.put("office_id", office.getId());
 //                postNodeData.put("office_name_bng", office.getNameBangla());
 //                postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
 //                postNodeData.put("office_unit_id", Long.valueOf(rootNode.getId().split("_")[3]));
@@ -361,7 +368,7 @@ public class MobileOfficeService {
 //        }
 //
 //        Map<String, Object> responseData = new HashMap<>();
-//        responseData.put("id", officeId);
+//        responseData.put("id", office.getId());
 //        responseData.put("label", "শাখাসমূহ");
 //        responseData.put("nodes", formattedData);
 //
@@ -370,4 +377,63 @@ public class MobileOfficeService {
 //                .status("success")
 //                .build();
 //    }
+
+    public MobileResponse getSubordinateOfficesOrganogram(Authentication authentication, Long grievanceId) {
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return MobileResponse.builder()
+                    .data("Please login.")
+                    .status("error")
+                    .build();
+        }
+
+        List<TreeNodeDTO> treeRootNodeOfficerDTOList = grievanceForwardingService.getRootOfSubOffice(grievanceId, authentication);
+        Grievance grievance = grievanceRepo.findOne(grievanceId);
+        Office office = officeRepo.findOfficeById(grievance.getOfficeId());
+
+        List<Map<String, Object>> formattedData = new ArrayList<>();
+
+        for (TreeNodeDTO rootNode : treeRootNodeOfficerDTOList) {
+            String postNodeId = rootNode.getId().replace("_root", "_post");
+
+            List<TreeNodeOfficerDTO> postNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(postNodeId, authentication);
+
+            List<Map<String, Object>> postNodes = new ArrayList<>();
+            for (TreeNodeOfficerDTO officer : postNodeOfficerDTOList) {
+                Map<String, Object> postNodeData = new HashMap<>();
+                postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3])); // organogramId
+                postNodeData.put("office_id", office.getId());
+                postNodeData.put("office_name_bng", office.getNameBangla());
+                postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
+                postNodeData.put("office_unit_id", Long.valueOf(officer.getId().split("_")[2]));
+                postNodeData.put("employee_record_id", null); // Ensure this method exists
+                postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
+                postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
+                postNodeData.put("designation", officer.getDesignation());
+                postNodeData.put("name", officer.getName());
+                postNodeData.put("name_en", null); // Ensure this method exists
+                postNodeData.put("checked", false);
+                postNodes.add(postNodeData);
+            }
+
+            // Format root node data
+            Map<String, Object> rootNodeData = new HashMap<>();
+            rootNodeData.put("id", Long.valueOf(rootNode.getId().split("_")[2]));
+            rootNodeData.put("label", rootNode.getText().replaceAll("<[^>]*>", ""));
+            rootNodeData.put("nodes", postNodes);
+
+            formattedData.add(rootNodeData);
+        }
+
+        Map<String, Object> responseData = new HashMap<>();
+        responseData.put("id", office.getId());
+        responseData.put("label", office.getNameBangla());
+        responseData.put("nodes", formattedData);
+
+        return MobileResponse.builder()
+                .data(Collections.singletonList(responseData))
+                .status("success")
+                .build();
+    }
+
 }
