@@ -203,9 +203,9 @@ public class MobileOfficeController {
         return mobileOfficeService.getOfficeUnitDesignationEmployeeMap(authentication, officeId);
     }
 
-//    @GetMapping("/api/doptor/office-organogram/subordinate-office-organogram")
-//    public MobileResponse getSubordinateOfficesOrganogram(Authentication authentication, @RequestParam("grievanceId") Long grievanceId) {
-//        return mobileOfficeService.getSubordinateOfficesOrganogram(authentication, grievanceId);
-//    }
+    @GetMapping("/api/doptor/office-organogram/subordinate-office-organogram")
+    public MobileResponse getSubordinateOfficesOrganogram(Authentication authentication, @RequestParam("grievanceId") Long grievanceId) {
+        return mobileOfficeService.getSubordinateOfficesOrganogram(authentication, grievanceId);
+    }
 
 }
