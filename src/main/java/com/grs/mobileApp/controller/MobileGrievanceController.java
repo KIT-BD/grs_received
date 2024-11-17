@@ -33,6 +33,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor
@@ -407,7 +408,7 @@ public class MobileGrievanceController {
         return mobileGrievanceService.findGrievances(userInformation, pageable, ListViewType.APPEAL_OUTBOX);
     }
 
-    @GetMapping("api/administrative-grievance/departmental-action-officers")
+    @GetMapping("/api/administrative-grievance/departmental-action-officers")
     public Map<String,Object> getMovementForComplainant(
             Authentication authentication,
             @RequestParam("complaint_id") Long id,
@@ -421,9 +422,12 @@ public class MobileGrievanceController {
             return response;
         }
         List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.getAllComplaintMovementHistoryByGrievance(id, authentication);
+
+        List<GrievanceForwardingEmployeeRecordsDTO> actionBasedFiltering = grievanceList.stream().filter(item -> Objects.equals(item.getAction(), action)).collect(Collectors.toList());
+
         List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
 
-        for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
+        for (GrievanceForwardingEmployeeRecordsDTO g : actionBasedFiltering){
             forwardingDTOList.add(
                     MobileGrievanceForwardingDTO.builder()
                             .id(null)
