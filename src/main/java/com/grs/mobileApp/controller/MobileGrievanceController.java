@@ -3,14 +3,19 @@ package com.grs.mobileApp.controller;
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.response.GenericResponse;
 import com.grs.api.model.response.file.FileDerivedDTO;
+import com.grs.core.dao.EmployeeRecordDAO;
+import com.grs.core.dao.GrievanceForwardingDAO;
+import com.grs.core.dao.OfficeUnitDAO;
+import com.grs.core.domain.grs.*;
+import com.grs.core.domain.projapoti.EmployeeRecord;
+import com.grs.core.domain.projapoti.OfficeUnit;
 import com.grs.core.model.ListViewType;
 import com.grs.core.service.GrievanceService;
+import com.grs.core.service.OfficesGroService;
 import com.grs.mobileApp.dto.*;
 import com.grs.mobileApp.service.MobileGrievanceService;
 import com.grs.mobileApp.service.MobilePublicAPIService;
 import com.grs.api.model.response.GrievanceForwardingEmployeeRecordsDTO;
-import com.grs.core.domain.grs.Education;
-import com.grs.core.domain.grs.Occupation;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.GrievanceForwardingService;
@@ -20,7 +25,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import com.grs.api.model.UserInformation;
-import com.grs.core.domain.grs.Complainant;
 import com.grs.core.service.ComplainantService;
 import com.grs.utils.Utility;
 import lombok.RequiredArgsConstructor;
@@ -43,6 +47,16 @@ public class MobileGrievanceController {
     private MobileGrievanceService mobileGrievanceService;
     private final ComplainantService complainantService;
     private final GrievanceForwardingService grievanceForwardingService;
+    @Autowired
+    private GrievanceService grievanceService;
+    @Autowired
+    private GrievanceForwardingDAO grievanceForwardingDAO;
+    @Autowired
+    private OfficesGroService officesGroService;
+    @Autowired
+    private EmployeeRecordDAO employeeRecordDAO;
+    @Autowired
+    private OfficeUnitDAO officeUnitDAO;
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public MobileResponse savePublicGrievance(
@@ -476,6 +490,64 @@ public class MobileGrievanceController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("data", forwardingDTOList);
+        response.put("status", "success");
+
+        return response;
+    }
+
+    @GetMapping("/api/grievance/gro-info")
+    public Map<String,Object> getGROInfo(
+            Authentication authentication,
+            @RequestParam("complaint_id") Long complaint_id
+    ){
+        UserInformation auth = Utility.extractUserInformationFromAuthentication(authentication);
+
+        Grievance grievance = grievanceService.findGrievanceById(complaint_id);
+        OfficesGRO officesGRO = this.officesGroService.findOfficesGroByOfficeId(grievance.getOfficeId());
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllRelatedComplaintMovements(complaint_id,
+                officesGRO.getOfficeId(),
+                new ArrayList<Long>() {{
+                    add(officesGRO.getGroOfficeUnitOrganogramId());
+                }},
+                "%APPEAL%");
+
+        GrievanceForwarding gro = grievanceForwardings.get(0);
+        EmployeeRecord employeeRecord = employeeRecordDAO.findEmployeeRecordById(gro.getToEmployeeRecordId());
+        OfficeUnit officeUnit = officeUnitDAO.findById(gro.getToOfficeUnitId());
+
+        Map<String, Object> response = new HashMap<>();
+        Map<String,Object> data = new HashMap<>();
+        data.put("unit", officeUnit.getOffice().getId());
+        data.put("employeeRecord", gro.getToEmployeeRecordId());
+        data.put("joiningDate", null);
+        data.put("office", gro.getToOfficeId());
+        data.put("id", gro.getId());
+        data.put("designation", gro.getToEmployeeDesignationBangla());
+        data.put("organogram", gro.getToOfficeUnitOrganogramId());
+        data.put("lastDate", null);
+        data.put("status", null);
+        data.put("officeHead", null);
+        data.put("officeNameEn", gro.getToOfficeNameBangla());
+        data.put("officeNameBn", gro.getToOfficeNameBangla());
+        data.put("unitNameEn", officeUnit.getUnitNameEnglish());
+        data.put("unitNameBn", officeUnit.getUnitNameBangla());
+        data.put("officeMinistryId", officeUnit.getOfficeMinistry().getId());
+        data.put("ministryNameBng", officeUnit.getOfficeMinistry().getNameBangla());
+        data.put("ministryNameEng", officeUnit.getOfficeMinistry().getNameEnglish());
+        data.put("ministryShortName", officeUnit.getOfficeMinistry().getNameEnglishShort());
+        data.put("ministryReferenceCode", officeUnit.getOfficeMinistry().getReferenceCode());
+        data.put("refOriginUnitOrganogramId", null);
+        data.put("is_office_admin", auth.getIsOfficeAdmin());
+        data.put("is_unit_admin", null);
+        data.put("is_office_head", null);
+        data.put("is_unit_head", null);
+        data.put("name_bng", employeeRecord.getNameBangla());
+        data.put("name", employeeRecord.getNameEnglish());
+        data.put("mobile", employeeRecord.getPersonalMobile());
+        data.put("email", employeeRecord.getPersonalEmail());
+        data.put("username", auth.getUsername());
+
+        response.put("data", data);
         response.put("status", "success");
 
         return response;
