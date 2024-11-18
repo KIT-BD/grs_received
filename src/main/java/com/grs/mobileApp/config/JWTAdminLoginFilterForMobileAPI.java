@@ -26,6 +26,7 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -68,6 +69,9 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
 
     private final GrsRoleDAO grsRoleDAO;
 
+    @Value("${nothi.mobileApp.url}")
+    private String nothiMobileUserVerifyUrl;
+
 
     public JWTAdminLoginFilterForMobileAPI(String url, AuthenticationManager authManager, BCryptPasswordEncoder bCryptPasswordEncoder, OISFUserDetailsServiceImpl oisfUserDetailsService, GrsRoleDAO grsRoleDAO) {
         super(new AntPathRequestMatcher(url, "POST"));
@@ -106,7 +110,7 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
             restTemplate.getMessageConverters()
                     .add(0, new StringHttpMessageConverter(StandardCharsets.UTF_8));
             ResponseEntity<String> responseEntity = restTemplate.postForEntity(
-                    "https://api-stage.doptor.gov.bd/api/user/verify",
+                    nothiMobileUserVerifyUrl,
                     requestEntity,
                     String.class
             );
