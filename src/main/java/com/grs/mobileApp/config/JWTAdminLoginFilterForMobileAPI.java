@@ -27,6 +27,8 @@ import org.apache.http.impl.client.HttpClients;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.env.Environment;
 import org.springframework.http.*;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.StringHttpMessageConverter;
@@ -44,6 +46,7 @@ import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -68,17 +71,24 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
     private final OISFUserDetailsServiceImpl oisfUserDetailsService;
 
     private final GrsRoleDAO grsRoleDAO;
+    private final String nothiMobileUserVerifyUrl;
+    private final boolean tokenStatus;
 
-    @Value("${nothi.mobileApp.url}")
-    private String nothiMobileUserVerifyUrl;
 
-
-    public JWTAdminLoginFilterForMobileAPI(String url, AuthenticationManager authManager, BCryptPasswordEncoder bCryptPasswordEncoder, OISFUserDetailsServiceImpl oisfUserDetailsService, GrsRoleDAO grsRoleDAO) {
+    public JWTAdminLoginFilterForMobileAPI(String url,
+                                           AuthenticationManager authManager,
+                                           BCryptPasswordEncoder bCryptPasswordEncoder,
+                                           OISFUserDetailsServiceImpl oisfUserDetailsService,
+                                           GrsRoleDAO grsRoleDAO,
+                                           String mobileAdminVerify,
+                                           boolean tokenStatus) {
         super(new AntPathRequestMatcher(url, "POST"));
         this.grsRoleDAO = grsRoleDAO;
         setAuthenticationManager(authManager);
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.oisfUserDetailsService = oisfUserDetailsService;
+        this.nothiMobileUserVerifyUrl = mobileAdminVerify;
+        this.tokenStatus = tokenStatus;
     }
     @Getter
     @Setter
@@ -200,8 +210,12 @@ public class JWTAdminLoginFilterForMobileAPI extends AbstractAuthenticationProce
             Map<String,Object> data = new HashMap<>();
             data.put("user_info",responseData.get("data"));
             data.put("user_type",userInformation.getOisfUserType());
-//            data.put("token", TokenAuthenticationServiceUtil.addAuthenticationForMyGovMobile(userDetails, request, response));
-            data.put("token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDAwMDAwMDA1NTgiLCJwZXJtaXNzaW9ucyI6WyJBRERfU0VSVklDRVMiLCJFRElUX0NJVElaRU5fQ0hBUlRFUiIsIk9GRkxJTkVfR1JJRVZBTkNFX1VQTE9BRCIsIkVESVRfU0VSVklDRVMiLCJBRERfUFVCTElDX0dSSUVWQU5DRVMiLCJBRERfT0ZGSUNJQUxfR1JJRVZBTkNFUyIsIlZJRVdfU1VHR0VTVElPTiIsIlZJRVdfUFVCTElDX0dSSUVWQU5DRVMiLCJWSUVXX1JFR0lTVEVSIiwiVklFV19TVEFGRl9HUklFVkFOQ0VTIiwiVklFV19PRkZJQ0lBTF9HUklFVkFOQ0VTIiwiQUREX1NUQUZGX0dSSUVWQU5DRVMiLCJWSUVXX0NJVElaRU5fQ0hBUlRFUiIsIlZJRVdfU0VSVklDRVMiLCJBRERfQ0lUSVpFTl9DSEFSVEVSIl0sInVzZXJfaW5mbyI6eyJ1c2VySWQiOjgsInVzZXJuYW1lIjoiMjAwMDAwMDAwNTU4IiwidXNlclR5cGUiOiJPSVNGX1VTRVIiLCJvaXNmVXNlclR5cGUiOiJHUk8iLCJncnNVc2VyVHlwZSI6bnVsbCwib2ZmaWNlSW5mb3JtYXRpb24iOnsib2ZmaWNlSWQiOjI4LCJvZmZpY2VOYW1lQmFuZ2xhIjoi4Kau4Kao4KeN4Kak4KeN4Kaw4Ka_4Kaq4Kaw4Ka_4Ka34KamIOCmrOCmv-CmreCmvuCmlyAiLCJvZmZpY2VOYW1lRW5nbGlzaCI6Ik1pbmlzdHJ5IERpdmlzaW9uIiwib2ZmaWNlTWluaXN0cnlJZCI6NCwib2ZmaWNlT3JpZ2luSWQiOjQyLCJuYW1lIjoi4Kau4KeL4KaDIOCmtuCmvuCmq-CmvuCnn-CmvuCmpCDgpq7gpr7gprngpqzgp4Hgpqwg4Kaa4KeM4Kan4KeB4Kaw4KeAIiwiZGVzaWduYXRpb24iOiLgpq_gp4Hgppfgp43gpq7gprjgpprgpr_gpqwgKOCmuOCmguCmr-CngeCmleCnjeCmpCkiLCJlbXBsb3llZVJlY29yZElkIjo3ODMwMiwib2ZmaWNlVW5pdE9yZ2Fub2dyYW1JZCI6MTA3ODYsImxheWVyTGV2ZWwiOjEsImdlb0RpdmlzaW9uSWQiOjMsImdlb0Rpc3RyaWN0SWQiOjE4fSwiaXNBcHBlYWxPZmZpY2VyIjp0cnVlLCJpc09mZmljZUFkbWluIjpmYWxzZSwiaXNDZW50cmFsRGFzaGJvYXJkVXNlciI6dHJ1ZSwiaXNDZWxsR1JPIjp0cnVlLCJpc01vYmlsZUxvZ2luIjpmYWxzZSwiaXNNeUdvdkxvZ2luIjpudWxsLCJ0b2tlbiI6bnVsbH19.tUtVEIT38NGGP3tYTTrJdjMEHd-_uLJsZfPxLNGCu4PcR4YjSqhQSPnrh75bRaHllT-PHWII0LM_ODwSaehUWw");
+
+            if (tokenStatus){
+                data.put("token", "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIyMDAwMDAwMDA1NTgiLCJwZXJtaXNzaW9ucyI6WyJBRERfU0VSVklDRVMiLCJFRElUX0NJVElaRU5fQ0hBUlRFUiIsIk9GRkxJTkVfR1JJRVZBTkNFX1VQTE9BRCIsIkVESVRfU0VSVklDRVMiLCJBRERfUFVCTElDX0dSSUVWQU5DRVMiLCJBRERfT0ZGSUNJQUxfR1JJRVZBTkNFUyIsIlZJRVdfU1VHR0VTVElPTiIsIlZJRVdfUFVCTElDX0dSSUVWQU5DRVMiLCJWSUVXX1JFR0lTVEVSIiwiVklFV19TVEFGRl9HUklFVkFOQ0VTIiwiVklFV19PRkZJQ0lBTF9HUklFVkFOQ0VTIiwiQUREX1NUQUZGX0dSSUVWQU5DRVMiLCJWSUVXX0NJVElaRU5fQ0hBUlRFUiIsIlZJRVdfU0VSVklDRVMiLCJBRERfQ0lUSVpFTl9DSEFSVEVSIl0sInVzZXJfaW5mbyI6eyJ1c2VySWQiOjgsInVzZXJuYW1lIjoiMjAwMDAwMDAwNTU4IiwidXNlclR5cGUiOiJPSVNGX1VTRVIiLCJvaXNmVXNlclR5cGUiOiJHUk8iLCJncnNVc2VyVHlwZSI6bnVsbCwib2ZmaWNlSW5mb3JtYXRpb24iOnsib2ZmaWNlSWQiOjI4LCJvZmZpY2VOYW1lQmFuZ2xhIjoi4Kau4Kao4KeN4Kak4KeN4Kaw4Ka_4Kaq4Kaw4Ka_4Ka34KamIOCmrOCmv-CmreCmvuCmlyAiLCJvZmZpY2VOYW1lRW5nbGlzaCI6Ik1pbmlzdHJ5IERpdmlzaW9uIiwib2ZmaWNlTWluaXN0cnlJZCI6NCwib2ZmaWNlT3JpZ2luSWQiOjQyLCJuYW1lIjoi4Kau4KeL4KaDIOCmtuCmvuCmq-CmvuCnn-CmvuCmpCDgpq7gpr7gprngpqzgp4Hgpqwg4Kaa4KeM4Kan4KeB4Kaw4KeAIiwiZGVzaWduYXRpb24iOiLgpq_gp4Hgppfgp43gpq7gprjgpprgpr_gpqwgKOCmuOCmguCmr-CngeCmleCnjeCmpCkiLCJlbXBsb3llZVJlY29yZElkIjo3ODMwMiwib2ZmaWNlVW5pdE9yZ2Fub2dyYW1JZCI6MTA3ODYsImxheWVyTGV2ZWwiOjEsImdlb0RpdmlzaW9uSWQiOjMsImdlb0Rpc3RyaWN0SWQiOjE4fSwiaXNBcHBlYWxPZmZpY2VyIjp0cnVlLCJpc09mZmljZUFkbWluIjpmYWxzZSwiaXNDZW50cmFsRGFzaGJvYXJkVXNlciI6dHJ1ZSwiaXNDZWxsR1JPIjp0cnVlLCJpc01vYmlsZUxvZ2luIjpmYWxzZSwiaXNNeUdvdkxvZ2luIjpudWxsLCJ0b2tlbiI6bnVsbH19.tUtVEIT38NGGP3tYTTrJdjMEHd-_uLJsZfPxLNGCu4PcR4YjSqhQSPnrh75bRaHllT-PHWII0LM_ODwSaehUWw");
+            } else {
+                data.put("token", TokenAuthenticationServiceUtil.addAuthenticationForMyGovMobile(userDetails, request, response));
+            }
 
             Map<String,Object> mobileResponse = new HashMap<>();
             mobileResponse.put("status","success");
