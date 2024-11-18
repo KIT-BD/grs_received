@@ -2,8 +2,10 @@ package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.response.GenericResponse;
+import com.grs.api.model.response.dashboard.latest.GRSStatisticDTO;
 import com.grs.api.model.response.file.FileDerivedDTO;
 import com.grs.core.dao.EmployeeRecordDAO;
+import com.grs.core.dao.GRSStatisticsDAO;
 import com.grs.core.dao.GrievanceForwardingDAO;
 import com.grs.core.dao.OfficeUnitDAO;
 import com.grs.core.domain.grs.*;
@@ -57,6 +59,51 @@ public class MobileGrievanceController {
     private EmployeeRecordDAO employeeRecordDAO;
     @Autowired
     private OfficeUnitDAO officeUnitDAO;
+    @Autowired
+    private GRSStatisticsDAO grsStatisticsDAO;
+
+    @GetMapping("/api/grievance/total")
+    public Map<String,Object> viewDashboardData(
+            Authentication authentication,
+            @RequestParam("officeId") Long officeId
+    ){
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+        Calendar cal = Calendar.getInstance();
+        int year = cal.get(Calendar.YEAR);
+        int month = cal.get(Calendar.MONTH) + 1;
+        GRSStatisticDTO dashboardData = grsStatisticsDAO.getGRSStatistics(userInformation, officeId, year, month);
+
+        Map<String, Object> response = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
+
+        if (dashboardData == null){
+            response.put("data", null);
+            response.put("status", "error");
+
+            return response;
+        }
+
+        data.put("total_complaint", dashboardData.totalSubmittedGrievance);
+        data.put("running_complaint", dashboardData.runningGrievances);
+        data.put("closed_complaint", dashboardData.resolvedGrievances);
+        data.put("time_passed_complaint", dashboardData.timeExpiredGrievances);
+        data.put("total_appeal", dashboardData.appealTotal);
+        data.put("running_appeal", dashboardData.appealRunning);
+        data.put("time_passed_appeal", dashboardData.appealTimeExpired);
+        data.put("closed_appeal", dashboardData.appealResolved);
+        data.put("grievance_disposal_rate", dashboardData.resolveRate);
+        data.put("appeal_rate", dashboardData.appealResolveRate);
+        data.put("total_response", dashboardData.totalRating);
+        data.put("average_rating", dashboardData.averageRating);
+        data.put("safetynet_wise_grievance_list", null);
+        data.put("graph_wise_grievance_list", null);
+        data.put("office_wise_grievance_list", null);
+
+        response.put("data", data);
+        response.put("status", "success");
+
+        return response;
+    }
 
     @PostMapping(value = "/api/public-grievance/save", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public MobileResponse savePublicGrievance(
