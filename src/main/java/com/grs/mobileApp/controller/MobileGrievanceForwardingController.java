@@ -34,11 +34,16 @@ public class MobileGrievanceForwardingController {
             @RequestParam String note,
             @RequestParam String deadline,
             @RequestParam String officers,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
             @RequestParam(value = "fileNameByUser", required = false) String file_name_by_user,
             Authentication authentication,
             Principal principal
     ) throws ParseException {
+
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
+        }
 
         MobileGrievanceForwardingRequest grievanceOpinionRequestDTO = MobileGrievanceForwardingRequest.builder()
                 .complaint_id(complaint_id)
@@ -48,7 +53,7 @@ public class MobileGrievanceForwardingController {
                 .deadline(deadline)
                 .officers(officers)
                 .file_name_by_user(file_name_by_user)
-                .files(fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal))
+                .files(convertedFiles)
                 .build();
 
         return mobileGrievanceForwardingService.sendForOpinion(authentication,grievanceOpinionRequestDTO);
@@ -63,7 +68,7 @@ public class MobileGrievanceForwardingController {
             @RequestParam(value = "other_service", required = false) String other_service,
             @RequestParam(value = "service_id", required = false) Long service_id,
             @RequestParam String username,
-            @RequestPart(value = "files", required = false) List<MultipartFile> files,
+            @RequestPart(value = "files[]", required = false) List<MultipartFile> files,
             @RequestParam(value = "fileNameByUser", required = false) String fileNameByUser,
             Principal principal) throws ParseException {
 
@@ -91,7 +96,7 @@ public class MobileGrievanceForwardingController {
             @RequestParam(value = "office_id", required = false) Long office_id,
             @RequestParam(value = "other_service", required = false) String other_service,
             @RequestParam(value = "service_id", required = false) Long service_id,
-            @RequestParam(value = "files", required = false) List<MultipartFile> files,
+            @RequestParam(value = "files[]", required = false) List<MultipartFile> files,
             @RequestParam(value = "fileNameByUser", required = false) String fileNameByUser
     ) throws ParseException {
         return mobileGrievanceForwardingService.sendToAppealOfficerOrSubordinateOffice(
