@@ -4,6 +4,7 @@ import com.grs.api.model.request.FileDTO;
 import com.grs.api.model.response.GenericResponse;
 import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.service.MobileGrievanceForwardingService;
+import com.grs.utils.BanglaConverter;
 import com.grs.utils.FileUploadUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -45,12 +46,14 @@ public class MobileGrievanceForwardingController {
             convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
         }
 
+        String deadLineEn = BanglaConverter.convertToEnglish(deadline);
+
         MobileGrievanceForwardingRequest grievanceOpinionRequestDTO = MobileGrievanceForwardingRequest.builder()
                 .complaint_id(complaint_id)
                 .office_id(office_id)
                 .username(username)
                 .note(note)
-                .deadline(deadline)
+                .deadline(deadLineEn)
                 .officers(officers)
                 .file_name_by_user(file_name_by_user)
                 .files(convertedFiles)
