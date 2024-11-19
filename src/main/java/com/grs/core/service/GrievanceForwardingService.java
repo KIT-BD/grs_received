@@ -1350,6 +1350,7 @@ public class GrievanceForwardingService {
     }
 
     public OpinionReceiverDTO getOpinionFieldsByGrievance(Long grievanceId, Authentication authentication, String postNodeId) {
+        log.info("postnodeId  ================================= "+postNodeId);
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         if (userInformation.getUserType().equals(UserType.COMPLAINANT)) {
