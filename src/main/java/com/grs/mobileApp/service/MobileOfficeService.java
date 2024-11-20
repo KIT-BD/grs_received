@@ -285,19 +285,21 @@ public class MobileOfficeService {
 
             List<Map<String, Object>> postNodes = new ArrayList<>();
             for (TreeNodeOfficerDTO officer : postNodeOfficerDTOList) {
-                Map<String, Object> postNodeData = new HashMap<>();
-                postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3]));
-                postNodeData.put("office_id", officeId);
-                postNodeData.put("office_name_bng", office.getNameBangla());
-                postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
-                postNodeData.put("office_unit_id", Long.valueOf(rootNode.getId().split("_")[3]));
-                postNodeData.put("employee_record_id", null);
-                postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
-                postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
-                postNodeData.put("designation", officer.getDesignation());
-                postNodeData.put("name", officer.getName());
-                postNodeData.put("name_en", "");
-                postNodes.add(postNodeData);
+                if (officer != null && officer.getId() != null && !officer.getId().isEmpty()){
+                    Map<String, Object> postNodeData = new HashMap<>();
+                    postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3]));
+                    postNodeData.put("office_id", officeId);
+                    postNodeData.put("office_name_bng", office.getNameBangla());
+                    postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
+                    postNodeData.put("office_unit_id", Long.valueOf(rootNode.getId().split("_")[3]));
+                    postNodeData.put("employee_record_id", null);
+                    postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
+                    postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
+                    postNodeData.put("designation", officer.getDesignation());
+                    postNodeData.put("name", officer.getName());
+                    postNodeData.put("name_en", "");
+                    postNodes.add(postNodeData);
+                }
             }
 
             // Format root node data
@@ -321,63 +323,6 @@ public class MobileOfficeService {
     }
 
 
-//    public MobileResponse getSubordinateOfficesOrganogram(Authentication authentication, Long grievanceId) {
-//
-//        if (authentication == null || !authentication.isAuthenticated()) {
-//            return MobileResponse.builder()
-//                    .data("Please login.")
-//                    .status("error")
-//                    .build();
-//        }
-//
-//        List<TreeNodeDTO> treeRootNodeOfficerDTOList = grievanceForwardingService.getRootOfSubOffice(grievanceId, authentication);
-//        Grievance grievance = grievanceRepo.findOne(grievanceId);
-//        Office office = officeRepo.findOfficeById(grievance.getOfficeId());
-//
-//        List<Map<String, Object>> formattedData = new ArrayList<>();
-//
-//        for (TreeNodeDTO rootNode : treeRootNodeOfficerDTOList) {
-//            String postNodeId = rootNode.getId().replace("_root", "_post");
-//
-//            List<TreeNodeOfficerDTO> postNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(postNodeId, authentication);
-//
-//            List<Map<String, Object>> postNodes = new ArrayList<>();
-//            for (TreeNodeOfficerDTO officer : postNodeOfficerDTOList) {
-//                Map<String, Object> postNodeData = new HashMap<>();
-//                postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3]));
-//                postNodeData.put("office_id", office.getId());
-//                postNodeData.put("office_name_bng", office.getNameBangla());
-//                postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
-//                postNodeData.put("office_unit_id", Long.valueOf(rootNode.getId().split("_")[3]));
-//                postNodeData.put("employee_record_id", null);
-//                postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
-//                postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
-//                postNodeData.put("designation", officer.getDesignation());
-//                postNodeData.put("name", officer.getName());
-//                postNodeData.put("name_en", "");
-//                postNodes.add(postNodeData);
-//            }
-//
-//            // Format root node data
-//            Map<String, Object> rootNodeData = new HashMap<>();
-//            rootNodeData.put("id", Long.valueOf(rootNode.getId().split("_")[3]));
-//            rootNodeData.put("label", rootNode.getText().replaceAll("<[^>]*>", ""));
-//            rootNodeData.put("nodes", postNodes);
-//
-//            formattedData.add(rootNodeData);
-//        }
-//
-//        Map<String, Object> responseData = new HashMap<>();
-//        responseData.put("id", office.getId());
-//        responseData.put("label", "শাখাসমূহ");
-//        responseData.put("nodes", formattedData);
-//
-//        return MobileResponse.builder()
-//                .data(Collections.singletonList(responseData))
-//                .status("success")
-//                .build();
-//    }
-
     public MobileResponse getSubordinateOfficesOrganogram(Authentication authentication, Long grievanceId) {
 
         if (authentication == null || !authentication.isAuthenticated()) {
@@ -387,53 +332,59 @@ public class MobileOfficeService {
                     .build();
         }
 
-        List<TreeNodeDTO> treeRootNodeOfficerDTOList = grievanceForwardingService.getRootOfSubOffice(grievanceId, authentication);
-        Grievance grievance = grievanceRepo.findOne(grievanceId);
-        Office office = officeRepo.findOfficeById(grievance.getOfficeId());
+        List<TreeNodeDTO> firstnode = grievanceForwardingService.getRootOfSubOffice(grievanceId, authentication);
 
-        List<Map<String, Object>> formattedData = new ArrayList<>();
+        List<Object> finalResponse = new ArrayList<>();
 
-        for (TreeNodeDTO rootNode : treeRootNodeOfficerDTOList) {
-            String postNodeId = rootNode.getId().replace("_root", "_post");
+        for(TreeNodeDTO treeNodeDTO : firstnode) {
+            List<TreeNodeOfficerDTO> treeRootNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(treeNodeDTO.getId(), authentication);
+//            System.out.println("Parent: " + treeNodeDTO);
 
-            List<TreeNodeOfficerDTO> postNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(postNodeId, authentication);
+            List<Map<String, Object>> formattedData = new ArrayList<>();
 
-            List<Map<String, Object>> postNodes = new ArrayList<>();
-            for (TreeNodeOfficerDTO officer : postNodeOfficerDTOList) {
-                Map<String, Object> postNodeData = new HashMap<>();
-                postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3])); // organogramId
-                postNodeData.put("office_id", office.getId());
-                postNodeData.put("office_name_bng", office.getNameBangla());
-                postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
-                postNodeData.put("office_unit_id", Long.valueOf(officer.getId().split("_")[2]));
-                postNodeData.put("employee_record_id", null); // Ensure this method exists
-                postNodeData.put("unit_name_bng", rootNode.getText().replaceAll("<[^>]*>", ""));
-                postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
-                postNodeData.put("designation", officer.getDesignation());
-                postNodeData.put("name", officer.getName());
-                postNodeData.put("name_en", null); // Ensure this method exists
-                postNodeData.put("checked", false);
-                postNodes.add(postNodeData);
+            for (TreeNodeOfficerDTO treeNodeOfficerDTO : treeRootNodeOfficerDTOList){
+//                System.out.println("Child: " + treeNodeOfficerDTO);
+                List<TreeNodeOfficerDTO> treeNodeOfficerDTOList = officeOrganogramService.getSOOrganogram(treeNodeOfficerDTO.getId(), authentication);
+                List<Map<String, Object>> postNodes = new ArrayList<>();
+                for (TreeNodeOfficerDTO officer: treeNodeOfficerDTOList) {
+//                    System.out.println("================ Grandchilren ================" + officer);
+                    if (officer != null && officer.getId() != null && !officer.getId().isEmpty()){
+                        Map<String, Object> postNodeData = new HashMap<>();
+                        postNodeData.put("id", Long.valueOf(officer.getId().split("_")[3]));
+                        postNodeData.put("office_id", Long.valueOf(officer.getId().split("_")[2]));
+                        postNodeData.put("office_name_bng", treeNodeDTO.getName());
+                        postNodeData.put("office_unit_organogram_id", Long.valueOf(officer.getId().split("_")[3]));
+                        postNodeData.put("office_unit_id", Long.valueOf(treeNodeOfficerDTO.getId().split("_")[3]));
+                        postNodeData.put("employee_record_id", null);
+                        postNodeData.put("unit_name_bng", treeNodeOfficerDTO.getText().replaceAll("<[^>]*>", ""));
+                        postNodeData.put("label", String.format("%s, %s", officer.getDesignation(), officer.getName()));
+                        postNodeData.put("designation", officer.getDesignation());
+                        postNodeData.put("name", officer.getName());
+                        postNodeData.put("name_en", "");
+                        postNodes.add(postNodeData);
+                    }
+                }
+                // Format root node data
+                Map<String, Object> rootNodeData = new HashMap<>();
+                rootNodeData.put("id", Long.valueOf(treeNodeOfficerDTO.getId().split("_")[3]));
+                rootNodeData.put("label", treeNodeOfficerDTO.getText().replaceAll("<[^>]*>", ""));
+                rootNodeData.put("nodes", postNodes);
+
+                formattedData.add(rootNodeData);
             }
 
-            // Format root node data
-            Map<String, Object> rootNodeData = new HashMap<>();
-            rootNodeData.put("id", Long.valueOf(rootNode.getId().split("_")[2]));
-            rootNodeData.put("label", rootNode.getText().replaceAll("<[^>]*>", ""));
-            rootNodeData.put("nodes", postNodes);
+            Map<String, Object> responseData = new HashMap<>();
+            responseData.put("id", Long.valueOf(treeNodeDTO.getId().split("_")[2]));
+            responseData.put("label", treeNodeDTO.getText().replaceAll("<[^>]*>", ""));
+            responseData.put("nodes", formattedData);
 
-            formattedData.add(rootNodeData);
+            finalResponse.add(responseData);
+
+
         }
-
-        Map<String, Object> responseData = new HashMap<>();
-        responseData.put("id", office.getId());
-        responseData.put("label", office.getNameBangla());
-        responseData.put("nodes", formattedData);
-
         return MobileResponse.builder()
-                .data(Collections.singletonList(responseData))
+                .data(finalResponse)
                 .status("success")
                 .build();
     }
-
 }
