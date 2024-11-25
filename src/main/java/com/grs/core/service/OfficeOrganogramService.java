@@ -293,6 +293,7 @@ public class OfficeOrganogramService {
             return null;
         }
         Long employeeMinistryId = userInformation.getOfficeInformation().getOfficeMinistryId();
+//        Long employeeOfficeUnitOrganogramId = userInformation.getOfficeInformation().getOfficeUnitOrganogramId();
         if (nodeId.equals("#")) {
             List<Office> listOfficesDTO = officesGroService.findByAppealOfficer(
                     userInformation.getOfficeInformation().getOfficeId(),
@@ -301,6 +302,7 @@ public class OfficeOrganogramService {
             if (listOfficesDTO.size() > 0) {
                 for (Office officesDTO : listOfficesDTO) {
                     TreeNodeDTO treeNodeDTO = TreeNodeDTO.builder()
+//                            .id("office_" + employeeMinistryId + "_" + officesDTO.getId() + "_" + employeeOfficeUnitOrganogramId + "_root")
                             .id("office_" + employeeMinistryId + "_" + officesDTO.getId() + "_0_root")
                             .icon("fa fa-bank")
                             .text("<span style='color: blue'>" + officesDTO.getNameBangla() + "</span>")

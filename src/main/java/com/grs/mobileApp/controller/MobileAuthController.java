@@ -13,6 +13,7 @@ import com.grs.core.service.ComplainantService;
 import com.grs.core.service.OccupationService;
 import com.grs.utils.StringUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -20,6 +21,7 @@ import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/complainant")
 public class MobileAuthController {
 
@@ -189,7 +191,8 @@ public class MobileAuthController {
         complainant.setPassword(bCryptPasswordEncoder.encode(newPincode));
         this.complainantService.save(complainant);
 
-        // System.out.println("New Pin Code: " + newPincode);
+//        System.out.println("New Pin Code: " + newPincode);
+        log.info("New Pin Code: " + newPincode);
         shortMessageService.sendSMS(complainant.getPhoneNumber(), String.format("আপনার জিআরএস লগইন পিনকোড রিসেট করা হয়েছে, নতুন পিনকোড : %s.", newPincode));
         if(StringUtil.isValidString(complainant.getEmail())) {
             emailService.sendEmail(complainant.getEmail(), "GRS login new pincode", "Dear " + complainant.getName() + ",\n\nYour GRS login pincode has been successfully reset. \nNew pincode is " + newPincode + ". \nPlease keep it secret and do not disclose to anyone.\n\n- From GRS System");

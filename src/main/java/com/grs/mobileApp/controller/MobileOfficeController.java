@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -195,4 +196,16 @@ public class MobileOfficeController {
 
         return ResponseEntity.ok(response);
     }
+
+
+    @GetMapping("/api/doptor/office-organogram/office-unit-designation-employee-map")
+    public MobileResponse getOfficeUnitDesignationEmployeeMap(Authentication authentication, @RequestParam("office_id") Long officeId) {
+        return mobileOfficeService.getOfficeUnitDesignationEmployeeMap(authentication, officeId);
+    }
+
+    @GetMapping("/api/doptor/office-organogram/subordinate-office-organogram")
+    public MobileResponse getSubordinateOfficesOrganogram(Authentication authentication, @RequestParam("grievanceId") Long grievanceId) {
+        return mobileOfficeService.getSubordinateOfficesOrganogram(authentication, grievanceId);
+    }
+
 }

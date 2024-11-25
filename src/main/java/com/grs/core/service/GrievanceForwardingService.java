@@ -606,6 +606,8 @@ public class GrievanceForwardingService {
         List<String> postNodeList = opinionRequestDTO.getPostNode();
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
+        System.out.println(opinionRequestDTO);
+
         List<OpinionReceiverDTO> opinionReceiverDTOS = new ArrayList<>();
         List<OpinionReceiverDTO> opinionReceiverCcDTOS = new ArrayList<>();
 
@@ -1347,6 +1349,7 @@ public class GrievanceForwardingService {
     }
 
     public OpinionReceiverDTO getOpinionFieldsByGrievance(Long grievanceId, Authentication authentication, String postNodeId) {
+        log.info("postnodeId  ================================= "+postNodeId);
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         if (userInformation.getUserType().equals(UserType.COMPLAINANT)) {
