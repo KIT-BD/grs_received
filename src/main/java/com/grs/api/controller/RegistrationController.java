@@ -217,6 +217,7 @@ public class RegistrationController {
         this.complainantService.save(complainant);
 //        shortMessageService.sendSMS(complainant.getPhoneNumber(), String.format("Your GRS login pincode has been reset, new pincode is %s.", newPincode));
         shortMessageService.sendSMS(complainant.getPhoneNumber(), String.format("আপনার জিআরএস লগইন পিনকোড রিসেট করা হয়েছে, নতুন পিনকোড : %s.", newPincode));
+        System.out.println(newPincode);
         if(StringUtil.isValidString(complainant.getEmail())) {
             emailService.sendEmail(complainant.getEmail(), "GRS login new pincode", "Dear " + complainant.getName() + ",\n\nYour GRS login pincode has been successfully reset. \nNew pincode is " + newPincode + ". \nPlease keep it secret and do not disclose to anyone.\n\n- From GRS System");
         }
