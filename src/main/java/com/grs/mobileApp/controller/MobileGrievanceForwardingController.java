@@ -1,6 +1,7 @@
 package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.FileDTO;
+import com.grs.mobileApp.dto.MobileGrievanceCloseForwardingDTO;
 import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileInvestigationForwardingDTO;
 import com.grs.mobileApp.dto.MobileOpinionForwardingDTO;
@@ -67,7 +68,6 @@ public class MobileGrievanceForwardingController {
             Authentication authentication,
             @RequestParam Long complaint_id,
             @RequestParam Long office_id,
-//            @RequestParam Long username,
             @RequestParam String note,
             @RequestParam Long to_employee_record_id,
             @RequestParam String officers
@@ -76,7 +76,6 @@ public class MobileGrievanceForwardingController {
         MobileInvestigationForwardingDTO mobileInvestigationForwardingDTO = MobileInvestigationForwardingDTO.builder()
                 .Complaint_id(complaint_id)
                 .office_id(office_id)
-//                .username(username)
                 .note(note)
                 .to_employee_record_id(to_employee_record_id)
                 .officers(officers)
@@ -114,7 +113,47 @@ public class MobileGrievanceForwardingController {
                 .fileNameByUser(fileNameByUser)
                 .build();
 
-        return mobileGrievanceForwardingService.giveOpinion(mobileOpinionForWardingDTO,authentication);
+        return mobileGrievanceForwardingService.giveOpinion(mobileOpinionForWardingDTO, authentication);
+
+    }
+
+
+    @RequestMapping(value = "/api/administrative-grievance/close-grievance", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String, Object> closeGrievance(
+            @RequestParam Long complaint_id,
+            @RequestParam Long office_id,
+            @RequestParam Long to_employee_record_id,
+            @RequestParam String action,
+            @RequestParam String closingNoteGRODecision,
+            @RequestParam String closingNoteMainReason,
+            @RequestParam String closingNoteSuggestion,
+            @RequestParam (required = false) List<Long> deptAction,
+            @RequestParam (required = false) String departmentalActionReason,
+            @RequestParam (value = "files[]",required = false)List<MultipartFile> files,
+            @RequestParam (value = "fileNameByUser",required = false)String fileNameByUser,
+            Authentication authentication,
+            Principal principal
+    ) throws ParseException {
+
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
+
+        MobileGrievanceCloseForwardingDTO mobileGrievanceCloseForwardingDTO = MobileGrievanceCloseForwardingDTO.builder()
+                .complaint_id(complaint_id)
+                .office_id(office_id)
+                .to_employee_record_id(to_employee_record_id)
+                .departmentalActionReason(departmentalActionReason)
+                .closingNoteGRODecision(closingNoteGRODecision)
+                .closingNoteSuggestion(closingNoteSuggestion)
+                .closingNoteMainReason(closingNoteMainReason)
+                .action(action)
+                .deptAction(deptAction)
+                .files(convertedFiles)
+                .build();
+
+        return mobileGrievanceForwardingService.closeGievance(mobileGrievanceCloseForwardingDTO,authentication);
 
     }
 
