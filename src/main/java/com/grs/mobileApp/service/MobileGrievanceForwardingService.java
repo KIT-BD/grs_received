@@ -4,10 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grs.api.model.UserInformation;
-import com.grs.api.model.request.FileDTO;
-import com.grs.api.model.request.ForwardToAnotherOfficeDTO;
-import com.grs.api.model.request.GrievanceForwardingNoteDTO;
-import com.grs.api.model.request.OpinionRequestDTO;
+import com.grs.api.model.request.*;
 import com.grs.api.model.response.GenericResponse;
 import com.grs.api.model.response.grievanceForwarding.GrievanceForwardingInvestigationDTO;
 import com.grs.core.domain.GrievanceCurrentStatus;
@@ -152,8 +149,6 @@ public class MobileGrievanceForwardingService {
         }
 
         assert officerDTOList != null;
-//        System.out.println("Officer DTO list"+officerDTOList.get(0).getReceiverCheck());
-//        System.out.println("Officer DTO list"+officerDTOList.get(1).getReceiverCheck());
         Optional<MobileOfficerInvstDTO> primary = officerDTOList.stream().filter(officer -> officer.isCommitteeHead()).findFirst();
 
         List<MobileOfficerInvstDTO> comitteeList = officerDTOList.stream()
@@ -240,6 +235,117 @@ public class MobileGrievanceForwardingService {
         }
 
     }
+
+
+    public Map<String, Object> closeGievance(MobileGrievanceCloseForwardingDTO mobileGrievanceCloseForwardingDTO, Authentication authentication) throws ParseException {
+
+        if(GrievanceCurrentStatus.valueOf(mobileGrievanceCloseForwardingDTO.getAction()) == GrievanceCurrentStatus.CLOSED_ACCUSATION_PROVED) {
+
+            if(!mobileGrievanceCloseForwardingDTO.getDeptAction().isEmpty()){
+                List<String> employeeList = new ArrayList<>();
+
+                for(Long i : mobileGrievanceCloseForwardingDTO.getDeptAction()){
+                    employeeList.add(i + "_" + "office_unit_organogram_id_for_later" + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
+                }
+
+                GrievanceForwardingCloseDTO grievanceForwardingCloseDTO = GrievanceForwardingCloseDTO.builder()
+                        .departmentalActionNote(mobileGrievanceCloseForwardingDTO.getDepartmentalActionReason())
+                        .groDecision(mobileGrievanceCloseForwardingDTO.getClosingNoteGRODecision())
+                        .mainReason(mobileGrievanceCloseForwardingDTO.getClosingNoteMainReason())
+                        .groSuggestion(mobileGrievanceCloseForwardingDTO.getClosingNoteSuggestion())
+                        .files(mobileGrievanceCloseForwardingDTO.getFiles())
+                        .status(GrievanceCurrentStatus.valueOf(mobileGrievanceCloseForwardingDTO.getAction()))
+                        .takeAction(true)
+                        .employeeList(employeeList)
+                        .referredFiles(null)
+                        .build();
+
+                GenericResponse genericResponse = grievanceForwardingService.closeGrievance(authentication, mobileGrievanceCloseForwardingDTO.getComplaint_id(), grievanceForwardingCloseDTO);
+                Map<String,Object> response = new LinkedHashMap<>();
+                if (genericResponse.isSuccess()) {
+
+                    Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceCloseForwardingDTO.getComplaint_id());
+                    Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+                    Object allComplaintDetails = data.get("allComplaintDetails");
+
+                    response.put("data", allComplaintDetails);
+                    response.put("status", "success");
+                    response.put("message", "The grievance has been sent for giving opinion successfully.");
+                    return response;
+                } else {
+                    response.put("status", "error");
+                    response.put("message", "Error while sending for opinion.");
+                    response.put("data", null);
+                    return response;
+                }
+            }
+            else {
+                GrievanceForwardingCloseDTO grievanceForwardingCloseDTO = GrievanceForwardingCloseDTO.builder()
+                        .groDecision(mobileGrievanceCloseForwardingDTO.getClosingNoteGRODecision())
+                        .mainReason(mobileGrievanceCloseForwardingDTO.getClosingNoteMainReason())
+                        .groSuggestion(mobileGrievanceCloseForwardingDTO.getClosingNoteSuggestion())
+                        .files(mobileGrievanceCloseForwardingDTO.getFiles())
+                        .status(GrievanceCurrentStatus.valueOf(mobileGrievanceCloseForwardingDTO.getAction()))
+                        .takeAction(false)
+                        .referredFiles(null)
+                        .build();
+
+                GenericResponse genericResponse = grievanceForwardingService.closeGrievance(authentication, mobileGrievanceCloseForwardingDTO.getComplaint_id(), grievanceForwardingCloseDTO);
+                Map<String,Object> response = new LinkedHashMap<>();
+                if (genericResponse.isSuccess()) {
+
+                    Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceCloseForwardingDTO.getComplaint_id());
+                    Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+                    Object allComplaintDetails = data.get("allComplaintDetails");
+
+                    response.put("data", allComplaintDetails);
+                    response.put("status", "success");
+                    response.put("message", "The grievance has been sent for giving opinion successfully.");
+                    return response;
+                } else {
+                    response.put("status", "error");
+                    response.put("message", "Error while sending for opinion.");
+                    response.put("data", null);
+                    return response;
+                }
+            }
+
+
+        } else {
+            GrievanceForwardingCloseDTO grievanceForwardingCloseDTO = GrievanceForwardingCloseDTO.builder()
+                    .groDecision(mobileGrievanceCloseForwardingDTO.getClosingNoteGRODecision())
+                    .mainReason(mobileGrievanceCloseForwardingDTO.getClosingNoteMainReason())
+                    .groSuggestion(mobileGrievanceCloseForwardingDTO.getClosingNoteSuggestion())
+                    .files(mobileGrievanceCloseForwardingDTO.getFiles())
+                    .status(GrievanceCurrentStatus.valueOf(mobileGrievanceCloseForwardingDTO.getAction()))
+                    .takeAction(false)
+                    .referredFiles(null)
+                    .build();
+
+            GenericResponse genericResponse = grievanceForwardingService.closeGrievance(authentication, mobileGrievanceCloseForwardingDTO.getComplaint_id(), grievanceForwardingCloseDTO);
+            Map<String,Object> response = new LinkedHashMap<>();
+            if (genericResponse.isSuccess()) {
+
+                Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceCloseForwardingDTO.getComplaint_id());
+                Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+                Object allComplaintDetails = data.get("allComplaintDetails");
+
+                response.put("data", allComplaintDetails);
+                response.put("status", "success");
+                response.put("message", "The grievance has been sent for giving opinion successfully.");
+                return response;
+            } else {
+                response.put("status", "error");
+                response.put("message", "Error while sending for opinion.");
+                response.put("data", null);
+                return response;
+            }
+        }
+
+
+    }
+
+
 
     //================================================================================================================================================
 
@@ -419,5 +525,6 @@ public class MobileGrievanceForwardingService {
             return response;
         }
     }
+
 
 }
