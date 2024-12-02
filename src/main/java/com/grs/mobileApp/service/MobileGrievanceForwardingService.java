@@ -4,16 +4,15 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grs.api.model.UserInformation;
-import com.grs.api.model.request.FileDTO;
-import com.grs.api.model.request.ForwardToAnotherOfficeDTO;
-import com.grs.api.model.request.GrievanceForwardingNoteDTO;
-import com.grs.api.model.request.OpinionRequestDTO;
+import com.grs.api.model.request.*;
 import com.grs.api.model.response.GenericResponse;
 import com.grs.api.model.response.grievanceForwarding.GrievanceForwardingInvestigationDTO;
 import com.grs.core.domain.GrievanceCurrentStatus;
+import com.grs.core.domain.projapoti.Office;
 import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.core.service.GrievanceForwardingService;
 import com.grs.mobileApp.dto.*;
+import com.grs.utils.BanglaConverter;
 import com.grs.utils.FileUploadUtil;
 import com.grs.utils.Utility;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -420,4 +420,40 @@ public class MobileGrievanceForwardingService {
         }
     }
 
+
+    public Map<String, Object> giveGuidelinesToProvidingServices(Authentication authentication, Long complaintId, Long officeId, String note, String deadline, String guidanceReceiver) throws ParseException, IOException {
+
+
+        ObjectMapper obj = new ObjectMapper();
+        obj.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        MobileOfficerGuidServDTO guidanceReceiverObj = obj.readValue(guidanceReceiver, MobileOfficerGuidServDTO.class);
+
+
+        Office office = officeRepo.findOfficeById(officeId);
+        GrievanceForwardingGuidanceForServiceDTO grievanceForwardingGuidanceForServiceDTO = GrievanceForwardingGuidanceForServiceDTO.builder()
+                .grievanceId(complaintId)
+                .guidanceReceiver("post_" + office.getOfficeMinistry().getId() + "_" + officeId + "_" + guidanceReceiverObj.getOffice_unit_organogram_id())
+                .note(note + " সেবা প্রদানের শেষ তারিখ: " + BanglaConverter.getDateBanglaFromEnglish(deadline))
+                .build();
+
+        GenericResponse genericResponse = grievanceForwardingService.giveGuidanceToGiveService(authentication, grievanceForwardingGuidanceForServiceDTO);
+
+        Map<String, Object> response = new HashMap<>();
+        if (genericResponse.isSuccess()) {
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(complaintId);
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
+            response.put("status", "success");
+            response.put("message", "Grievance has been successfully forwarded for further action.");
+            return response;
+        } else {
+            response.put("status", "error");
+            response.put("data", null);
+            response.put("message", "Failed to forward the grievance for further action. Please try again or contact support.");
+            return response;
+        }
+    }
 }

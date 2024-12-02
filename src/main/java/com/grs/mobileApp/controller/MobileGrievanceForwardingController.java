@@ -3,6 +3,7 @@ package com.grs.mobileApp.controller;
 import com.grs.api.model.request.FileDTO;
 import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileInvestigationForwardingDTO;
+import com.grs.mobileApp.dto.MobileOfficerGuidServDTO;
 import com.grs.mobileApp.dto.MobileOpinionForwardingDTO;
 import com.grs.mobileApp.service.MobileGrievanceForwardingService;
 import com.grs.utils.BanglaConverter;
@@ -13,6 +14,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.security.Principal;
 import java.text.ParseException;
 import java.util.List;
@@ -171,5 +173,25 @@ public class MobileGrievanceForwardingController {
                 service_id,
                 files,
                 fileNameByUser);
+    }
+
+
+    @RequestMapping(value = "/api/administrative-grievance/give-guidelines-to-providing-services", method = RequestMethod.POST)
+    public Map<String, Object> giveGuidelinesToProvidingServices(
+            Authentication authentication,
+            @RequestParam(value = "complaint_id") Long complaint_id,
+            @RequestParam(value = "office_id", required = false) Long office_id,
+            @RequestParam(value = "note") String note,
+            @RequestParam(value = "deadline") String deadline,
+            @RequestParam(value = "guidance_receiver") String guidance_receiver
+
+    ) throws ParseException, IOException {
+        return mobileGrievanceForwardingService.giveGuidelinesToProvidingServices(
+                authentication,
+                complaint_id,
+                office_id,
+                note,
+                deadline,
+                guidance_receiver);
     }
 }
