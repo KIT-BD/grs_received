@@ -547,7 +547,6 @@ public class MobileGrievanceForwardingService {
         grievanceForwardingService.requestEvidences(materialHearingDTO, authentication);
         MobileGrievanceResponseDTO grievance = mobileGrievanceService.findGrievancesById(complaintId);
 
-
         if (grievance == null) {
             Map<String, Object> response = new HashMap<>();
             response.put("data", null);
@@ -656,6 +655,30 @@ public class MobileGrievanceForwardingService {
             response.put("status", "error");
             response.put("data", null);
             response.put("message", "Failed to forward the grievance for further action. Please try again or contact support.");
+            return response;
+        }
+    }
+
+    public Map<String, Object> askForPermission(Authentication authentication, Long complaintId, String note) throws ParseException {
+        GenericResponse genericResponse = grievanceForwardingService.askPermission(authentication,
+                GrievanceForwardingNoteDTO.builder()
+                        .grievanceId(complaintId)
+                        .note(note)
+                        .build()
+        );
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        if (genericResponse.isSuccess()) {
+            MobileGrievanceResponseDTO grievance = mobileGrievanceService.findGrievancesById(complaintId);
+            response.put("status", "success");
+            response.put("data", mobileGrievanceService.getGrievanceDetails(grievance));
+            response.put("message", "The grievance has been successfully sent for requesting permission.");
+            return response;
+
+        } else {
+            response.put("status", "error");
+            response.put("data", null);
+            response.put("message", "Failed to sent the grievance for requesting permission. Please try again or contact support.");
             return response;
         }
     }
