@@ -112,4 +112,15 @@ public class MobileGrievanceForwardingController {
                 files,
                 fileNameByUser);
     }
+
+    @RequestMapping(value = "/api/administrative-grievance/request-document", method = RequestMethod.POST)
+    public Map<String,Object> documentRequest(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam(required = false) Long office_id,
+            @RequestParam(required = false) Long to_employee_record_id,
+            @RequestParam String note
+            ) throws ParseException {
+        return mobileGrievanceForwardingService.requestDocument(authentication, complaint_id, note);
+    }
 }
