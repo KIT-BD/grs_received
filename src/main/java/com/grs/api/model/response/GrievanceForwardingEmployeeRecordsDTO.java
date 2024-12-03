@@ -44,4 +44,11 @@ public class GrievanceForwardingEmployeeRecordsDTO {
     private Boolean isCommitteeMember;
 
     private RoleType assignedRole;
+
+    // Fields added for mobile app
+    private Long id;
+    private Long to_office_unit_organogram_id;
+    private Long from_office_unit_organogram_id;
+    private Long to_employee_record_id;
+    private Long from_employee_record_id;
 }

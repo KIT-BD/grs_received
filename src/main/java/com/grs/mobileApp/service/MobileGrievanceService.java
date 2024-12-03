@@ -257,24 +257,8 @@ public class MobileGrievanceService {
         //return grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
     }
 
-    public Map<String,Object> getComplaintDetailsById(Long complaintId) throws ParseException {
-
-        MobileGrievanceResponseDTO grievance = findGrievancesById(complaintId);
-
-        if (grievance == null){
-            Map<String, Object> response = new HashMap<>();
-            response.put("data", null);
-            response.put("status", "success");
-
-            return response;
-        }
-
-        Complainant complainant = complainantService.findOne(grievance.getComplainant_id());
-        // Filter the occupations list to find the matching occupation ID
-
-        SimpleDateFormat isoDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
-
-        Map<String, Object> grievanceDetails = new HashMap<>();
+    public Map<String,Object> getGrievanceDetails(MobileGrievanceResponseDTO grievance) throws ParseException {
+        Map<String, Object> grievanceDetails = new LinkedHashMap<>();
         grievanceDetails.put("id", grievance.getId());
         grievanceDetails.put("submission_date", grievance.getSubmission_date());
         grievanceDetails.put("submission_date_bn", BanglaConverter.getDateBanglaFromEnglish(grievance.getSubmission_date()));
@@ -335,6 +319,27 @@ public class MobileGrievanceService {
         grievanceDetails.put("is_evidence_provide", grievance.getIs_evidence_provide());
         grievanceDetails.put("is_see_hearing_date", grievance.getIs_see_hearing_date());
 
+        return grievanceDetails;
+    }
+
+    public Map<String,Object> getComplaintDetailsById(Long complaintId) throws ParseException {
+
+        MobileGrievanceResponseDTO grievance = findGrievancesById(complaintId);
+
+        if (grievance == null){
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", null);
+            response.put("status", "success");
+
+            return response;
+        }
+
+        Complainant complainant = complainantService.findOne(grievance.getComplainant_id());
+        // Filter the occupations list to find the matching occupation ID
+
+        SimpleDateFormat isoDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
+
+        Map<String,Object> grievanceDetails = this.getGrievanceDetails(grievance);
 
         Map<String, Object> complainantInfo = new HashMap<>();
         complainantInfo.put("id", complainant.getId());

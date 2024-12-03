@@ -262,4 +262,16 @@ public class MobileGrievanceForwardingController {
                 deadline,
                 guidance_receiver);
     }
+    @RequestMapping(value = "/api/administrative-grievance/ask-for-permission", method = RequestMethod.POST)
+        public Map<String, Object> askForPermission(
+                Authentication authentication,
+                @RequestParam(value = "complaint_id") Long complaint_id,
+                @RequestParam(value = "note") String note
+
+        ) throws ParseException {
+            return mobileGrievanceForwardingService.askForPermission(
+                    authentication,
+                    complaint_id,
+                    note);
+        }
 }
