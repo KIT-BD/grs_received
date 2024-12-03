@@ -34,6 +34,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.security.Principal;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static com.grs.utils.BanglaConverter.*;
@@ -681,5 +683,66 @@ public class MobileGrievanceForwardingService {
             response.put("message", "Failed to sent the grievance for requesting permission. Please try again or contact support.");
             return response;
         }
+    }
+
+    public Map<String, Object> hearingNotice(Authentication authentication, Long complaintId, String hearingDate, String hearingTime, String note) throws ParseException {
+        // Parse the date (e.g., "2024-12-31")
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date parsedDate = dateFormat.parse(hearingDate);
+        // Extract the time components from hearingTime
+        // Assuming hearingTime contains "14:11:59" somewhere in the string
+        String timeString = extractTimeFromHearingTime(hearingTime);
+        if (timeString == null) {
+            throw new ParseException("Unable to extract time from hearingTime", 0);
+        }
+        // Parse the time (e.g., "14:11:59")
+        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss");
+        Date parsedTime = timeFormat.parse(timeString);
+        // Combine date and time
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(parsedDate);
+        Calendar timeCalendar = Calendar.getInstance();
+        timeCalendar.setTime(parsedTime);
+
+        // Set time components from parsedTime into calendar
+        calendar.set(Calendar.HOUR_OF_DAY, timeCalendar.get(Calendar.HOUR_OF_DAY));
+        calendar.set(Calendar.MINUTE, timeCalendar.get(Calendar.MINUTE));
+        calendar.set(Calendar.SECOND, timeCalendar.get(Calendar.SECOND));
+        calendar.set(Calendar.MILLISECOND, 0);
+        Date finalDateTime = calendar.getTime();
+        // Proceed with your logic using finalDateTime
+        InvestigationMaterialHearingDTO investigationMaterialHearingDTO = InvestigationMaterialHearingDTO.builder()
+                .grievanceId(complaintId)
+                .note(note)
+                .persons(Collections.singletonList("COMPLAINANT"))
+                .hearingDate(finalDateTime)
+                .build();
+
+        GenericResponse genericResponse = grievanceForwardingService.askForHearing(investigationMaterialHearingDTO, authentication);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        if (genericResponse.isSuccess()) {
+            MobileGrievanceResponseDTO grievance = mobileGrievanceService.findGrievancesById(complaintId);
+            response.put("status", "success");
+            response.put("data", mobileGrievanceService.getGrievanceDetails(grievance));
+            response.put("message", "The grievance has been successfully sent for hearing notice.");
+            return response;
+
+        } else {
+            response.put("status", "error");
+            response.put("data", null);
+            response.put("message", "Failed to sent the grievance for hearing notice. Please try again or contact support.");
+            return response;
+        }
+    }
+
+    private String extractTimeFromHearingTime(String hearingTime) {
+        // Use regex to find HH:mm:ss in hearingTime
+        Pattern timePattern = Pattern.compile("\\b(\\d{2}:\\d{2}:\\d{2})\\b");
+        Matcher matcher = timePattern.matcher(hearingTime);
+        if (matcher.find()) {
+            return matcher.group(1); // e.g., "14:11:59"
+        }
+        return null;
     }
 }
