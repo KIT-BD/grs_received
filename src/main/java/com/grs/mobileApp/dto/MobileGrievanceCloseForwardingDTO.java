@@ -19,8 +19,6 @@ public class MobileGrievanceCloseForwardingDTO {
 
     private long complaint_id;
     private long office_id;
-    private long username;
-    private long to_employee_record_id;
     private String action;
     private String closingNoteGRODecision;
     private String closingNoteMainReason;

@@ -1,11 +1,7 @@
 package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.FileDTO;
-import com.grs.mobileApp.dto.MobileGrievanceCloseForwardingDTO;
-import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
-import com.grs.mobileApp.dto.MobileInvestigationForwardingDTO;
-import com.grs.mobileApp.dto.MobileOfficerGuidServDTO;
-import com.grs.mobileApp.dto.MobileOpinionForwardingDTO;
+import com.grs.mobileApp.dto.*;
 import com.grs.mobileApp.service.MobileGrievanceForwardingService;
 import com.grs.utils.BanglaConverter;
 import com.grs.utils.FileUploadUtil;
@@ -124,7 +120,6 @@ public class MobileGrievanceForwardingController {
     public Map<String, Object> closeGrievance(
             @RequestParam Long complaint_id,
             @RequestParam Long office_id,
-            @RequestParam Long to_employee_record_id,
             @RequestParam String action,
             @RequestParam String closingNoteGRODecision,
             @RequestParam String closingNoteMainReason,
@@ -145,7 +140,6 @@ public class MobileGrievanceForwardingController {
         MobileGrievanceCloseForwardingDTO mobileGrievanceCloseForwardingDTO = MobileGrievanceCloseForwardingDTO.builder()
                 .complaint_id(complaint_id)
                 .office_id(office_id)
-                .to_employee_record_id(to_employee_record_id)
                 .departmentalActionReason(departmentalActionReason)
                 .closingNoteGRODecision(closingNoteGRODecision)
                 .closingNoteSuggestion(closingNoteSuggestion)
@@ -159,6 +153,31 @@ public class MobileGrievanceForwardingController {
 
     }
 
+    @RequestMapping(value = "/api/administrative-grievance/provide-investigation-report", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String,Object> provideInvestigationReport(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam String note,
+            @RequestParam(value = "files[]") List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser") String fileNameByUser,
+            Principal principal
+
+    ) throws ParseException {
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
+
+        MobileInvestigationReportForwardingDTO mobileInvestigationReportForwardingDTO = MobileInvestigationReportForwardingDTO.builder()
+                .complaint_id(complaint_id)
+                .file(convertedFiles)
+                .note(note)
+                .build();
+
+        return mobileGrievanceForwardingService.provideInvestigationReport(mobileInvestigationReportForwardingDTO,authentication);
+
+
+    }
 
     //================================================================================================================================================
 
