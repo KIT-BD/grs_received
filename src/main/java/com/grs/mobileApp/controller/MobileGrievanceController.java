@@ -1,6 +1,7 @@
 package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
+import com.grs.api.model.response.EmployeeRecordDTO;
 import com.grs.api.model.response.GenericResponse;
 import com.grs.api.model.response.dashboard.latest.GRSStatisticDTO;
 import com.grs.api.model.response.file.FileDerivedDTO;
@@ -472,33 +473,35 @@ public class MobileGrievanceController {
     @GetMapping("/api/administrative-grievance/departmental-action-officers")
     public Map<String,Object> getMovementForComplainant(
             Authentication authentication,
-            @RequestParam("complaint_id") Long id,
-            @RequestParam("action") String action
+            @RequestParam(value = "complaint_id") Long complaint_id,
+            @RequestParam(value = "action", required = false) String action
     ) throws ParseException {
-        if (id == null){
+        if (complaint_id == null){
             Map<String, Object> response = new HashMap<>();
             response.put("data", "Complaint could not be found");
             response.put("status", "error");
 
             return response;
         }
-        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.getAllComplaintMovementHistoryByGrievance(id, authentication);
+        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.getAllComplaintMovementHistoryByGrievance(complaint_id, authentication);
 
-        List<GrievanceForwardingEmployeeRecordsDTO> actionBasedFiltering = grievanceList.stream().filter(item -> Objects.equals(item.getAction(), action)).collect(Collectors.toList());
+        if (!(action == null || action.isEmpty())){
+            grievanceList = grievanceList.stream().filter(item -> Objects.equals(item.getAction(), action)).collect(Collectors.toList());
+        }
 
         List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
 
-        for (GrievanceForwardingEmployeeRecordsDTO g : actionBasedFiltering){
+        for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
             forwardingDTOList.add(
                     MobileGrievanceForwardingDTO.builder()
-                            .id(null)
-                            .complaint_id(Math.toIntExact(id))
+                            .id(g.getId())
+                            .complaint_id(Math.toIntExact(complaint_id))
                             .note(g.getComment())
                             .action(g.getAction())
-                            .to_employee_record_id(null)
-                            .from_employee_record_id(null)
-                            .to_office_unit_organogram_id(null)
-                            .from_office_unit_organogram_id(null)
+                            .to_employee_record_id(Math.toIntExact(g.getTo_employee_record_id()))
+                            .from_employee_record_id(Math.toIntExact(g.getFrom_employee_record_id()))
+                            .to_office_unit_organogram_id(Math.toIntExact(g.getTo_office_unit_organogram_id()))
+                            .from_office_unit_organogram_id(Math.toIntExact(g.getFrom_office_unit_organogram_id()))
                             .to_office_id(null)
                             .from_office_id(null)
                             .to_office_unit_id(null)
