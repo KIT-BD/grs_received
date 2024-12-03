@@ -360,6 +360,39 @@ public class MobileGrievanceForwardingService {
     }
 
 
+    public Map<String, Object> provideInvestigationReport(MobileInvestigationReportForwardingDTO mobileInvestigationReportForwardingDTO, Authentication authentication) throws ParseException {
+
+        GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
+                .grievanceId(mobileInvestigationReportForwardingDTO.getComplaint_id())
+                .note(mobileInvestigationReportForwardingDTO.getNote())
+                .files(mobileInvestigationReportForwardingDTO.getFile())
+                .referredFiles(new ArrayList<>())
+                .build();
+
+
+        GenericResponse genericResponse = grievanceForwardingService.investigationReportSubmission(grievanceForwardingNoteDTO, authentication);
+        Map<String, Object> response = new HashMap<>();
+
+        if (genericResponse.isSuccess()) {
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileInvestigationReportForwardingDTO.getComplaint_id());
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
+            response.put("status", "success");
+            response.put("message", "The investigation report provided successfully.");
+            return response;
+        } else {
+            response.put("status", "error");
+            response.put("message", "investigation report forwarding error while forwarding to another office.");
+            return response;
+        }
+
+
+    }
+
+
 
     //================================================================================================================================================
 

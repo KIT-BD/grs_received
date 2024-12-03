@@ -489,7 +489,7 @@ public class MobileGrievanceController {
             grievanceList = grievanceList.stream().filter(item -> Objects.equals(item.getAction(), action)).collect(Collectors.toList());
         }
 
-        List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
+        List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();//
 
         for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
             forwardingDTOList.add(
@@ -602,4 +602,6 @@ public class MobileGrievanceController {
 
         return response;
     }
+
+
 }
