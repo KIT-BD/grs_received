@@ -154,7 +154,7 @@ public class MobileGrievanceForwardingController {
     }
 
     @RequestMapping(value = "/api/administrative-grievance/provide-investigation-report", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Map<String,Object> provideInvestigationReport(
+    public Map<String,Object> giveInvestigationReport(
             Authentication authentication,
             @RequestParam Long complaint_id,
             @RequestParam String note,
@@ -175,6 +175,33 @@ public class MobileGrievanceForwardingController {
                 .build();
 
         return mobileGrievanceForwardingService.provideInvestigationReport(mobileInvestigationReportForwardingDTO,authentication);
+
+
+    }
+
+
+    @RequestMapping(value = "/api/administrative-grievance/take-hearing", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String,Object> takeHearingAgainstGrievance(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam String note,
+            @RequestParam(value = "files[]") List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser") String fileNameByUser,
+            Principal principal
+
+    ) throws ParseException {
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
+
+        MobileTakeHearingForwardingDTO mobileTakeHearingForwardingDTO = MobileTakeHearingForwardingDTO.builder()
+                .grievanceId(complaint_id)
+                .files(convertedFiles)
+                .note(note)
+                .build();
+
+        return mobileGrievanceForwardingService.hearingTaking(mobileTakeHearingForwardingDTO,authentication);
 
 
     }
