@@ -15,8 +15,6 @@ import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileGrievanceResponseDTO;
 import com.grs.mobileApp.dto.MobileOfficerDTO;
 import com.grs.core.domain.projapoti.Office;
-import com.grs.core.repo.projapoti.OfficeRepo;
-import com.grs.core.service.GrievanceForwardingService;
 import com.grs.mobileApp.dto.*;
 import com.grs.utils.BanglaConverter;
 import com.grs.utils.FileUploadUtil;
@@ -391,6 +389,42 @@ public class MobileGrievanceForwardingService {
     }
 
 
+    public Map<String, Object> hearingTaking(MobileTakeHearingForwardingDTO mobileTakeHearingForwardingDTO, Authentication authentication) throws ParseException {
+
+
+        GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
+                .grievanceId(mobileTakeHearingForwardingDTO.getGrievanceId())
+                .note(mobileTakeHearingForwardingDTO.getNote())
+                .files(mobileTakeHearingForwardingDTO.getFiles())
+                .referredFiles(null)
+                .currentStatus(null)
+                .build();
+
+        GenericResponse genericResponse = grievanceForwardingService.takeHearing(grievanceForwardingNoteDTO, authentication);
+        Map<String, Object> response = new HashMap<>();
+
+        System.out.println("genericresponse "+genericResponse);
+
+        if (genericResponse.isSuccess()) {
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileTakeHearingForwardingDTO.getGrievanceId());
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
+            response.put("status", "success");
+            response.put("message", "Hearing taken successfully.");
+            return response;
+        } else {
+            response.put("status", "error");
+            response.put("message", "Failed to take hearing");
+            return response;
+        }
+
+
+    }
+
+
 
     //================================================================================================================================================
 
@@ -715,4 +749,6 @@ public class MobileGrievanceForwardingService {
             return response;
         }
     }
+
+
 }
