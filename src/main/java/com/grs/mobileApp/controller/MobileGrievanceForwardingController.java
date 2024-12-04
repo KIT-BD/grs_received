@@ -301,4 +301,15 @@ public class MobileGrievanceForwardingController {
                     complaint_id,
                     note);
         }
+
+    @RequestMapping(value = "/api/administrative-grievance/hearing-notice", method = RequestMethod.POST)
+    public Map<String, Object> hearingNotice(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam String hearing_date,
+            @RequestParam String hearing_time,
+            @RequestParam String note
+    ) throws ParseException {
+        return mobileGrievanceForwardingService.hearingNotice(authentication, complaint_id, hearing_date, hearing_time, note);
+    }
 }
