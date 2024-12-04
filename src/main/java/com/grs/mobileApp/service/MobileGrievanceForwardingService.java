@@ -15,8 +15,6 @@ import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileGrievanceResponseDTO;
 import com.grs.mobileApp.dto.MobileOfficerDTO;
 import com.grs.core.domain.projapoti.Office;
-import com.grs.core.repo.projapoti.OfficeRepo;
-import com.grs.core.service.GrievanceForwardingService;
 import com.grs.mobileApp.dto.*;
 import com.grs.utils.BanglaConverter;
 import com.grs.utils.FileUploadUtil;
@@ -54,7 +52,6 @@ public class MobileGrievanceForwardingService {
 
     @Autowired
     private MobileGrievanceService mobileGrievanceService;
-
 
 
     public Map<String, Object> sendForOpinion(
@@ -174,7 +171,7 @@ public class MobileGrievanceForwardingService {
         Long postNodeMinistryId = officeRepo.findOfficeById(primary.get().getOffice_id()).getOfficeMinistry().getId();
 
 
-        String head="post_" + postNodeMinistryId + "_" + primary.get().getOffice_id() + "_" + primary.get().getOffice_unit_organogram_id();
+        String head = "post_" + postNodeMinistryId + "_" + primary.get().getOffice_id() + "_" + primary.get().getOffice_unit_organogram_id();
 
         List<String> committee = new ArrayList<>();
         for (MobileOfficerInvstDTO m : comitteeList) {
@@ -191,7 +188,7 @@ public class MobileGrievanceForwardingService {
                 .build();
 
 
-        GenericResponse genericResponse= grievanceForwardingService.initiateInvestigation(grievanceForwardingInvestigationDTO, authentication);
+        GenericResponse genericResponse = grievanceForwardingService.initiateInvestigation(grievanceForwardingInvestigationDTO, authentication);
 
         Map<String, Object> response = new HashMap<>();
 
@@ -214,10 +211,8 @@ public class MobileGrievanceForwardingService {
     }
 
 
-
-
-    public  Map<String, Object> giveOpinion(MobileOpinionForwardingDTO mobileOpinionForWardingDTO,
-                                            Authentication authentication) throws ParseException {
+    public Map<String, Object> giveOpinion(MobileOpinionForwardingDTO mobileOpinionForWardingDTO,
+                                           Authentication authentication) throws ParseException {
 
         OpinionRequestDTO opinionRequestDTO = OpinionRequestDTO.builder()
                 .grievanceId(mobileOpinionForWardingDTO.getComplaint_id())
@@ -253,12 +248,12 @@ public class MobileGrievanceForwardingService {
 
     public Map<String, Object> closeGievance(MobileGrievanceCloseForwardingDTO mobileGrievanceCloseForwardingDTO, Authentication authentication) throws ParseException {
 
-        if(GrievanceCurrentStatus.valueOf(mobileGrievanceCloseForwardingDTO.getAction()) == GrievanceCurrentStatus.CLOSED_ACCUSATION_PROVED) {
+        if (GrievanceCurrentStatus.valueOf(mobileGrievanceCloseForwardingDTO.getAction()) == GrievanceCurrentStatus.CLOSED_ACCUSATION_PROVED) {
 
-            if(!mobileGrievanceCloseForwardingDTO.getDeptAction().isEmpty()){
+            if (!mobileGrievanceCloseForwardingDTO.getDeptAction().isEmpty()) {
                 List<String> employeeList = new ArrayList<>();
 
-                for(Long i : mobileGrievanceCloseForwardingDTO.getDeptAction()){
+                for (Long i : mobileGrievanceCloseForwardingDTO.getDeptAction()) {
                     employeeList.add(i + "_" + "office_unit_organogram_id_for_later" + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
                 }
 
@@ -275,7 +270,7 @@ public class MobileGrievanceForwardingService {
                         .build();
 
                 GenericResponse genericResponse = grievanceForwardingService.closeGrievance(authentication, mobileGrievanceCloseForwardingDTO.getComplaint_id(), grievanceForwardingCloseDTO);
-                Map<String,Object> response = new LinkedHashMap<>();
+                Map<String, Object> response = new LinkedHashMap<>();
                 if (genericResponse.isSuccess()) {
 
                     Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceCloseForwardingDTO.getComplaint_id());
@@ -292,8 +287,7 @@ public class MobileGrievanceForwardingService {
                     response.put("data", null);
                     return response;
                 }
-            }
-            else {
+            } else {
                 GrievanceForwardingCloseDTO grievanceForwardingCloseDTO = GrievanceForwardingCloseDTO.builder()
                         .groDecision(mobileGrievanceCloseForwardingDTO.getClosingNoteGRODecision())
                         .mainReason(mobileGrievanceCloseForwardingDTO.getClosingNoteMainReason())
@@ -305,7 +299,7 @@ public class MobileGrievanceForwardingService {
                         .build();
 
                 GenericResponse genericResponse = grievanceForwardingService.closeGrievance(authentication, mobileGrievanceCloseForwardingDTO.getComplaint_id(), grievanceForwardingCloseDTO);
-                Map<String,Object> response = new LinkedHashMap<>();
+                Map<String, Object> response = new LinkedHashMap<>();
                 if (genericResponse.isSuccess()) {
 
                     Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceCloseForwardingDTO.getComplaint_id());
@@ -337,7 +331,7 @@ public class MobileGrievanceForwardingService {
                     .build();
 
             GenericResponse genericResponse = grievanceForwardingService.closeGrievance(authentication, mobileGrievanceCloseForwardingDTO.getComplaint_id(), grievanceForwardingCloseDTO);
-            Map<String,Object> response = new LinkedHashMap<>();
+            Map<String, Object> response = new LinkedHashMap<>();
             if (genericResponse.isSuccess()) {
 
                 Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileGrievanceCloseForwardingDTO.getComplaint_id());
@@ -358,8 +352,6 @@ public class MobileGrievanceForwardingService {
 
 
     }
-
-
     public Map<String, Object> provideInvestigationReport(MobileInvestigationReportForwardingDTO mobileInvestigationReportForwardingDTO, Authentication authentication) throws ParseException {
 
         GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
@@ -393,10 +385,40 @@ public class MobileGrievanceForwardingService {
     }
 
 
+    public Map<String, Object> hearingTaking(MobileTakeHearingForwardingDTO mobileTakeHearingForwardingDTO, Authentication authentication) throws ParseException {
 
-    //================================================================================================================================================
+
+        GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
+                .grievanceId(mobileTakeHearingForwardingDTO.getGrievanceId())
+                .note(mobileTakeHearingForwardingDTO.getNote())
+                .files(mobileTakeHearingForwardingDTO.getFiles())
+                .referredFiles(null)
+                .currentStatus(null)
+                .build();
+
+        GenericResponse genericResponse = grievanceForwardingService.takeHearing(grievanceForwardingNoteDTO, authentication);
+        Map<String, Object> response = new HashMap<>();
+
+        System.out.println("genericresponse "+genericResponse);
+
+        if (genericResponse.isSuccess()) {
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(mobileTakeHearingForwardingDTO.getGrievanceId());
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
+            response.put("status", "success");
+            response.put("message", "Hearing taken successfully.");
+            return response;
+        } else {
+            response.put("status", "error");
+            response.put("message", "Failed to take hearing");
+            return response;
+        }
 
 
+    }
     public Map<String, Object> forwardToAnotherOffice(Authentication authentication,
                                                       Long complaint_id,
                                                       Long office_id,
@@ -572,6 +594,7 @@ public class MobileGrievanceForwardingService {
             return response;
         }
     }
+
     public Map<String, Object> requestDocument(Authentication authentication, Long complaintId, String note) throws ParseException {
         InvestigationMaterialHearingDTO materialHearingDTO = InvestigationMaterialHearingDTO.builder()
                 .grievanceId(complaintId)
@@ -718,6 +741,44 @@ public class MobileGrievanceForwardingService {
         }
     }
 
+    public Map<String, Object> provideEvidence(
+            Long complaintId,
+            String note,
+            List<MultipartFile> files,
+            String fileNameByUser,
+            Authentication authentication,
+            Principal principal
+    ) throws ParseException {
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
+        GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
+                .grievanceId(complaintId)
+                .note(note)
+                .files(convertedFiles)
+                .referredFiles(new ArrayList<>())
+                .build();
+        GenericResponse genericResponse = grievanceForwardingService.addFileTransitToHearing(grievanceForwardingNoteDTO, authentication);
+
+        Map<String, Object> response = new HashMap<>();
+        if (genericResponse.isSuccess()) {
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(complaintId);
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
+            response.put("status", "success");
+            response.put("message", "Additional evidence has been successfully provided.");
+            return response;
+        } else {
+            response.put("status", "error");
+            response.put("data", null);
+            response.put("message", "Failed to provide additional evidence for the complaint.");
+            return response;
+        }
+    }
     public Map<String, Object> hearingNotice(Authentication authentication, Long complaintId, String hearingDate, String hearingTime, String note) throws ParseException {
         // Parse the date (e.g., "2024-12-31")
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
