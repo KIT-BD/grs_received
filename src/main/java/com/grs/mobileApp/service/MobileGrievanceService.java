@@ -41,6 +41,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -698,6 +700,10 @@ public class MobileGrievanceService {
 
 
     public MobileGrievanceResponseDTO mapGrievanceDTOToMobileResponse(GrievanceDTO grievanceDTO) {
+
+//        String regex = "\\(([^)]+)\\)";
+//        Pattern pattern = Pattern.compile(regex);
+
         MobileGrievanceResponseDTO mobileGrievanceResponseDTO = MobileGrievanceResponseDTO
                 .builder()
                 .id(Long.parseLong(grievanceDTO.getId()))
@@ -717,8 +723,8 @@ public class MobileGrievanceService {
                 .submission_date_bn(grievanceDTO.getSubmissionDateBangla())
                 .complaint_type(grievanceDTO.getTypeEnglish())
                 .complaint_type_bn(grievanceDTO.getTypeBangla())
-                .current_status(grievanceDTO.getStatusEnglish())
-                .current_status_bn(grievanceDTO.getStatusBangla())
+                .current_status(extractOutofParenthesis(grievanceDTO.getStatusEnglish()))
+                .current_status_bn(extractOutofParenthesis(grievanceDTO.getStatusBangla()))
                 .subject(grievanceDTO.getSubject())
                 .details(null)
                 .grievance_from(null)
@@ -769,7 +775,7 @@ public class MobileGrievanceService {
                                                 .format(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a").parse(date));
                                     } catch (ParseException e) {
                                         e.printStackTrace();
-                                        return null; // Fallback in case of error
+                                        return null;
                                     }
                                 })
                                 .orElse(null)
@@ -782,7 +788,7 @@ public class MobileGrievanceService {
                                                 .format(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a").parse(date));
                                     } catch (ParseException e) {
                                         e.printStackTrace();
-                                        return null; // Fallback in case of error
+                                        return null;
                                     }
                                 })
                                 .orElse(null))
@@ -797,6 +803,19 @@ public class MobileGrievanceService {
                 .geo_upazila_id(null)
                 .build();
         return mobileGrievanceResponseDTO;
+    }
+
+    private String extractOutofParenthesis(String status) {
+        if (status == null || !status.contains("(") || !status.contains(")")) {
+            return null;
+        }
+
+        try {
+            String[] firstGone = status.split("\\(");
+            return firstGone[1].split("\\)")[0];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     List<MobileComplainAttachmentInfoDTO> getComplainAttachments(Long complainId) {
