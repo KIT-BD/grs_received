@@ -8,6 +8,7 @@ import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileInvestigationForwardingDTO;
 import com.grs.mobileApp.dto.MobileOfficerGuidServDTO;
 import com.grs.mobileApp.dto.MobileOpinionForwardingDTO;
+import com.grs.mobileApp.dto.*;
 import com.grs.mobileApp.service.MobileGrievanceForwardingService;
 import com.grs.utils.BanglaConverter;
 import com.grs.utils.FileUploadUtil;
@@ -16,7 +17,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import javax.validation.Valid;
 import java.io.IOException;
 import java.security.Principal;
@@ -65,8 +65,6 @@ public class MobileGrievanceForwardingController {
 
         return mobileGrievanceForwardingService.sendForOpinion(authentication, grievanceOpinionRequestDTO);
     }
-
-    //================================================================================================================================================
 
     @RequestMapping(value = "/api/administrative-grievance/investigation", method = RequestMethod.POST)
     public Map<String, Object> takingInvestigationStep(
@@ -127,7 +125,6 @@ public class MobileGrievanceForwardingController {
     public Map<String, Object> closeGrievance(
             @RequestParam Long complaint_id,
             @RequestParam Long office_id,
-            @RequestParam Long to_employee_record_id,
             @RequestParam String action,
             @RequestParam String closingNoteGRODecision,
             @RequestParam String closingNoteMainReason,
@@ -148,7 +145,6 @@ public class MobileGrievanceForwardingController {
         MobileGrievanceCloseForwardingDTO mobileGrievanceCloseForwardingDTO = MobileGrievanceCloseForwardingDTO.builder()
                 .complaint_id(complaint_id)
                 .office_id(office_id)
-                .to_employee_record_id(to_employee_record_id)
                 .departmentalActionReason(departmentalActionReason)
                 .closingNoteGRODecision(closingNoteGRODecision)
                 .closingNoteSuggestion(closingNoteSuggestion)
@@ -162,9 +158,58 @@ public class MobileGrievanceForwardingController {
 
     }
 
+    @RequestMapping(value = "/api/administrative-grievance/provide-investigation-report", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String,Object> giveInvestigationReport(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam String note,
+            @RequestParam(value = "files[]") List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser") String fileNameByUser,
+            Principal principal
 
-    //================================================================================================================================================
+    ) throws ParseException {
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
 
+        MobileInvestigationReportForwardingDTO mobileInvestigationReportForwardingDTO = MobileInvestigationReportForwardingDTO.builder()
+                .complaint_id(complaint_id)
+                .file(convertedFiles)
+                .note(note)
+                .build();
+
+        return mobileGrievanceForwardingService.provideInvestigationReport(mobileInvestigationReportForwardingDTO,authentication);
+
+
+    }
+
+
+    @RequestMapping(value = "/api/administrative-grievance/take-hearing", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Map<String,Object> takeHearingAgainstGrievance(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam String note,
+            @RequestParam(value = "files[]") List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser") String fileNameByUser,
+            Principal principal
+
+    ) throws ParseException {
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
+
+        MobileTakeHearingForwardingDTO mobileTakeHearingForwardingDTO = MobileTakeHearingForwardingDTO.builder()
+                .grievanceId(complaint_id)
+                .files(convertedFiles)
+                .note(note)
+                .build();
+
+        return mobileGrievanceForwardingService.hearingTaking(mobileTakeHearingForwardingDTO,authentication);
+
+
+    }
 
     @RequestMapping(value = "/api/administrative-grievance/send-to-another-office", method = RequestMethod.POST)
     public Map<String, Object> forwardToAnotherOffice(
@@ -259,6 +304,17 @@ public class MobileGrievanceForwardingController {
                 note);
     }
 
+    @RequestMapping(value = "/api/administrative-grievance/hearing-notice", method = RequestMethod.POST)
+    public Map<String, Object> hearingNotice(
+            Authentication authentication,
+            @RequestParam Long complaint_id,
+            @RequestParam String hearing_date,
+            @RequestParam String hearing_time,
+            @RequestParam String note
+    ) throws ParseException {
+        return mobileGrievanceForwardingService.hearingNotice(authentication, complaint_id, hearing_date, hearing_time, note);
+    }
+
     @RequestMapping(value = "/api/administrative-grievance/providing-material-for-investigation", method = RequestMethod.POST)
     public Map<String, Object> provideEvidenceMaterial(
             Authentication authentication,
@@ -267,7 +323,7 @@ public class MobileGrievanceForwardingController {
             @RequestParam String note,
             @RequestParam(required = false, value = "files[]") List<MultipartFile> files,
             @RequestParam(required = false) String fileNameByUser
-            ) throws ParseException {
+    ) throws ParseException {
         return mobileGrievanceForwardingService.provideEvidence(
                 complaint_id,
                 note,
