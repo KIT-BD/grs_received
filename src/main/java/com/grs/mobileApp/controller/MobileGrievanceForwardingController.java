@@ -1,6 +1,8 @@
 package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.FileDTO;
+import com.grs.api.model.request.GrievanceForwardingNoteDTO;
+import com.grs.api.model.response.GenericResponse;
 import com.grs.mobileApp.dto.MobileGrievanceCloseForwardingDTO;
 import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileInvestigationForwardingDTO;
@@ -15,6 +17,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.io.IOException;
 import java.security.Principal;
 import java.text.ParseException;
@@ -244,15 +247,34 @@ public class MobileGrievanceForwardingController {
                 guidance_receiver);
     }
     @RequestMapping(value = "/api/administrative-grievance/ask-for-permission", method = RequestMethod.POST)
-        public Map<String, Object> askForPermission(
-                Authentication authentication,
-                @RequestParam(value = "complaint_id") Long complaint_id,
-                @RequestParam(value = "note") String note
+    public Map<String, Object> askForPermission(
+            Authentication authentication,
+            @RequestParam(value = "complaint_id") Long complaint_id,
+            @RequestParam(value = "note") String note
 
-        ) throws ParseException {
-            return mobileGrievanceForwardingService.askForPermission(
-                    authentication,
-                    complaint_id,
-                    note);
-        }
+    ) throws ParseException {
+        return mobileGrievanceForwardingService.askForPermission(
+                authentication,
+                complaint_id,
+                note);
+    }
+
+    @RequestMapping(value = "/api/administrative-grievance/providing-material-for-investigation", method = RequestMethod.POST)
+    public Map<String, Object> provideEvidenceMaterial(
+            Authentication authentication,
+            Principal principal,
+            @RequestParam Long complaint_id,
+            @RequestParam String note,
+            @RequestParam(required = false, value = "files[]") List<MultipartFile> files,
+            @RequestParam(required = false) String fileNameByUser
+            ) throws ParseException {
+        return mobileGrievanceForwardingService.provideEvidence(
+                complaint_id,
+                note,
+                files,
+                fileNameByUser,
+                authentication,
+                principal
+        );
+    }
 }
