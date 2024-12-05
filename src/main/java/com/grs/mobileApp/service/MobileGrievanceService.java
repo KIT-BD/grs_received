@@ -41,6 +41,8 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -257,24 +259,8 @@ public class MobileGrievanceService {
         //return grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
     }
 
-    public Map<String,Object> getComplaintDetailsById(Long complaintId) throws ParseException {
-
-        MobileGrievanceResponseDTO grievance = findGrievancesById(complaintId);
-
-        if (grievance == null){
-            Map<String, Object> response = new HashMap<>();
-            response.put("data", null);
-            response.put("status", "success");
-
-            return response;
-        }
-
-        Complainant complainant = complainantService.findOne(grievance.getComplainant_id());
-        // Filter the occupations list to find the matching occupation ID
-
-        SimpleDateFormat isoDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
-
-        Map<String, Object> grievanceDetails = new HashMap<>();
+    public Map<String,Object> getGrievanceDetails(MobileGrievanceResponseDTO grievance) throws ParseException {
+        Map<String, Object> grievanceDetails = new LinkedHashMap<>();
         grievanceDetails.put("id", grievance.getId());
         grievanceDetails.put("submission_date", grievance.getSubmission_date());
         grievanceDetails.put("submission_date_bn", BanglaConverter.getDateBanglaFromEnglish(grievance.getSubmission_date()));
@@ -335,86 +321,110 @@ public class MobileGrievanceService {
         grievanceDetails.put("is_evidence_provide", grievance.getIs_evidence_provide());
         grievanceDetails.put("is_see_hearing_date", grievance.getIs_see_hearing_date());
 
+        return grievanceDetails;
+    }
+
+    public Map<String,Object> getComplaintDetailsById(Long complaintId) throws ParseException {
+
+        MobileGrievanceResponseDTO grievance = findGrievancesById(complaintId);
+
+        if (grievance == null){
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", null);
+            response.put("status", "success");
+
+            return response;
+        }
+
+        Complainant complainant = complainantService.findOne(grievance.getComplainant_id());
+        // Filter the occupations list to find the matching occupation ID
+
+        SimpleDateFormat isoDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
+
+        Map<String,Object> grievanceDetails = this.getGrievanceDetails(grievance);
 
         Map<String, Object> complainantInfo = new HashMap<>();
-        complainantInfo.put("id", complainant.getId());
-        complainantInfo.put("name", complainant.getName());
-        complainantInfo.put("identification_value", complainant.getIdentificationValue());
-        complainantInfo.put("identification_type", complainant.getIdentificationType().toString());  // Assuming `IdentificationType` is an enum
-        complainantInfo.put("mobile_number", complainant.getPhoneNumber());
-        complainantInfo.put("email", complainant.getEmail());
-        complainantInfo.put("birth_date", complainant.getBirthDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(complainant.getBirthDate()) : null);
-        complainantInfo.put("gender", complainant.getGender() != null ? complainant.getGender().toString() : null);  // Assuming `Gender` is an enum
-        complainantInfo.put("username", complainant.getUsername());
-        complainantInfo.put("nationality_id", complainant.getCountryInfo() != null ? complainant.getCountryInfo().getId() : null);
-        complainantInfo.put("present_address_street", complainant.getPresentAddressStreet());
-        complainantInfo.put("present_address_house", complainant.getPresentAddressHouse());
-        complainantInfo.put("present_address_division_id", complainant.getPresentAddressDivisionId());
-        complainantInfo.put("present_address_division_name_bng", complainant.getPresentAddressDivisionNameBng());
-        complainantInfo.put("present_address_division_name_eng", complainant.getPresentAddressDivisionNameEng());
-        complainantInfo.put("present_address_district_id", complainant.getPresentAddressDistrictId());
-        complainantInfo.put("present_address_district_name_bng", complainant.getPresentAddressDistrictNameBng());
-        complainantInfo.put("present_address_district_name_eng", complainant.getPresentAddressDistrictNameEng());
-        complainantInfo.put("present_address_type_id", complainant.getPresentAddressTypeId());
-        complainantInfo.put("present_address_type_name_bng", complainant.getPresentAddressTypeNameBng());
-        complainantInfo.put("present_address_type_name_eng", complainant.getPresentAddressTypeNameEng());
-        complainantInfo.put("present_address_type_value", complainant.getPresentAddressTypeValue() != null ? complainant.getPresentAddressTypeValue().toString() : null);
-        complainantInfo.put("present_address_postal_code", complainant.getPresentAddressPostalCode());
-        complainantInfo.put("permanent_address_street", complainant.getPermanentAddressStreet());
-        complainantInfo.put("permanent_address_house", complainant.getPermanentAddressHouse());
-        complainantInfo.put("permanent_address_division_id", complainant.getPermanentAddressDivisionId());
-        complainantInfo.put("permanent_address_division_name_bng", complainant.getPermanentAddressDivisionNameBng());
-        complainantInfo.put("permanent_address_division_name_eng", complainant.getPermanentAddressDivisionNameEng());
-        complainantInfo.put("permanent_address_district_id", complainant.getPermanentAddressDistrictId());
-        complainantInfo.put("permanent_address_district_name_bng", complainant.getPermanentAddressDistrictNameBng());
-        complainantInfo.put("permanent_address_district_name_eng", complainant.getPermanentAddressDistrictNameEng());
-        complainantInfo.put("permanent_address_type_id", complainant.getPermanentAddressTypeId());
-        complainantInfo.put("permanent_address_type_name_bng", complainant.getPermanentAddressTypeNameBng());
-        complainantInfo.put("permanent_address_type_name_eng", complainant.getPermanentAddressTypeNameEng());
-        complainantInfo.put("permanent_address_type_value", complainant.getPermanentAddressTypeValue() != null ? complainant.getPermanentAddressTypeValue().toString() : null);
-        complainantInfo.put("permanent_address_postal_code", complainant.getPermanentAddressPostalCode());
-        complainantInfo.put("foreign_permanent_address_line1", complainant.getForeignPermanentAddressLine1());
-        complainantInfo.put("foreign_permanent_address_line2", complainant.getForeignPermanentAddressLine2());
-        complainantInfo.put("foreign_permanent_address_city", complainant.getForeignPermanentAddressCity());
-        complainantInfo.put("foreign_permanent_address_state", complainant.getForeignPermanentAddressState());
-        complainantInfo.put("foreign_permanent_address_zipcode", complainant.getForeignPermanentAddressZipCode());
-        complainantInfo.put("foreign_present_address_line1", complainant.getForeignPresentAddressLine1());
-        complainantInfo.put("foreign_present_address_line2", complainant.getForeignPresentAddressLine2());
-        complainantInfo.put("foreign_present_address_city", complainant.getForeignPresentAddressCity());
-        complainantInfo.put("foreign_present_address_state", complainant.getForeignPresentAddressState());
-        complainantInfo.put("foreign_present_address_zipcode", complainant.getForeignPresentAddressZipCode());
-        complainantInfo.put("is_authenticated", complainant.isAuthenticated() ? 1 : 0);
-        complainantInfo.put("created_at", isoDateFormat.format(new Date(complainant.getCreatedAt().getTime())));
-        complainantInfo.put("updated_at", isoDateFormat.format(new Date(complainant.getUpdatedAt().getTime())));
-        complainantInfo.put("status", complainant.getStatus());
-        complainantInfo.put("present_address_country_id", complainant.getPresentAddressCountryId());
-        complainantInfo.put("permanent_address_country_id", complainant.getPermanentAddressCountryId());
-        complainantInfo.put("is_blacklisted", complainantService.isBlacklistedUserByComplainantId(complainant.getId()) ? 1 : 0);
-        List<Occupation> occupations = mobilePublicAPIService.getOccupationList();
-        String complainantOccupation = complainant.getOccupation();
-        String occupationId = occupations.stream()
-                .filter(o -> complainantOccupation != null
-                        && ((o.getOccupationBangla() != null && complainantOccupation.equals(o.getOccupationBangla()))
-                        || (o.getOccupationEnglish() != null && complainantOccupation.equals(o.getOccupationEnglish()))))
-                .map(o -> o.getId().toString())
-                .findFirst()
-                .orElse(null);
-        complainantInfo.put("occupation", occupationId);
 
-        List<Education> qualifications = mobilePublicAPIService.getQualificationList();
-        String complainantQualification = complainant.getEducation();
-        String qualificationId = qualifications.stream()
-                .filter(q -> complainantQualification != null
-                        && ((q.getEducationBangla() != null && complainantQualification.equals(q.getEducationBangla()))
-                        || (q.getEducationEnglish() != null && complainantQualification.equals(q.getEducationEnglish()))))
-                .map(q -> q.getId().toString())
-                .findFirst()
-                .orElse(null);
-        complainantInfo.put("educational_qualification", qualificationId);
-        complainantInfo.put("blacklister_office_id", null);
-        complainantInfo.put("blacklister_office_name", null);
-        complainantInfo.put("blacklist_reason", null);
-        complainantInfo.put("is_requested", null);
+        if (complainant != null) {
+            complainantInfo.put("id", complainant.getId());
+            complainantInfo.put("name", complainant.getName());
+            complainantInfo.put("identification_value", complainant.getIdentificationValue());
+            complainantInfo.put("identification_type", complainant.getIdentificationType().toString());  // Assuming `IdentificationType` is an enum
+            complainantInfo.put("mobile_number", complainant.getPhoneNumber());
+            complainantInfo.put("email", complainant.getEmail());
+            complainantInfo.put("birth_date", complainant.getBirthDate() != null ? new SimpleDateFormat("yyyy-MM-dd").format(complainant.getBirthDate()) : null);
+            complainantInfo.put("gender", complainant.getGender() != null ? complainant.getGender().toString() : null);  // Assuming `Gender` is an enum
+            complainantInfo.put("username", complainant.getUsername());
+            complainantInfo.put("nationality_id", complainant.getCountryInfo() != null ? complainant.getCountryInfo().getId() : null);
+            complainantInfo.put("present_address_street", complainant.getPresentAddressStreet());
+            complainantInfo.put("present_address_house", complainant.getPresentAddressHouse());
+            complainantInfo.put("present_address_division_id", complainant.getPresentAddressDivisionId());
+            complainantInfo.put("present_address_division_name_bng", complainant.getPresentAddressDivisionNameBng());
+            complainantInfo.put("present_address_division_name_eng", complainant.getPresentAddressDivisionNameEng());
+            complainantInfo.put("present_address_district_id", complainant.getPresentAddressDistrictId());
+            complainantInfo.put("present_address_district_name_bng", complainant.getPresentAddressDistrictNameBng());
+            complainantInfo.put("present_address_district_name_eng", complainant.getPresentAddressDistrictNameEng());
+            complainantInfo.put("present_address_type_id", complainant.getPresentAddressTypeId());
+            complainantInfo.put("present_address_type_name_bng", complainant.getPresentAddressTypeNameBng());
+            complainantInfo.put("present_address_type_name_eng", complainant.getPresentAddressTypeNameEng());
+            complainantInfo.put("present_address_type_value", complainant.getPresentAddressTypeValue() != null ? complainant.getPresentAddressTypeValue().toString() : null);
+            complainantInfo.put("present_address_postal_code", complainant.getPresentAddressPostalCode());
+            complainantInfo.put("permanent_address_street", complainant.getPermanentAddressStreet());
+            complainantInfo.put("permanent_address_house", complainant.getPermanentAddressHouse());
+            complainantInfo.put("permanent_address_division_id", complainant.getPermanentAddressDivisionId());
+            complainantInfo.put("permanent_address_division_name_bng", complainant.getPermanentAddressDivisionNameBng());
+            complainantInfo.put("permanent_address_division_name_eng", complainant.getPermanentAddressDivisionNameEng());
+            complainantInfo.put("permanent_address_district_id", complainant.getPermanentAddressDistrictId());
+            complainantInfo.put("permanent_address_district_name_bng", complainant.getPermanentAddressDistrictNameBng());
+            complainantInfo.put("permanent_address_district_name_eng", complainant.getPermanentAddressDistrictNameEng());
+            complainantInfo.put("permanent_address_type_id", complainant.getPermanentAddressTypeId());
+            complainantInfo.put("permanent_address_type_name_bng", complainant.getPermanentAddressTypeNameBng());
+            complainantInfo.put("permanent_address_type_name_eng", complainant.getPermanentAddressTypeNameEng());
+            complainantInfo.put("permanent_address_type_value", complainant.getPermanentAddressTypeValue() != null ? complainant.getPermanentAddressTypeValue().toString() : null);
+            complainantInfo.put("permanent_address_postal_code", complainant.getPermanentAddressPostalCode());
+            complainantInfo.put("foreign_permanent_address_line1", complainant.getForeignPermanentAddressLine1());
+            complainantInfo.put("foreign_permanent_address_line2", complainant.getForeignPermanentAddressLine2());
+            complainantInfo.put("foreign_permanent_address_city", complainant.getForeignPermanentAddressCity());
+            complainantInfo.put("foreign_permanent_address_state", complainant.getForeignPermanentAddressState());
+            complainantInfo.put("foreign_permanent_address_zipcode", complainant.getForeignPermanentAddressZipCode());
+            complainantInfo.put("foreign_present_address_line1", complainant.getForeignPresentAddressLine1());
+            complainantInfo.put("foreign_present_address_line2", complainant.getForeignPresentAddressLine2());
+            complainantInfo.put("foreign_present_address_city", complainant.getForeignPresentAddressCity());
+            complainantInfo.put("foreign_present_address_state", complainant.getForeignPresentAddressState());
+            complainantInfo.put("foreign_present_address_zipcode", complainant.getForeignPresentAddressZipCode());
+            complainantInfo.put("is_authenticated", complainant.isAuthenticated() ? 1 : 0);
+            complainantInfo.put("created_at", isoDateFormat.format(new Date(complainant.getCreatedAt().getTime())));
+            complainantInfo.put("updated_at", isoDateFormat.format(new Date(complainant.getUpdatedAt().getTime())));
+            complainantInfo.put("status", complainant.getStatus());
+            complainantInfo.put("present_address_country_id", complainant.getPresentAddressCountryId());
+            complainantInfo.put("permanent_address_country_id", complainant.getPermanentAddressCountryId());
+            complainantInfo.put("is_blacklisted", complainantService.isBlacklistedUserByComplainantId(complainant.getId()) ? 1 : 0);
+            List<Occupation> occupations = mobilePublicAPIService.getOccupationList();
+            String complainantOccupation = complainant.getOccupation();
+            String occupationId = occupations.stream()
+                    .filter(o -> complainantOccupation != null
+                            && ((o.getOccupationBangla() != null && complainantOccupation.equals(o.getOccupationBangla()))
+                            || (o.getOccupationEnglish() != null && complainantOccupation.equals(o.getOccupationEnglish()))))
+                    .map(o -> o.getId().toString())
+                    .findFirst()
+                    .orElse(null);
+            complainantInfo.put("occupation", occupationId);
+            List<Education> qualifications = mobilePublicAPIService.getQualificationList();
+            String complainantQualification = complainant.getEducation();
+            String qualificationId = qualifications.stream()
+                    .filter(q -> complainantQualification != null
+                            && ((q.getEducationBangla() != null && complainantQualification.equals(q.getEducationBangla()))
+                            || (q.getEducationEnglish() != null && complainantQualification.equals(q.getEducationEnglish()))))
+                    .map(q -> q.getId().toString())
+                    .findFirst()
+                    .orElse(null);
+            complainantInfo.put("educational_qualification", qualificationId);
+            complainantInfo.put("blacklister_office_id", null);
+            complainantInfo.put("blacklister_office_name", null);
+            complainantInfo.put("blacklist_reason", null);
+            complainantInfo.put("is_requested", null);
+        }
+
 
         Office office = officeRepo.findOfficeById(grievance.getOffice_id());
 
@@ -690,6 +700,10 @@ public class MobileGrievanceService {
 
 
     public MobileGrievanceResponseDTO mapGrievanceDTOToMobileResponse(GrievanceDTO grievanceDTO) {
+
+//        String regex = "\\(([^)]+)\\)";
+//        Pattern pattern = Pattern.compile(regex);
+
         MobileGrievanceResponseDTO mobileGrievanceResponseDTO = MobileGrievanceResponseDTO
                 .builder()
                 .id(Long.parseLong(grievanceDTO.getId()))
@@ -709,8 +723,8 @@ public class MobileGrievanceService {
                 .submission_date_bn(grievanceDTO.getSubmissionDateBangla())
                 .complaint_type(grievanceDTO.getTypeEnglish())
                 .complaint_type_bn(grievanceDTO.getTypeBangla())
-                .current_status(grievanceDTO.getStatusEnglish())
-                .current_status_bn(grievanceDTO.getStatusBangla())
+                .current_status(extractOutofParenthesis(grievanceDTO.getStatusEnglish()))
+                .current_status_bn(extractOutofParenthesis(grievanceDTO.getStatusBangla()))
                 .subject(grievanceDTO.getSubject())
                 .details(null)
                 .grievance_from(null)
@@ -761,7 +775,7 @@ public class MobileGrievanceService {
                                                 .format(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a").parse(date));
                                     } catch (ParseException e) {
                                         e.printStackTrace();
-                                        return null; // Fallback in case of error
+                                        return null;
                                     }
                                 })
                                 .orElse(null)
@@ -774,7 +788,7 @@ public class MobileGrievanceService {
                                                 .format(new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a").parse(date));
                                     } catch (ParseException e) {
                                         e.printStackTrace();
-                                        return null; // Fallback in case of error
+                                        return null;
                                     }
                                 })
                                 .orElse(null))
@@ -789,6 +803,19 @@ public class MobileGrievanceService {
                 .geo_upazila_id(null)
                 .build();
         return mobileGrievanceResponseDTO;
+    }
+
+    private String extractOutofParenthesis(String status) {
+        if (status == null || !status.contains("(") || !status.contains(")")) {
+            return null;
+        }
+
+        try {
+            String[] firstGone = status.split("\\(");
+            return firstGone[1].split("\\)")[0];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     List<MobileComplainAttachmentInfoDTO> getComplainAttachments(Long complainId) {

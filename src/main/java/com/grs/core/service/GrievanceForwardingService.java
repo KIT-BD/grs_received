@@ -523,6 +523,11 @@ public class GrievanceForwardingService {
                         .isCommitteeHead(grievanceForwarding.getIsCommitteeHead())
                         .isCommitteeMember(grievanceForwarding.getIsCommitteeMember())
                         .assignedRole(grievanceForwarding.getAssignedRole())
+                        .id(grievanceForwarding.getId())
+                        .to_employee_record_id(grievanceForwarding.getToEmployeeRecordId())
+                        .from_employee_record_id(grievanceForwarding.getFromEmployeeRecordId())
+                        .to_office_unit_organogram_id(grievanceForwarding.getToOfficeUnitOrganogramId())
+                        .from_office_unit_organogram_id(grievanceForwarding.getFromOfficeUnitOrganogramId())
                         .build())
                 .collect(Collectors.toList());
     }
@@ -1349,7 +1354,6 @@ public class GrievanceForwardingService {
     }
 
     public OpinionReceiverDTO getOpinionFieldsByGrievance(Long grievanceId, Authentication authentication, String postNodeId) {
-        log.info("postnodeId  ================================= "+postNodeId);
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         if (userInformation.getUserType().equals(UserType.COMPLAINANT)) {

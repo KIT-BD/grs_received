@@ -1,0 +1,33 @@
+package com.grs.mobileApp.dto;
+
+import com.grs.api.model.request.FileDTO;
+import com.grs.core.domain.GrievanceCurrentStatus;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.List;
+import java.util.Map;
+
+
+@AllArgsConstructor
+@NoArgsConstructor
+@Data
+@Builder
+public class MobileGrievanceCloseForwardingDTO {
+
+
+    private long complaint_id;
+    private long office_id;
+    private String action;
+    private String closingNoteGRODecision;
+    private String closingNoteMainReason;
+    private String closingNoteSuggestion;
+    private List<Map<String, Long>> deptAction;
+    private String departmentalActionReason;
+    private List<FileDTO> files;
+    private String fileNameByUser;
+
+
+}
