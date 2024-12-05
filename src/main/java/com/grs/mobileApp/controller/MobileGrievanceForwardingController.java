@@ -1,5 +1,7 @@
 package com.grs.mobileApp.controller;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.grs.api.model.request.FileDTO;
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.response.GenericResponse;
@@ -129,13 +131,19 @@ public class MobileGrievanceForwardingController {
             @RequestParam String closingNoteGRODecision,
             @RequestParam String closingNoteMainReason,
             @RequestParam String closingNoteSuggestion,
-            @RequestParam (required = false) List<Long> deptAction,
+            @RequestParam (required = false) String deptAction,
             @RequestParam (required = false) String departmentalActionReason,
             @RequestParam (value = "files[]",required = false)List<MultipartFile> files,
             @RequestParam (value = "fileNameByUser",required = false)String fileNameByUser,
             Authentication authentication,
             Principal principal
-    ) throws ParseException {
+    ) throws ParseException, IOException {
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Map<String, Long>> parsedDeptAction = null;
+        if (deptAction != null) {
+            parsedDeptAction = objectMapper.readValue(deptAction, new TypeReference<List<Map<String, Long>>>() {});
+        }
 
         List<FileDTO> convertedFiles = null;
         if (files != null && !files.isEmpty()) {
@@ -150,7 +158,7 @@ public class MobileGrievanceForwardingController {
                 .closingNoteSuggestion(closingNoteSuggestion)
                 .closingNoteMainReason(closingNoteMainReason)
                 .action(action)
-                .deptAction(deptAction)
+                .deptAction(parsedDeptAction)
                 .files(convertedFiles)
                 .build();
 
