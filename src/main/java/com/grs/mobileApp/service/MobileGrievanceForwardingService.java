@@ -253,8 +253,8 @@ public class MobileGrievanceForwardingService {
             if (!mobileGrievanceCloseForwardingDTO.getDeptAction().isEmpty()) {
                 List<String> employeeList = new ArrayList<>();
 
-                for (Long i : mobileGrievanceCloseForwardingDTO.getDeptAction()) {
-                    employeeList.add(i + "_" + "office_unit_organogram_id_for_later" + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
+                for (Map<String, Long> i : mobileGrievanceCloseForwardingDTO.getDeptAction()) {
+                    employeeList.add(i.get("employeeRecordId") + "_" + i.get("officeUnitOrganogramId") + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
                 }
 
                 GrievanceForwardingCloseDTO grievanceForwardingCloseDTO = GrievanceForwardingCloseDTO.builder()

@@ -8,6 +8,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 
 @AllArgsConstructor
@@ -23,7 +24,7 @@ public class MobileGrievanceCloseForwardingDTO {
     private String closingNoteGRODecision;
     private String closingNoteMainReason;
     private String closingNoteSuggestion;
-    private List<Long> deptAction;
+    private List<Map<String, Long>> deptAction;
     private String departmentalActionReason;
     private List<FileDTO> files;
     private String fileNameByUser;
