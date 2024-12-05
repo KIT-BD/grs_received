@@ -839,4 +839,36 @@ public class MobileGrievanceForwardingService {
         }
         return null;
     }
+
+    public Map<String, Object> seeHearingDate(Authentication authentication, Principal principal, Long complaintId, String note, List<MultipartFile> files, String fileNameByUser) throws ParseException {
+
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
+        }
+
+        GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
+                .grievanceId(complaintId)
+                .note(note)
+                .files(convertedFiles)
+                .referredFiles(new ArrayList<>())
+                .build();
+
+        GenericResponse genericResponse = grievanceForwardingService.joinHearing(grievanceForwardingNoteDTO, authentication);
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        if (genericResponse.isSuccess()) {
+            MobileGrievanceResponseDTO grievance = mobileGrievanceService.findGrievancesById(complaintId);
+            response.put("status", "success");
+            response.put("data", mobileGrievanceService.getGrievanceDetails(grievance));
+            response.put("message", "Accepted to present on the hearing date.");
+            return response;
+
+        } else {
+            response.put("status", "error");
+            response.put("data", null);
+            response.put("message", "Failed. Please try again or contact support.");
+            return response;
+        }
+    }
 }
