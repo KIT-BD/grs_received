@@ -341,4 +341,24 @@ public class MobileGrievanceForwardingController {
                 principal
         );
     }
+
+
+    @RequestMapping(value = "/api/administrative-grievance/see-date-of-hearing", method = RequestMethod.POST)
+    public Map<String, Object> seeHearingDate(
+            Authentication authentication,
+            Principal principal,
+            @RequestParam Long complaint_id,
+            @RequestParam String note,
+            @RequestParam(required = false, value = "files[]") List<MultipartFile> files,
+            @RequestParam(required = false) String fileNameByUser
+    ) throws ParseException {
+        return mobileGrievanceForwardingService.seeHearingDate(
+                authentication,
+                principal,
+                complaint_id,
+                note,
+                files,
+                fileNameByUser
+        );
+    }
 }
