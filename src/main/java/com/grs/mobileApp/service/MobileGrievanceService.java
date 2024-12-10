@@ -807,7 +807,7 @@ public class MobileGrievanceService {
 
     private String extractOutofParenthesis(String status) {
         if (status == null || !status.contains("(") || !status.contains(")")) {
-            return null;
+            return status;
         }
 
         try {

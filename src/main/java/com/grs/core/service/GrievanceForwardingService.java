@@ -1004,7 +1004,9 @@ public class GrievanceForwardingService {
         GrievanceForwarding grievanceForwardingHead = this.grievanceForwardingDAO.getActiveInvestigationHeadEntry(grievance);
         String action = "REQUEST_FOR_HEARING";
         GrievanceCurrentStatus currentStatus;
-        String HearingDateBangla = "\n শুনানির তারিখ: " + BanglaConverter.getDateBanglaFromEnglishFull24HourFormat(investigationMaterialHearingDTO.getHearingDate().toString()).replace("BDT", "বাংলাদেশ স্ট্যান্ডার্ড সময়");
+        // todo: fix date conversion to bangla
+//        String HearingDateBangla = "\n শুনানির তারিখ: " + BanglaConverter.getDateBanglaFromEnglishFull24HourFormat(investigationMaterialHearingDTO.getHearingDate().toString()).replace("BDT", "বাংলাদেশ স্ট্যান্ডার্ড সময়");
+        String HearingDateBangla = "\n শুনানির তারিখ: " + investigationMaterialHearingDTO.getHearingDate();
         if (grievance.getGrievanceCurrentStatus().toString().endsWith("APPEAL")) {
             currentStatus = GrievanceCurrentStatus.INV_NOTICE_HEARING_APPEAL;
             action = "REQUEST_FOR_HEARING_APPEAL";
