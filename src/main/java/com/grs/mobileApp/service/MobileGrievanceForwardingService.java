@@ -839,4 +839,36 @@ public class MobileGrievanceForwardingService {
         }
         return null;
     }
+
+    public Map<String, Object> agreeDisagree(Authentication authentication, Long complaintId, String opinion, List<FileDTO> convertedFiles) throws ParseException {
+
+
+        GrievanceForwardingInvestigationComment grievanceForwardingInvestigationComment = GrievanceForwardingInvestigationComment.builder()
+                .grievanceId(complaintId)
+                .decision(opinion)
+                .signature(convertedFiles)
+                .build();
+        GenericResponse genericResponse =grievanceForwardingService.confirmReport(authentication, grievanceForwardingInvestigationComment);
+
+        Map<String, Object> response = new HashMap<>();
+        if (genericResponse.isSuccess()) {
+
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(complaintId);
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
+            response.put("status", "success");
+            response.put("message", "Agreed or Disagreed  successfully provided.");
+            return response;
+        } else {
+            response.put("status", "error");
+            response.put("data", null);
+            response.put("message", "Failed to provide opinion");
+            return response;
+        }
+
+
+
+    }
 }
