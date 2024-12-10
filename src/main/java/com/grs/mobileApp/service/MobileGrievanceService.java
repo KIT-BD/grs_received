@@ -796,6 +796,22 @@ public class MobileGrievanceService {
         return mobileGrievanceResponseDTO;
     }
 
+<<<<<<< HEAD
+=======
+    private String extractOutofParenthesis(String status) {
+        if (status == null || !status.contains("(") || !status.contains(")")) {
+            return status;
+        }
+
+        try {
+            String[] firstGone = status.split("\\(");
+            return firstGone[1].split("\\)")[0];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+
+>>>>>>> bb1e06b (fixed some apis for the mobile app)
     List<MobileComplainAttachmentInfoDTO> getComplainAttachments(Long complainId) {
         List<FileDerivedDTO> complainAttachments = grievanceService.getGrievancesFiles(complainId);
         List<MobileComplainAttachmentInfoDTO> response = new ArrayList<>();
