@@ -89,6 +89,35 @@ public class MobileGrievanceForwardingController {
     }
 
 
+    @RequestMapping(value = "/api/grievance/agree-disagree", method = RequestMethod.POST)
+    public Map<String, Object> agreeDisagree(
+
+//            @RequestParam String note,
+            @RequestParam String opinion,
+            @RequestParam Long complaint_id,
+//            @RequestParam Long office_id,
+//            @RequestParam Long to_employee_record_id,
+//            @RequestParam String username,
+            @RequestParam(value = "files[]") List<MultipartFile> files,
+            @RequestParam(value = "fileNameByUser") String file_name_by_user,
+            Authentication authentication,
+            Principal principal
+
+    ) throws ParseException {
+
+
+        List<FileDTO> convertedFiles = null;
+        if (files != null && !files.isEmpty()) {
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
+        }
+
+        // Opinion: "AGREED" / "DISAGREED" should come from mobile app.....
+
+        return  mobileGrievanceForwardingService.agreeDisagree(authentication, complaint_id,opinion,convertedFiles);
+
+    }
+
+
     @RequestMapping(value = "/api/administrative-grievance/give-opinion", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Map<String, Object> giveOpinion(
 

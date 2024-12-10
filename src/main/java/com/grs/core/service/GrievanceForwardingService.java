@@ -1000,6 +1000,9 @@ public class GrievanceForwardingService {
     }
 
     public GenericResponse askForHearing(InvestigationMaterialHearingDTO investigationMaterialHearingDTO, Authentication authentication) {
+
+
+
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         Grievance grievance = this.grievanceService.findGrievanceById(investigationMaterialHearingDTO.getGrievanceId());
         GrievanceForwarding grievanceForwardingHead = this.grievanceForwardingDAO.getActiveInvestigationHeadEntry(grievance);
@@ -2008,7 +2011,10 @@ public class GrievanceForwardingService {
     @Transactional(value = "transactionManager", rollbackFor = RuntimeException.class)
     public GenericResponse confirmReport(Authentication authentication, GrievanceForwardingInvestigationComment messageDTO) {
         Grievance grievance = this.grievanceService.findGrievanceById(messageDTO.getGrievanceId());
+//        System.out.println("Grievance "+grievance.toString());
         GrievanceForwarding reportForwarding = this.grievanceForwardingDAO.getLastForwadingForGivenGrievanceAndAction(grievance, "%SUBMIT_INVESTIGATION_REPORT%");
+        System.out.println("Forwarding"+reportForwarding);
+
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
 
         Long fromOfficeId = userInformation.getOfficeInformation().getOfficeId();
