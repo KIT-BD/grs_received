@@ -1,5 +1,6 @@
 package com.grs.mobileApp.controller;
 
+import com.grs.api.model.UserType;
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.response.EmployeeRecordDTO;
 import com.grs.api.model.response.GenericResponse;
@@ -307,7 +308,16 @@ public class MobileGrievanceController {
 
             return response;
         }
-        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.getAllComplainantComplaintMovementHistoryByGrievance(id, authentication);
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList;
+
+        if (userInformation.getUserType() == UserType.COMPLAINANT){
+            grievanceList = grievanceForwardingService.getAllComplainantComplaintMovementHistoryByGrievance(id, authentication);
+        } else {
+            grievanceList = grievanceForwardingService.getAllComplaintMovementHistoryByGrievance(id, authentication);
+        }
+
         List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
 
         for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
