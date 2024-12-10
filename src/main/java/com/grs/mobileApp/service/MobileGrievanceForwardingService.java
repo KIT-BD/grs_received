@@ -253,8 +253,8 @@ public class MobileGrievanceForwardingService {
             if (!mobileGrievanceCloseForwardingDTO.getDeptAction().isEmpty()) {
                 List<String> employeeList = new ArrayList<>();
 
-                for (Map<String, Long> i : mobileGrievanceCloseForwardingDTO.getDeptAction()) {
-                    employeeList.add(i.get("employeeRecordId") + "_" + i.get("officeUnitOrganogramId") + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
+                for (Long i : mobileGrievanceCloseForwardingDTO.getDeptAction()) {
+                    employeeList.add(i + "_" + "office_unit_organogram_id_for_later" + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
                 }
 
                 GrievanceForwardingCloseDTO grievanceForwardingCloseDTO = GrievanceForwardingCloseDTO.builder()
@@ -840,35 +840,35 @@ public class MobileGrievanceForwardingService {
         return null;
     }
 
-    public Map<String, Object> seeHearingDate(Authentication authentication, Principal principal, Long complaintId, String note, List<MultipartFile> files, String fileNameByUser) throws ParseException {
+    public Map<String, Object> agreeDisagree(Authentication authentication, Long complaintId, String opinion, List<FileDTO> convertedFiles) throws ParseException {
 
-        List<FileDTO> convertedFiles = null;
-        if (files != null && !files.isEmpty()) {
-            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
-        }
 
-        GrievanceForwardingNoteDTO grievanceForwardingNoteDTO = GrievanceForwardingNoteDTO.builder()
+        GrievanceForwardingInvestigationComment grievanceForwardingInvestigationComment = GrievanceForwardingInvestigationComment.builder()
                 .grievanceId(complaintId)
-                .note(note)
-                .files(convertedFiles)
-                .referredFiles(new ArrayList<>())
+                .decision(opinion)
+                .signature(convertedFiles)
                 .build();
+        GenericResponse genericResponse =grievanceForwardingService.confirmReport(authentication, grievanceForwardingInvestigationComment);
 
-        GenericResponse genericResponse = grievanceForwardingService.joinHearing(grievanceForwardingNoteDTO, authentication);
-
-        Map<String, Object> response = new LinkedHashMap<>();
+        Map<String, Object> response = new HashMap<>();
         if (genericResponse.isSuccess()) {
-            MobileGrievanceResponseDTO grievance = mobileGrievanceService.findGrievancesById(complaintId);
-            response.put("status", "success");
-            response.put("data", mobileGrievanceService.getGrievanceDetails(grievance));
-            response.put("message", "Accepted to present on the hearing date.");
-            return response;
 
+            Map<String, Object> complaintDetails = mobileGrievanceService.getComplaintDetailsById(complaintId);
+            Map<String, Object> data = (Map<String, Object>) complaintDetails.get("data");
+            Object allComplaintDetails = data.get("allComplaintDetails");
+
+            response.put("data", allComplaintDetails);
+            response.put("status", "success");
+            response.put("message", "Agreed or Disagreed  successfully provided.");
+            return response;
         } else {
             response.put("status", "error");
             response.put("data", null);
-            response.put("message", "Failed. Please try again or contact support.");
+            response.put("message", "Failed to provide opinion");
             return response;
         }
+
+
+
     }
 }
