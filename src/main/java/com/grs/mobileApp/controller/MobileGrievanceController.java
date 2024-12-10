@@ -221,6 +221,7 @@ public class MobileGrievanceController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("status", genericResponse.isSuccess() ? "success" : "error");
+        response.put("data", grievanceService.findGrievanceById(complaint_id));
         response.put("message", genericResponse.getMessage());
         return response;
     }
