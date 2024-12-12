@@ -1,5 +1,6 @@
 package com.grs.mobileApp.controller;
 
+import com.grs.api.model.UserType;
 import com.grs.api.model.request.GrievanceForwardingNoteDTO;
 import com.grs.api.model.response.EmployeeRecordDTO;
 import com.grs.api.model.response.GenericResponse;
@@ -35,6 +36,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.validation.Valid;
 import java.security.Principal;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -221,6 +223,7 @@ public class MobileGrievanceController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("status", genericResponse.isSuccess() ? "success" : "error");
+        response.put("data", grievanceService.findGrievanceById(complaint_id));
         response.put("message", genericResponse.getMessage());
         return response;
     }
@@ -306,7 +309,16 @@ public class MobileGrievanceController {
 
             return response;
         }
-        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList = grievanceForwardingService.getAllComplainantComplaintMovementHistoryByGrievance(id, authentication);
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+
+        List<GrievanceForwardingEmployeeRecordsDTO> grievanceList;
+
+        if (userInformation.getUserType() == UserType.COMPLAINANT){
+            grievanceList = grievanceForwardingService.getAllComplainantComplaintMovementHistoryByGrievance(id, authentication);
+        } else {
+            grievanceList = grievanceForwardingService.getAllComplaintMovementHistoryByGrievance(id, authentication);
+        }
+
         List<MobileGrievanceForwardingDTO> forwardingDTOList = new ArrayList<>();
 
         for (GrievanceForwardingEmployeeRecordsDTO g : grievanceList){
@@ -603,5 +615,19 @@ public class MobileGrievanceController {
         return response;
     }
 
+    @RequestMapping(value = "/api/administrative-grievance/give-permission", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+    public Map<String, String> givePermission(@Valid @RequestBody GrievanceForwardingNoteDTO grievanceForwardingNoteDTO, Authentication authentication){
+        GenericResponse genericResponse = grievanceForwardingService.givePermission(authentication, grievanceForwardingNoteDTO);
+
+        Map<String,String> response = new LinkedHashMap<>();
+        if (genericResponse.isSuccess()){
+            response.put("status","success");
+            response.put("message","Permission given successfully");
+            return response;
+        }
+        response.put("status","error");
+        response.put("message","Permission could not be given");
+        return response;
+    }
 
 }
