@@ -1287,10 +1287,11 @@ public class GrievanceService {
         EmployeeOffice employeeOffice = this.officeService.findEmployeeOfficeByOfficeAndOfficeUnitOrganogramAndStatus(officeId, officeUnitOrganogram, true);
         String groEmail = employeeOffice != null ? employeeOffice.getEmployeeRecord().getPersonalEmail() : "";
         String groMobile = employeeOffice != null ? employeeOffice.getEmployeeRecord().getPersonalMobile() : "";
-        String trackingNumber = (StringUtil.isValidString(grievance.getTrackingNumber())
-                && (grievance.getTrackingNumber().startsWith("01"))) ?
-                grievance.getTrackingNumber().substring(11) :
-                grievance.getTrackingNumber();
+//        String trackingNumber = (StringUtil.isValidString(grievance.getTrackingNumber())
+//                && (grievance.getTrackingNumber().startsWith("01"))) ?
+//                grievance.getTrackingNumber().substring(11) :
+//                grievance.getTrackingNumber();
+        String trackingNumber = grievance.getTrackingNumber();
         String header = "Grievance Submitted in GRS";
         String body = "A new Grievance is submitted with tracking number:  " + trackingNumber;
         if(employeeOffice != null){
