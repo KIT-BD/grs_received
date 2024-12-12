@@ -607,7 +607,7 @@ public class GrievanceController {
 
     @RequestMapping(value = "/api/grievanceForOthers", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     public WeakHashMap<String, Object> addGrievanceForOthers(Authentication authentication, @RequestBody GrievanceWithoutLoginRequestDTO grievanceRequestDTO) throws Exception {
-        System.out.println(grievanceRequestDTO);
+//        System.out.println(grievanceRequestDTO);
         return this.grievanceService.addGrievanceForOthers(authentication, grievanceRequestDTO);
     }
 
