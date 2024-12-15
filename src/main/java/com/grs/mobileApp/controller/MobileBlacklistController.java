@@ -1,6 +1,7 @@
 package com.grs.mobileApp.controller;
 
 import com.grs.api.model.UserInformation;
+import com.grs.api.model.request.BlacklistRequestBodyDTO;
 import com.grs.api.model.response.grievance.ComplainantInfoBlacklistReqDTO;
 import com.grs.api.model.response.grievance.ComplainantInfoDTO;
 import com.grs.core.dao.BlacklistDAO;
@@ -25,10 +26,18 @@ public class MobileBlacklistController {
 
     @PostMapping("/save")
     public Map<String, Object> saveAsBlacklist(
+            Authentication authentication,
             @RequestParam Long complainant_id,
-            @RequestParam Long office_id
+            @RequestParam Long office_id,
+            @RequestParam String reason
     ){
-        boolean done = this.complainantService.doBlacklistByComplainantId(complainant_id, office_id);
+        BlacklistRequestBodyDTO blacklistRequestBodyDTO = BlacklistRequestBodyDTO.builder()
+                .complainantId(complainant_id)
+                .blacklistReason(reason)
+                .build();
+
+        UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
+        boolean done = this.complainantService.doBlacklistRequestByComplainantId(blacklistRequestBodyDTO, userInformation);
 
         Map<String, Object> response = new HashMap<>();
         if (done) {
