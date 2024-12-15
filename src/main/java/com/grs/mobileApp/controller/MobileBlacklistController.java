@@ -75,9 +75,24 @@ public class MobileBlacklistController {
     ){
         List<ComplainantInfoDTO> complainantInfoList = complainantService.getBlacklistByOfficeId(office_id);
 
-        List<Blacklist> blacklists = new ArrayList<>();
+        List<Map<String,Object>> blacklists = new ArrayList<>();
         for(ComplainantInfoDTO c: complainantInfoList){
-            blacklists.add(blacklistDAO.findByComplainantIdAndOfficeId(c.getId(), office_id));
+            Blacklist blacklist = blacklistDAO.findByComplainantIdAndOfficeId(c.getId(), office_id);
+            Map<String,Object> blacklistWrapper = new HashMap<>();
+            blacklistWrapper.put("id", blacklist.getId());
+            blacklistWrapper.put("complainant_id", blacklist.getComplainantId());
+            blacklistWrapper.put("office_id", blacklist.getOfficeId());
+            blacklistWrapper.put("requested", blacklist.getRequested());
+            blacklistWrapper.put("blacklisted", blacklist.getBlacklisted());
+            blacklistWrapper.put("office_name", blacklist.getOfficeName());
+            blacklistWrapper.put("reason", blacklist.getReason());
+            blacklistWrapper.put("created_at", blacklist.getCreatedAt());
+            blacklistWrapper.put("modified_at", blacklist.getUpdatedAt());
+            blacklistWrapper.put("created_by", blacklist.getCreatedBy());
+            blacklistWrapper.put("modified_by", blacklist.getModifiedBy());
+            blacklistWrapper.put("status", blacklist.getStatus());
+            blacklistWrapper.put("complainant_info", mobileGrievanceService.getComplainantDetails(complainantService.findOne(blacklist.getComplainantId())));
+            blacklists.add(blacklistWrapper);
         }
 
         Map<String, Object> response = new HashMap<>();
