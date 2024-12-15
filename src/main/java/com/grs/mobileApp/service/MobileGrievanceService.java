@@ -257,89 +257,8 @@ public class MobileGrievanceService {
         //return grievanceService.addGrievanceWithoutLogin(null, grievanceDTO);
     }
 
-    public Map<String,Object> getGrievanceDetails(MobileGrievanceResponseDTO grievance) throws ParseException {
-        Map<String, Object> grievanceDetails = new LinkedHashMap<>();
-        grievanceDetails.put("id", grievance.getId());
-        grievanceDetails.put("submission_date", grievance.getSubmission_date());
-        grievanceDetails.put("submission_date_bn", BanglaConverter.getDateBanglaFromEnglish(grievance.getSubmission_date()));
-        grievanceDetails.put("complaint_type", grievance.getComplaint_type());
-        grievanceDetails.put("current_status", grievance.getCurrent_status());
-        grievanceDetails.put("subject", grievance.getSubject());
-        grievanceDetails.put("details", grievance.getDetails());
-        grievanceDetails.put("tracking_number", grievance.getTracking_number());
-        grievanceDetails.put("tracking_number_bn", BanglaConverter.convertToBanglaDigit(grievance.getTracking_number()));
-        grievanceDetails.put("complainant_id", grievance.getComplainant_id());
-        grievanceDetails.put("office_id", grievance.getOffice_id());
-        grievanceDetails.put("service_id", grievance.getService_id());
-        grievanceDetails.put("service_id_before_forward", grievance.getService_id_before_forward());
-        grievanceDetails.put("current_appeal_office_id", grievance.getCurrent_appeal_office_id());
-        grievanceDetails.put("current_appeal_office_unit_organogram_id", grievance.getCurrent_appeal_office_unit_organogram_id());
-        grievanceDetails.put("send_to_ao_office_id", grievance.getSend_to_ao_office_id());
-        grievanceDetails.put("is_anonymous", grievance.getIs_anonymous());
-        grievanceDetails.put("case_number", grievance.getCase_number());
-        grievanceDetails.put("other_service", grievance.getOther_service());
-        grievanceDetails.put("other_service_before_forward", grievance.getOther_service_before_forward());
-        grievanceDetails.put("service_receiver", grievance.getService_receiver());
-        grievanceDetails.put("service_receiver_relation", grievance.getService_receiver_relation());
-        grievanceDetails.put("gro_decision", grievance.getGro_decision());
-        grievanceDetails.put("gro_identified_complaint_cause", grievance.getGro_identified_complaint_cause());
-        grievanceDetails.put("gro_suggestion", grievance.getGro_suggestion());
-        grievanceDetails.put("ao_decision", grievance.getAo_decision());
-        grievanceDetails.put("ao_identified_complaint_cause", grievance.getAo_identified_complaint_cause());
-        grievanceDetails.put("ao_suggestion", grievance.getAo_suggestion());
-        grievanceDetails.put("created_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievance.getCreated_at())));
-        grievanceDetails.put("updated_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievance.getUpdated_at())));
-        grievanceDetails.put("created_by", grievance.getCreated_by());
-        grievanceDetails.put("modified_by", grievance.getModified_by());
-        grievanceDetails.put("rating", grievance.getRating());
-        grievanceDetails.put("appeal_rating", grievance.getAppeal_rating());
-        grievanceDetails.put("is_rating_given", grievance.getIs_rating_given());
-        grievanceDetails.put("is_appeal_rating_given", grievance.getIs_appeal_rating_given());
-        grievanceDetails.put("feedback_comments", grievance.getFeedback_comments());
-        grievanceDetails.put("appeal_feedback_comments", grievance.getAppeal_feedback_comments());
-        grievanceDetails.put("source_of_grievance", grievance.getSource_of_grievance());
-        grievanceDetails.put("status", grievance.getStatus());
-        grievanceDetails.put("is_offline_complaint", grievance.getIs_offline_complaint());
-        grievanceDetails.put("is_self_motivated_grievance", grievance.getIs_self_motivated_grievance());
-        grievanceDetails.put("is_safety_net", grievance.getIs_safety_net());
-        grievanceDetails.put("is_grs_user", grievance.getIs_grs_user());
-        grievanceDetails.put("uploader_office_unit_organogram_id", grievance.getUploader_office_unit_organogram_id());
-        grievanceDetails.put("complaint_category", grievance.getComplaint_category());
-        grievanceDetails.put("sp_programme_id", grievance.getSp_programme_id());
-        grievanceDetails.put("geo_division_id", grievance.getGeo_division_id());
-        grievanceDetails.put("geo_district_id", grievance.getGeo_district_id());
-        grievanceDetails.put("geo_upazila_id", grievance.getGeo_upazila_id());
-        grievanceDetails.put("medium_of_submission", null);
-        grievanceDetails.put("complaint_attachment_info", this.getComplainAttachments(grievance.getId()));
-        grievanceDetails.put("mygov_user_id", null);
-        grievanceDetails.put("triple_three_agent_id", null);
-        grievanceDetails.put("grievance_from", grievance.getGrievance_from());
-        grievanceDetails.put("possible_close_date", grievance.getPossible_close_date());
-        grievanceDetails.put("possible_close_date_bn", grievance.getPossible_close_date_bn());
-        grievanceDetails.put("is_evidence_provide", grievance.getIs_evidence_provide());
-        grievanceDetails.put("is_see_hearing_date", grievance.getIs_see_hearing_date());
-
-        return grievanceDetails;
-    }
-
-    public Map<String,Object> getComplaintDetailsById(Long complaintId) throws ParseException {
-
-        MobileGrievanceResponseDTO grievance = findGrievancesById(complaintId);
-
-        if (grievance == null){
-            Map<String, Object> response = new HashMap<>();
-            response.put("data", null);
-            response.put("status", "success");
-
-            return response;
-        }
-
-        Complainant complainant = complainantService.findOne(grievance.getComplainant_id());
-        // Filter the occupations list to find the matching occupation ID
-
+    public Map<String,Object> getComplainantDetails(Complainant complainant){
         SimpleDateFormat isoDateFormat = new java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'");
-
-        Map<String,Object> grievanceDetails = this.getGrievanceDetails(grievance);
 
         Map<String, Object> complainantInfo = new HashMap<>();
         complainantInfo.put("id", complainant.getId());
@@ -420,6 +339,92 @@ public class MobileGrievanceService {
         complainantInfo.put("blacklister_office_name", null);
         complainantInfo.put("blacklist_reason", null);
         complainantInfo.put("is_requested", null);
+
+        return complainantInfo;
+    }
+
+    public Map<String,Object> getGrievanceDetails(MobileGrievanceResponseDTO grievance) throws ParseException {
+        Map<String, Object> grievanceDetails = new LinkedHashMap<>();
+        grievanceDetails.put("id", grievance.getId());
+        grievanceDetails.put("submission_date", grievance.getSubmission_date());
+        grievanceDetails.put("submission_date_bn", BanglaConverter.getDateBanglaFromEnglish(grievance.getSubmission_date()));
+        grievanceDetails.put("complaint_type", grievance.getComplaint_type());
+        grievanceDetails.put("current_status", grievance.getCurrent_status());
+        grievanceDetails.put("subject", grievance.getSubject());
+        grievanceDetails.put("details", grievance.getDetails());
+        grievanceDetails.put("tracking_number", grievance.getTracking_number());
+        grievanceDetails.put("tracking_number_bn", BanglaConverter.convertToBanglaDigit(grievance.getTracking_number()));
+        grievanceDetails.put("complainant_id", grievance.getComplainant_id());
+        grievanceDetails.put("office_id", grievance.getOffice_id());
+        grievanceDetails.put("service_id", grievance.getService_id());
+        grievanceDetails.put("service_id_before_forward", grievance.getService_id_before_forward());
+        grievanceDetails.put("current_appeal_office_id", grievance.getCurrent_appeal_office_id());
+        grievanceDetails.put("current_appeal_office_unit_organogram_id", grievance.getCurrent_appeal_office_unit_organogram_id());
+        grievanceDetails.put("send_to_ao_office_id", grievance.getSend_to_ao_office_id());
+        grievanceDetails.put("is_anonymous", grievance.getIs_anonymous());
+        grievanceDetails.put("case_number", grievance.getCase_number());
+        grievanceDetails.put("other_service", grievance.getOther_service());
+        grievanceDetails.put("other_service_before_forward", grievance.getOther_service_before_forward());
+        grievanceDetails.put("service_receiver", grievance.getService_receiver());
+        grievanceDetails.put("service_receiver_relation", grievance.getService_receiver_relation());
+        grievanceDetails.put("gro_decision", grievance.getGro_decision());
+        grievanceDetails.put("gro_identified_complaint_cause", grievance.getGro_identified_complaint_cause());
+        grievanceDetails.put("gro_suggestion", grievance.getGro_suggestion());
+        grievanceDetails.put("ao_decision", grievance.getAo_decision());
+        grievanceDetails.put("ao_identified_complaint_cause", grievance.getAo_identified_complaint_cause());
+        grievanceDetails.put("ao_suggestion", grievance.getAo_suggestion());
+        grievanceDetails.put("created_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievance.getCreated_at())));
+        grievanceDetails.put("updated_at", new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSS'Z'").format(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(grievance.getUpdated_at())));
+        grievanceDetails.put("created_by", grievance.getCreated_by());
+        grievanceDetails.put("modified_by", grievance.getModified_by());
+        grievanceDetails.put("rating", grievance.getRating());
+        grievanceDetails.put("appeal_rating", grievance.getAppeal_rating());
+        grievanceDetails.put("is_rating_given", grievance.getIs_rating_given());
+        grievanceDetails.put("is_appeal_rating_given", grievance.getIs_appeal_rating_given());
+        grievanceDetails.put("feedback_comments", grievance.getFeedback_comments());
+        grievanceDetails.put("appeal_feedback_comments", grievance.getAppeal_feedback_comments());
+        grievanceDetails.put("source_of_grievance", grievance.getSource_of_grievance());
+        grievanceDetails.put("status", grievance.getStatus());
+        grievanceDetails.put("is_offline_complaint", grievance.getIs_offline_complaint());
+        grievanceDetails.put("is_self_motivated_grievance", grievance.getIs_self_motivated_grievance());
+        grievanceDetails.put("is_safety_net", grievance.getIs_safety_net());
+        grievanceDetails.put("is_grs_user", grievance.getIs_grs_user());
+        grievanceDetails.put("uploader_office_unit_organogram_id", grievance.getUploader_office_unit_organogram_id());
+        grievanceDetails.put("complaint_category", grievance.getComplaint_category());
+        grievanceDetails.put("sp_programme_id", grievance.getSp_programme_id());
+        grievanceDetails.put("geo_division_id", grievance.getGeo_division_id());
+        grievanceDetails.put("geo_district_id", grievance.getGeo_district_id());
+        grievanceDetails.put("geo_upazila_id", grievance.getGeo_upazila_id());
+        grievanceDetails.put("medium_of_submission", null);
+        grievanceDetails.put("complaint_attachment_info", this.getComplainAttachments(grievance.getId()));
+        grievanceDetails.put("mygov_user_id", null);
+        grievanceDetails.put("triple_three_agent_id", null);
+        grievanceDetails.put("grievance_from", grievance.getGrievance_from());
+        grievanceDetails.put("possible_close_date", grievance.getPossible_close_date());
+        grievanceDetails.put("possible_close_date_bn", grievance.getPossible_close_date_bn());
+        grievanceDetails.put("is_evidence_provide", grievance.getIs_evidence_provide());
+        grievanceDetails.put("is_see_hearing_date", grievance.getIs_see_hearing_date());
+
+        return grievanceDetails;
+    }
+
+    public Map<String,Object> getComplaintDetailsById(Long complaintId) throws ParseException {
+
+        MobileGrievanceResponseDTO grievance = findGrievancesById(complaintId);
+
+        if (grievance == null){
+            Map<String, Object> response = new HashMap<>();
+            response.put("data", null);
+            response.put("status", "success");
+
+            return response;
+        }
+
+        Complainant complainant = complainantService.findOne(grievance.getComplainant_id());
+        // Filter the occupations list to find the matching occupation ID
+
+        Map<String,Object> grievanceDetails = this.getGrievanceDetails(grievance);
+        Map<String,Object> complainantInfo = this.getComplainantDetails(complainant);
 
         Office office = officeRepo.findOfficeById(grievance.getOffice_id());
 

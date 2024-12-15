@@ -27,6 +27,10 @@ public class BlacklistDAO {
         return blacklistRepo.save(blacklist);
     }
 
+    public Blacklist findByComplainantIdAndOfficeId(Long complainantId, Long officeId){
+        return this.blacklistRepo.findByComplainantIdAndOfficeId(complainantId, officeId);
+    }
+
     public boolean doBlacklistRequestByComplainantId(Long complainantId, Long officeId){
         Blacklist blacklist = this.blacklistRepo.findByComplainantIdAndOfficeId(complainantId, officeId);
         blacklist.setRequested(true);
