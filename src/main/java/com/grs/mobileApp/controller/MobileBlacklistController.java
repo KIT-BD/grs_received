@@ -50,8 +50,8 @@ public class MobileBlacklistController {
             blacklistWrapper.put("blacklisted", blacklist.getBlacklisted());
             blacklistWrapper.put("office_name", blacklist.getOfficeName());
             blacklistWrapper.put("reason", blacklist.getReason());
-            blacklistWrapper.put("created_at", blacklist.getCreatedAt());
-            blacklistWrapper.put("modified_at", blacklist.getUpdatedAt());
+            blacklistWrapper.put("created_at", null);
+            blacklistWrapper.put("modified_at", null);
             blacklistWrapper.put("created_by", blacklist.getCreatedBy());
             blacklistWrapper.put("modified_by", blacklist.getModifiedBy());
             blacklistWrapper.put("status", blacklist.getStatus());
@@ -86,8 +86,8 @@ public class MobileBlacklistController {
             blacklistWrapper.put("blacklisted", blacklist.getBlacklisted());
             blacklistWrapper.put("office_name", blacklist.getOfficeName());
             blacklistWrapper.put("reason", blacklist.getReason());
-            blacklistWrapper.put("created_at", blacklist.getCreatedAt());
-            blacklistWrapper.put("modified_at", blacklist.getUpdatedAt());
+            blacklistWrapper.put("created_at", null);
+            blacklistWrapper.put("modified_at", null);
             blacklistWrapper.put("created_by", blacklist.getCreatedBy());
             blacklistWrapper.put("modified_by", blacklist.getModifiedBy());
             blacklistWrapper.put("status", blacklist.getStatus());
