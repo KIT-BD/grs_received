@@ -906,7 +906,7 @@ public class ReportsService {
             final long[] serial = {1};
 
             // Define the IDs of the offices you want to move to the end (using HashSet and Arrays.asList)
-            Set<Long> excludedOfficeIds = new HashSet<>(Arrays.asList(2131L, 2175L, 53L));
+            Set<Long> excludedOfficeIds = new HashSet<>(Arrays.asList(2131L, 2175L, 53L, 2294L));
 
             // Process the main list without the excluded office IDs
             List<GrievanceAndAppealMonthlyReportDTO> prioritizedList = reportDTOS.stream()
@@ -933,7 +933,7 @@ public class ReportsService {
                     .collect(Collectors.toList());
 
             // Combine both lists (prioritized + excluded offices at the end)
-            prioritizedList.addAll(excludedOffices);
+//            prioritizedList.addAll(excludedOffices);
 
             return prioritizedList;
         }
