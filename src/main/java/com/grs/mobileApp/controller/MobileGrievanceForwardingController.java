@@ -154,7 +154,7 @@ public class MobileGrievanceForwardingController {
             @RequestParam String closingNoteGRODecision,
             @RequestParam String closingNoteMainReason,
             @RequestParam String closingNoteSuggestion,
-            @RequestParam (required = false) List<Long> deptAction,
+            @RequestParam (required = false) String deptAction,
             @RequestParam (required = false) String departmentalActionReason,
             @RequestParam (value = "files[]",required = false)List<MultipartFile> files,
             @RequestParam (value = "fileNameByUser",required = false)String fileNameByUser,
