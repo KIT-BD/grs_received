@@ -1,12 +1,9 @@
 package com.grs.mobileApp.controller;
 
 import com.grs.api.model.request.FileDTO;
-import com.grs.api.model.request.GrievanceForwardingNoteDTO;
-import com.grs.api.model.response.GenericResponse;
 import com.grs.mobileApp.dto.MobileGrievanceCloseForwardingDTO;
 import com.grs.mobileApp.dto.MobileGrievanceForwardingRequest;
 import com.grs.mobileApp.dto.MobileInvestigationForwardingDTO;
-import com.grs.mobileApp.dto.MobileOfficerGuidServDTO;
 import com.grs.mobileApp.dto.MobileOpinionForwardingDTO;
 import com.grs.mobileApp.dto.*;
 import com.grs.mobileApp.service.MobileGrievanceForwardingService;
@@ -17,7 +14,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import javax.validation.Valid;
 import java.io.IOException;
 import java.security.Principal;
 import java.text.ParseException;
@@ -99,7 +95,7 @@ public class MobileGrievanceForwardingController {
 //            @RequestParam Long to_employee_record_id,
 //            @RequestParam String username,
             @RequestParam(value = "files[]") List<MultipartFile> files,
-            @RequestParam(value = "fileNameByUser") String file_name_by_user,
+            @RequestParam(value = "fileNameByUser") String fileNameByUser,
             Authentication authentication,
             Principal principal
 
@@ -108,7 +104,7 @@ public class MobileGrievanceForwardingController {
 
         List<FileDTO> convertedFiles = null;
         if (files != null && !files.isEmpty()) {
-            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, file_name_by_user, principal);
+            convertedFiles = fileUploadUtil.getFileDTOFromMultipart(files, fileNameByUser, principal);
         }
 
         // Opinion: "AGREED" / "DISAGREED" should come from mobile app.....
@@ -158,7 +154,7 @@ public class MobileGrievanceForwardingController {
             @RequestParam String closingNoteGRODecision,
             @RequestParam String closingNoteMainReason,
             @RequestParam String closingNoteSuggestion,
-            @RequestParam (required = false) List<Long> deptAction,
+            @RequestParam (required = false) String deptAction,
             @RequestParam (required = false) String departmentalActionReason,
             @RequestParam (value = "files[]",required = false)List<MultipartFile> files,
             @RequestParam (value = "fileNameByUser",required = false)String fileNameByUser,

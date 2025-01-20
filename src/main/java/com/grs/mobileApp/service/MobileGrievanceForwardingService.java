@@ -245,16 +245,43 @@ public class MobileGrievanceForwardingService {
 
     }
 
+    private List<Long> getDeptActionOfficers(String deptAction) {
+        // Create an ObjectMapper instance
+        ObjectMapper objectMapper = new ObjectMapper();
+        List<Long> response = new ArrayList<>();
+
+        try {
+            // Parse JSON into a list of maps
+            List<Map<String, Object>> parsedList = objectMapper.readValue(deptAction, new TypeReference<List<Map<String, Object>>>() {});
+
+            for (Map<String, Object> map : parsedList) {
+                // Extract values
+                Long employeeRecordId = Long.valueOf(map.get("employeeRecordId").toString());
+                Long officeUnitOrganogramId = Long.valueOf(map.get("officeUnitOrganogramId").toString());
+
+                response.add(employeeRecordId);
+                response.add(officeUnitOrganogramId);
+            }
+            return response;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return response;
+    }
+
 
     public Map<String, Object> closeGievance(MobileGrievanceCloseForwardingDTO mobileGrievanceCloseForwardingDTO, Authentication authentication) throws ParseException {
 
         if (GrievanceCurrentStatus.valueOf(mobileGrievanceCloseForwardingDTO.getAction()) == GrievanceCurrentStatus.CLOSED_ACCUSATION_PROVED) {
 
             if (!mobileGrievanceCloseForwardingDTO.getDeptAction().isEmpty()) {
+
+                List<Long> deptActionOfficers = getDeptActionOfficers(mobileGrievanceCloseForwardingDTO.getDeptAction());
+
                 List<String> employeeList = new ArrayList<>();
 
-                for (Long i : mobileGrievanceCloseForwardingDTO.getDeptAction()) {
-                    employeeList.add(i + "_" + "office_unit_organogram_id_for_later" + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
+                for (int i = 0;  i < deptActionOfficers.size(); i = i + 2) {
+                    employeeList.add(deptActionOfficers.get(i) + "_" + deptActionOfficers.get(i + 1) + "_" + mobileGrievanceCloseForwardingDTO.getOffice_id());
                 }
 
                 GrievanceForwardingCloseDTO grievanceForwardingCloseDTO = GrievanceForwardingCloseDTO.builder()
