@@ -23,7 +23,7 @@ public class MobileGrievanceCloseForwardingDTO {
     private String closingNoteGRODecision;
     private String closingNoteMainReason;
     private String closingNoteSuggestion;
-    private List<Long> deptAction;
+    private String deptAction;
     private String departmentalActionReason;
     private List<FileDTO> files;
     private String fileNameByUser;

@@ -795,7 +795,6 @@ public class MobileGrievanceService {
                 .build();
         return mobileGrievanceResponseDTO;
     }
-
     private String extractOutofParenthesis(String status) {
         if (status == null || !status.contains("(") || !status.contains(")")) {
             return status;
@@ -808,7 +807,6 @@ public class MobileGrievanceService {
             return null;
         }
     }
-
     List<MobileComplainAttachmentInfoDTO> getComplainAttachments(Long complainId) {
         List<FileDerivedDTO> complainAttachments = grievanceService.getGrievancesFiles(complainId);
         List<MobileComplainAttachmentInfoDTO> response = new ArrayList<>();
