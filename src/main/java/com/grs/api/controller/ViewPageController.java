@@ -1399,7 +1399,7 @@ public class ViewPageController {
                 model.addAttribute("currentYear", messageService.getCurrentYearString());
                 model.addAttribute("currentDateMonthYear", messageService.getCurrentDateMonthYearAsString());
                 model.addAttribute("isDrilledDown", isDrilledDown);
-                model.addAttribute("canViewGrievanceDashboard", Utility.isUserAnGROUser(authentication) || Utility.isUserAHOOUser(authentication) || Utility.isUserACentralDashboardRecipient(authentication));
+                model.addAttribute("canViewGrievanceDashboard", Utility.isUserAnGROUser(authentication) || Utility.isUserAHOOUser(authentication) || Utility.isUserACentralDashboardRecipient(authentication) || Utility.isMinistrySystemAdmin(authentication));
                 model.addAttribute("canViewAppealAndSubOfficeDashboard", officeService.hasAccessToAoAndSubOfficesDashboard(userInformation, officeId));
                 model.addAttribute("isDivisionLevelFC", Utility.isDivisionLevelFC(authentication));
                 model.addAttribute("isDistrictLevelFC", Utility.isDistrictLevelFC(authentication));
@@ -1410,6 +1410,7 @@ public class ViewPageController {
                 model.addAttribute("districtId", districtId);
                 model.addAttribute("upazilaId", upazilaId);
                 model.addAttribute("isCabinetDivisionUser",isCabinetDivisionUser);
+                model.addAttribute("isMinistrySystemAdmin",Utility.isMinistrySystemAdmin(authentication));
                 return modelViewService.addNecessaryAttributesAndReturnViewPage(model,
                         authentication,
                         request,
