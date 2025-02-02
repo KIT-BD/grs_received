@@ -80,7 +80,7 @@ public class Utility {
     public static Boolean canViewDashboard(Authentication authentication) {
 
         UserInformation userInformation = extractUserInformationFromAuthentication(authentication);
-        if (userInformation.getOisfUserType().equals(OISFUserType.SERVICE_OFFICER) && userInformation.getOfficeInformation().getOfficeId().equals(28L)) {
+        if (userInformation.getOisfUserType() != null && userInformation.getOisfUserType().equals(OISFUserType.SERVICE_OFFICER) && userInformation.getOfficeInformation().getOfficeId().equals(28L)) {
             return true;
         }
 
