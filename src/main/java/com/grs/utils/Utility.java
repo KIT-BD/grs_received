@@ -78,10 +78,21 @@ public class Utility {
     }
 
     public static Boolean canViewDashboard(Authentication authentication) {
+
+        UserInformation userInformation = extractUserInformationFromAuthentication(authentication);
+        if (userInformation.getOisfUserType() != null && userInformation.getOisfUserType().equals(OISFUserType.SERVICE_OFFICER) && userInformation.getOfficeInformation().getOfficeId().equals(28L)) {
+            return true;
+        }
+
         return !isUserAnGRSUser(authentication) && (isUserAnGROUser(authentication)
                 || isUserAHOOUser(authentication)
                 || isUserACentralDashboardRecipient(authentication)
                 || isCellGRO(authentication));
+    }
+
+    public static Boolean isMinistrySystemAdmin(Authentication authentication) {
+        UserInformation userInformation = extractUserInformationFromAuthentication(authentication);
+        return userInformation.getOisfUserType().equals(OISFUserType.SERVICE_OFFICER) && userInformation.getOfficeInformation().getOfficeId().equals(28L);
     }
 
     public static Boolean isServiceOfficer(Authentication authentication) {
