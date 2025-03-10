@@ -14,6 +14,7 @@ import com.grs.core.domain.projapoti.Office;
 import com.grs.core.domain.projapoti.OfficeLayer;
 import com.grs.core.domain.projapoti.OfficeMinistry;
 import com.grs.core.repo.grs.BaseEntityManager;
+import com.grs.core.repo.grs.DashboardDataRepo;
 import com.grs.utils.CacheUtil;
 import com.grs.utils.Constant;
 import com.grs.utils.Utility;
@@ -25,6 +26,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -59,6 +62,8 @@ public class ReportsService {
     private GrievanceService grievanceService;
     @Autowired
     private BaseEntityManager baseEntityManager;
+    @Autowired
+    private DashboardDataRepo dashboardDataRepo;
 
     public GrievanceMonthlyReportsDTO getGrievanceMonthlyReportsSummarry(String month, Office office) {
         Date date = new Date(Long.valueOf(month));
@@ -199,6 +204,46 @@ public class ReportsService {
                 .rate(rate)
                 .build();
     }
+
+    public MonthlyReportDTO getGrievanceMonthlyReportForGenerateDDMMYY(Long officeId, Long monthDiff, Long startDate, Long endDate) {
+        Long totalSubmitted = dashboardService.countTotalComplaintsByOfficeIdV2(officeId, monthDiff);
+        Long resolvedCount = dashboardService.countResolvedComplaintsByOfficeIdV2(officeId, monthDiff);
+        Long timeExpiredCount = dashboardService.countTimeExpiredComplaintsByOfficeIdV3(officeId, monthDiff);
+        Long runningGrievanceCount = dashboardService.countRunningGrievancesByOfficeIdV2(officeId, monthDiff);
+        Long sentToOtherOfficeCount = dashboardService.countForwardedGrievancesByOfficeIdV2(officeId, monthDiff);
+        Long onlineSubmission = dashboardService.getMonthlyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.ONLINE, monthDiff);
+
+//        Long inherited = dashboardService.countRunningGrievancesByOfficeIdV2(officeId, monthDiff-1);//dashboardService.getGrievanceAscertainCountOfPreviousMonthV2(officeId, monthDiff);
+        Long inherited = dashboardService.countInheritedComplaintsByOfficeId(officeId, monthDiff);
+
+        if (totalSubmitted == null ) {
+            totalSubmitted = 0L;
+        }
+        if (inherited != null && inherited >0) {
+            totalSubmitted +=inherited;
+        }
+        Double rate = 0d;
+        Long totalDecided = resolvedCount + sentToOtherOfficeCount;
+        if (totalSubmitted > 0) {
+            rate = (double) totalDecided / (double)totalSubmitted * 100;
+            rate = (double) Math.round(rate * 100) / 100;
+        }
+
+        return MonthlyReportDTO.builder()
+                .officeId(officeId)
+                .onlineSubmissionCount(onlineSubmission)
+                .conventionalMethodSubmissionCount(dashboardService.getMonthlyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.CONVENTIONAL_METHOD, monthDiff))
+                .selfMotivatedAccusationCount(dashboardService.getMonthlyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.SELF_MOTIVATED_ACCEPTANCE, monthDiff))
+                .inheritedFromLastMonthCount(inherited)
+                .totalCount(totalSubmitted)
+                .sentToOtherCount(sentToOtherOfficeCount)
+                .resolvedCount(resolvedCount)
+                .runningCount(runningGrievanceCount)
+                .timeExpiredCount(timeExpiredCount)
+                .rate(rate)
+                .build();
+    }
+
     public MonthlyReportDTO getAppealMonthlyReportForGenerate(Long officeId, Long monthDiff) {
         Long totalSubmitted = dashboardService.countTotalAppealsByOfficeIdV2(officeId, monthDiff);
         Long resolvedCount = dashboardService.countResolvedAppealsByOfficeIdV2(officeId, monthDiff);
@@ -379,6 +424,205 @@ public class ReportsService {
     public Integer countGeneratedReportByMonthAndYear(Integer month, Integer year) {
         return monthlyReportDAO.countGeneratedReportByMonthAndYear(month, year);
     }
+
+    public List<GrievanceAndAppealMonthlyReportDTO> getCustomReportDDMMYY(long layerLevel, Long officeId, int fromYear, int fromMonth, int fromDate, int toYear, int toMonth, int toDate) {
+        List<GrievanceAndAppealMonthlyReportDTO> reportList = new ArrayList<>();
+
+        LocalDate startDate = LocalDate.of(fromYear, fromMonth, fromDate);
+        LocalDate endDate = LocalDate.of(toYear, toMonth, toDate);
+
+        while (!startDate.isAfter(endDate)) {
+            int currentYear = startDate.getYear();
+            int currentMonth = startDate.getMonthValue();
+            int currentDay = startDate.getDayOfMonth();
+
+            if (officeId.equals(CacheUtil.SELECT_ALL_OPTION_VALUE)) {
+                List<Office> childOffices = this.officeService.getOfficesByLayerLevel(new Long(layerLevel).intValue(), true);
+                if (childOffices != null && !childOffices.isEmpty()) {
+                    for (Office office : childOffices) {
+                        GrievanceAndAppealMonthlyReportDTO reportDTO = getDailyReport(office.getId(), currentYear, currentMonth, currentDay, layerLevel);
+                        reportList.add(reportDTO);
+                    }
+                }
+            } else {
+                GrievanceAndAppealMonthlyReportDTO reportDTO = getDailyReport(officeId, currentYear, currentMonth, currentDay, layerLevel);
+                reportList.add(reportDTO);
+            }
+
+            startDate = startDate.plusDays(1);
+        }
+
+        if (officeId.equals(CacheUtil.SELECT_ALL_OPTION_VALUE)) {
+
+            Map<String, List<GrievanceAndAppealMonthlyReportDTO>> peopleBySomeKey = reportList.stream().collect(Collectors.groupingBy(this::getGroupingByKey, Collectors.mapping((GrievanceAndAppealMonthlyReportDTO p) -> p, toList())));
+
+            List<GrievanceAndAppealMonthlyReportDTO> results = new ArrayList<>();
+            peopleBySomeKey.forEach((k, v) -> {
+                GrievanceAndAppealMonthlyReportDTO rep = new GrievanceAndAppealMonthlyReportDTO();
+                rep.setYear(v.get(0).getYear());
+                rep.setMonth(v.get(0).getMonth());
+//                rep.setDate(v.get(0).getDate()); // <-- Ensure Date is included
+                rep.setOfficeLevel(v.get(0).getOfficeLevel());
+                MonthlyReportDTO monthlyGR = new MonthlyReportDTO();
+                MonthlyReportDTO monthlyAR = new MonthlyReportDTO();
+
+                for (GrievanceAndAppealMonthlyReportDTO reportDTO : v) {
+                    if (reportDTO == null) {
+                        continue;
+                    }
+                    MonthlyReportDTO monthlyGrievanceReport = reportDTO.getMonthlyGrievanceReport();
+                    if (monthlyGrievanceReport != null) {
+                        if (monthlyGrievanceReport.getOnlineSubmissionCount() != null) {
+                            monthlyGR.setOnlineSubmissionCount(monthlyGR.getOnlineSubmissionCount() + monthlyGrievanceReport.getOnlineSubmissionCount());
+                        }
+                        if (monthlyGrievanceReport.getConventionalMethodSubmissionCount() != null) {
+                            monthlyGR.setConventionalMethodSubmissionCount(monthlyGR.getConventionalMethodSubmissionCount() + monthlyGrievanceReport.getConventionalMethodSubmissionCount());
+                        }
+                        if (monthlyGrievanceReport.getSelfMotivatedAccusationCount() != null) {
+                            monthlyGR.setSelfMotivatedAccusationCount(monthlyGR.getSelfMotivatedAccusationCount() + monthlyGrievanceReport.getSelfMotivatedAccusationCount());
+                        }
+                        if (monthlyGrievanceReport.getInheritedFromLastMonthCount() != null) {
+                            monthlyGR.setInheritedFromLastMonthCount(monthlyGR.getInheritedFromLastMonthCount() + monthlyGrievanceReport.getInheritedFromLastMonthCount());
+                        }
+                        if (monthlyGrievanceReport.getTotalCount() != null) {
+                            monthlyGR.setTotalCount(monthlyGR.getTotalCount() + monthlyGrievanceReport.getTotalCount());
+                        }
+                        if (monthlyGrievanceReport.getSentToOtherCount() != null) {
+                            monthlyGR.setSentToOtherCount(monthlyGR.getSentToOtherCount() + monthlyGrievanceReport.getSentToOtherCount());
+                        }
+                        if (monthlyGrievanceReport.getResolvedCount() != null) {
+                            monthlyGR.setResolvedCount(monthlyGR.getResolvedCount() + monthlyGrievanceReport.getResolvedCount());
+                        }
+                        if (monthlyGrievanceReport.getTimeExpiredCount() != null) {
+                            monthlyGR.setTimeExpiredCount(monthlyGR.getTimeExpiredCount() + monthlyGrievanceReport.getTimeExpiredCount());
+                        }
+                        if (monthlyGrievanceReport.getRunningCount() != null) {
+                            monthlyGR.setRunningCount(monthlyGR.getRunningCount() + monthlyGrievanceReport.getRunningCount());
+                        }
+                        if (monthlyGrievanceReport.getRate() != null) {
+                            monthlyGR.setRate((monthlyGR.getRate() + monthlyGrievanceReport.getRate()));
+                        }
+                    }
+                    MonthlyReportDTO monthlyAppealReport = reportDTO.getMonthlyAppealReport();
+                    if (monthlyAppealReport != null) {
+                        if (monthlyAppealReport.getOnlineSubmissionCount() != null) {
+                            monthlyAR.setOnlineSubmissionCount(monthlyAR.getOnlineSubmissionCount() + monthlyAppealReport.getOnlineSubmissionCount());
+                        }
+                        if (monthlyAppealReport.getConventionalMethodSubmissionCount() != null) {
+                            monthlyAR.setConventionalMethodSubmissionCount(monthlyAR.getConventionalMethodSubmissionCount() + monthlyAppealReport.getConventionalMethodSubmissionCount());
+                        }
+                        if (monthlyAppealReport.getSelfMotivatedAccusationCount() != null) {
+                            monthlyAR.setSelfMotivatedAccusationCount(monthlyAR.getSelfMotivatedAccusationCount() + monthlyAppealReport.getSelfMotivatedAccusationCount());
+                        }
+                        if (monthlyAppealReport.getInheritedFromLastMonthCount() != null) {
+                            monthlyAR.setInheritedFromLastMonthCount(monthlyAR.getInheritedFromLastMonthCount() + monthlyAppealReport.getInheritedFromLastMonthCount());
+                        }
+                        if (monthlyAppealReport.getTotalCount() != null) {
+                            monthlyAR.setTotalCount(monthlyAR.getTotalCount() + monthlyAppealReport.getTotalCount());
+                        }
+                        if (monthlyAppealReport.getSentToOtherCount() != null) {
+                            monthlyAR.setSentToOtherCount(monthlyAR.getSentToOtherCount() + monthlyAppealReport.getSentToOtherCount());
+                        }
+                        if (monthlyAppealReport.getResolvedCount() != null) {
+                            monthlyAR.setResolvedCount(monthlyAR.getResolvedCount() + monthlyAppealReport.getResolvedCount());
+                        }
+                        if (monthlyAppealReport.getTimeExpiredCount() != null) {
+                            monthlyAR.setTimeExpiredCount(monthlyAR.getTimeExpiredCount() + monthlyAppealReport.getTimeExpiredCount());
+                        }
+                        if (monthlyAppealReport.getRunningCount() != null) {
+                            monthlyAR.setRunningCount(monthlyAR.getRunningCount() + monthlyAppealReport.getRunningCount());
+                        }
+                        if (monthlyAppealReport.getRate() != null) {
+                            monthlyAR.setRate((monthlyAR.getRate() + monthlyAppealReport.getRate()));
+                        }
+                    }
+
+                }
+
+                monthlyGR.setRate((((monthlyGR.getResolvedCount() + monthlyGR.getSentToOtherCount().doubleValue()) * 100 / monthlyGR.getTotalCount().doubleValue())));
+                monthlyAR.setRate((((monthlyAR.getResolvedCount() + monthlyAR.getSentToOtherCount().doubleValue()) * 100 / monthlyAR.getTotalCount().doubleValue())));
+                rep.setMonthlyGrievanceReport(monthlyGR);
+                rep.setMonthlyAppealReport(monthlyAR);
+                results.add(rep);
+            });
+            return results;
+        } else {
+            return reportList;
+        }
+    }
+
+    public GrievanceAndAppealMonthlyReportDTO getDailyReport(Long officeId, int year, int month, int day, long layerLevel) {
+        GrievanceAndAppealMonthlyReportDTO grievanceAndAppealMonthlyReportDTO;
+        Calendar calendar = Calendar.getInstance();
+
+        // Calculate the report date difference
+        LocalDate reportDate = LocalDate.of(year, month, day);
+        LocalDate currentDate = LocalDate.now();
+        long dayDiff = ChronoUnit.DAYS.between(currentDate, reportDate);
+
+        OfficesGRO officesGRO = this.officesGroService.findOfficesGroByOfficeId(officeId);
+        String officeName = officesGRO == null ? "" : officesGRO.getOfficeNameBangla();
+
+        boolean hasAppealReport = layerLevel < Constant.districtLayerLevel && officeService.hasChildOffice(officeId);
+        MonthlyReportDTO appealReportDTO = null;
+
+        if (hasAppealReport) {
+//            appealReportDTO = getAppealDailyReport(officeId, dayDiff);
+        }
+
+        grievanceAndAppealMonthlyReportDTO = GrievanceAndAppealMonthlyReportDTO.builder()
+                .officeId(officeId)
+                .year(year)
+                .month(month)
+//                .date(day)  // Include the date
+                .monthlyGrievanceReport(getGrievanceDailyReportForGenerate(officeId, dayDiff))
+                .monthlyAppealReport(appealReportDTO)
+                .officeName(officeName)
+                .build();
+
+        return grievanceAndAppealMonthlyReportDTO;
+    }
+
+    public MonthlyReportDTO getGrievanceDailyReportForGenerate(Long officeId, Long dayDiff) {
+        Long totalSubmitted = dashboardDataRepo.countTotalComplaintsByOfficeIdForDay(officeId, dayDiff);
+        Long resolvedCount = dashboardDataRepo.countResolvedComplaintsByOfficeIdForDay(officeId, dayDiff);
+        Long timeExpiredCount = dashboardService.countTimeExpiredComplaintsByOfficeIdForDay(officeId, dayDiff);
+        Long runningGrievanceCount = dashboardService.countRunningGrievancesByOfficeIdForDay(officeId, dayDiff);
+        Long sentToOtherOfficeCount = dashboardDataRepo.countForwardedGrievancesByOfficeIdForDay(officeId, dayDiff);
+        Long onlineSubmission = dashboardDataRepo.getDailyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.ONLINE.name(), dayDiff);
+
+        Long inherited = dashboardDataRepo.countInheritedComplaintsByOfficeIdForDay(officeId, dayDiff);
+
+        if (totalSubmitted == null ) {
+            totalSubmitted = 0L;
+        }
+        if (inherited != null && inherited > 0) {
+            totalSubmitted += inherited;
+        }
+
+        Double rate = 0d;
+        Long totalDecided = resolvedCount + sentToOtherOfficeCount;
+        if (totalSubmitted > 0) {
+            rate = (double) totalDecided / (double) totalSubmitted * 100;
+            rate = (double) Math.round(rate * 100) / 100;
+        }
+
+        return MonthlyReportDTO.builder()
+                .officeId(officeId)
+                .onlineSubmissionCount(onlineSubmission)
+                .conventionalMethodSubmissionCount(dashboardDataRepo.getDailyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.CONVENTIONAL_METHOD.name(), dayDiff))
+                .selfMotivatedAccusationCount(dashboardDataRepo.getDailyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.SELF_MOTIVATED_ACCEPTANCE.name(), dayDiff))
+                .inheritedFromLastMonthCount(inherited)
+                .totalCount(totalSubmitted)
+                .sentToOtherCount(sentToOtherOfficeCount)
+                .resolvedCount(resolvedCount)
+                .runningCount(runningGrievanceCount)
+                .timeExpiredCount(timeExpiredCount)
+                .rate(rate)
+                .build();
+    }
+
+
 
     public List<GrievanceAndAppealMonthlyReportDTO> getCustomReport(long layerLevel, Long officeId, int fromYear, int fromMonth, int toYear, int toMonth) {
         List<GrievanceAndAppealMonthlyReportDTO> reportList = new ArrayList<>();
@@ -643,6 +887,110 @@ public class ReportsService {
 
             return reportDTOS;
         }
+    }
+
+    private List<GrievanceAndAppealMonthlyReportDTO> getMultipleOfficesMergedReportDDMMYY(List<Office> childOffices, Integer fromYear, Integer fromMonth, Integer fromDate, Integer toYear, Integer toMonth, Integer toDate) {
+        List<GrievanceAndAppealMonthlyReportDTO> grievanceAndAppealMonthlyReportDTOS = new ArrayList<>();
+        for (Office childOffice : childOffices) {
+            Long totalOnline = 0L;
+            Long totalSelfMotivated = 0L;
+            Long totalConventional = 0L;
+            Long totalNew = 0L;
+            Long totalInherited = -1L;
+            Long sendToOtherOffices = 0L;
+            Long totalResolved = 0L;
+            Long totalRunning = 0L;
+            Long timeExpired = 0L;
+            Long totalNewAppeal = 0L;
+            Long totalInheritedAppeal = -1L;
+            Long totalResolvedAppeal = 0L;
+            Long totalRunningAppeal = 0L;
+            Long timeExpiredAppeal = 0L;
+            Boolean hasAppealReportFlag = false;
+            Double rate = 0d;
+            Double rateAppeal = 0d;
+
+            if (childOffice.getOfficeLayer() == null) {
+                continue;
+            }
+            for (GrievanceAndAppealMonthlyReportDTO reportDTO : getCustomReportDDMMYY(childOffice.getOfficeLayer().getLayerLevel(), childOffice.getId(), fromYear, fromMonth, fromDate, toYear, toMonth, toDate)) {
+                MonthlyReportDTO monthlyGrievanceReport = reportDTO.getMonthlyGrievanceReport();
+                MonthlyReportDTO monthlyAppealReport = reportDTO.getMonthlyAppealReport();
+                if (monthlyGrievanceReport != null) {
+                    if (totalInherited == -1) {
+                        totalInherited = monthlyGrievanceReport.getInheritedFromLastMonthCount();
+                    }
+                    totalOnline += monthlyGrievanceReport.getOnlineSubmissionCount();
+                    totalSelfMotivated += monthlyGrievanceReport.getSelfMotivatedAccusationCount();
+                    totalConventional += monthlyGrievanceReport.getConventionalMethodSubmissionCount();
+                    totalNew += (monthlyGrievanceReport.getOnlineSubmissionCount()
+                            + monthlyGrievanceReport.getConventionalMethodSubmissionCount()
+                            + monthlyGrievanceReport.getSelfMotivatedAccusationCount());
+                    sendToOtherOffices += monthlyGrievanceReport.getSentToOtherCount();
+                    totalResolved += monthlyGrievanceReport.getResolvedCount();
+                    totalRunning = monthlyGrievanceReport.getRunningCount();
+                    timeExpired = monthlyGrievanceReport.getTimeExpiredCount();
+                }
+                if (monthlyAppealReport != null) {
+                    if (totalInheritedAppeal == -1) {
+                        totalInheritedAppeal = monthlyAppealReport.getInheritedFromLastMonthCount();
+                    }
+                    totalNewAppeal += monthlyAppealReport.getOnlineSubmissionCount();
+                    totalResolvedAppeal += monthlyAppealReport.getResolvedCount();
+                    totalRunningAppeal = monthlyAppealReport.getRunningCount();
+                    timeExpiredAppeal = monthlyAppealReport.getTimeExpiredCount();
+                    hasAppealReportFlag = true;
+                }
+            }
+
+            if (totalNew + totalInherited > 0) {
+                rate = (double) (((totalResolved + sendToOtherOffices) * 1.0 / (totalNew + totalInherited)) * 100);
+                rate = (double) Math.round(rate * 100) / 100;
+            }
+
+            if (totalNewAppeal + totalInheritedAppeal > 0) {
+                rateAppeal = (double) ((totalResolvedAppeal * 1.0 / (totalNewAppeal + totalInheritedAppeal)) * 100);
+                rateAppeal = (double) Math.round(rateAppeal * 100) / 100;
+            }
+            totalInherited = totalInherited == -1 ? 0 : totalInherited;
+            totalInheritedAppeal = totalInheritedAppeal == -1 ? 0 : totalInheritedAppeal;
+
+            grievanceAndAppealMonthlyReportDTOS.add(
+                    GrievanceAndAppealMonthlyReportDTO.builder()
+                            .month(fromMonth)
+                            .officeId(childOffice.getId())
+                            .officeName(childOffice.getNameBangla())
+                            .officeLevel(childOffice.getOfficeLayer().getLayerLevel())
+                            .year(fromYear)
+                            .monthlyGrievanceReport(
+                                    MonthlyReportDTO.builder()
+                                            .onlineSubmissionCount(totalOnline)
+                                            .selfMotivatedAccusationCount(totalSelfMotivated)
+                                            .conventionalMethodSubmissionCount(totalConventional)
+                                            .inheritedFromLastMonthCount(totalInherited)
+                                            .totalCount(totalNew + totalInherited)
+                                            .sentToOtherCount(sendToOtherOffices)
+                                            .resolvedCount(totalResolved)
+                                            .runningCount(totalRunning)
+                                            .rate(rate)
+                                            .timeExpiredCount(timeExpired)
+                                            .build()
+                            )
+                            .monthlyAppealReport(
+                                    MonthlyReportDTO.builder()
+                                            .onlineSubmissionCount(totalNewAppeal)
+                                            .inheritedFromLastMonthCount(totalInheritedAppeal)
+                                            .totalCount(totalNewAppeal + totalInheritedAppeal)
+                                            .resolvedCount(totalResolvedAppeal)
+                                            .runningCount(totalRunningAppeal)
+                                            .timeExpiredCount(timeExpiredAppeal)
+                                            .rate(rateAppeal)
+                                            .build()
+                            )
+                            .build()
+            );
+        }
+        return grievanceAndAppealMonthlyReportDTOS.stream().sorted(Comparator.comparingInt(GrievanceAndAppealMonthlyReportDTO::getOfficeLevel)).collect(toList());
     }
 
 
@@ -946,6 +1294,60 @@ public class ReportsService {
                     .collect(Collectors.toList());
         }
     }
+
+    public List<GrievanceAndAppealMonthlyReportDTO> getLayerWiseBasedReportDDMMYY(Integer level, Integer fromYear, Integer fromMonth, Integer fromDate, Integer toYear, Integer toMonth, Integer toDate, Authentication authentication) {
+        List<Office> childOffices = this.officeService.getOfficesByLayerLevel(level, true);
+        if (Utility.isUserAnOisfUser(authentication)) {
+            OfficeInformation currentUserOfficeInformation = this.officeService.getCurrentLoggedInUserInformation();
+
+            if (currentUserOfficeInformation.getOfficeId() != 28) {
+                childOffices = childOffices
+                        .stream()
+                        .filter(office -> Objects.equals(currentUserOfficeInformation.getOfficeId(), office.getId()))
+                        .collect(toList());
+            }
+        }
+
+        List<GrievanceAndAppealMonthlyReportDTO> reportDTOS = getMultipleOfficesMergedReportDDMMYY(childOffices, fromYear, fromMonth, fromDate, toYear, toMonth, toDate);
+
+        if (level.equals(1)) {
+            final long[] serial = {1};
+
+            Set<Long> excludedOfficeIds = new HashSet<>(Arrays.asList(2131L, 2175L, 53L, 2294L));
+
+            List<GrievanceAndAppealMonthlyReportDTO> prioritizedList = reportDTOS.stream()
+                    .filter(e -> CacheUtil.getOfficeOrder(e.getOfficeId()) != null)
+                    .filter(e -> !excludedOfficeIds.contains(e.getOfficeId()))
+                    .sorted((a, b) -> Long.compare(CacheUtil.getOfficeOrder(a.getOfficeId()), CacheUtil.getOfficeOrder(b.getOfficeId())))
+                    .map(r -> {
+                        r.setSl(serial[0]);
+                        r.getMonthlyGrievanceReport().setSl(serial[0]);
+                        serial[0]++;
+                        return r;
+                    })
+                    .collect(Collectors.toList());
+
+            List<GrievanceAndAppealMonthlyReportDTO> excludedOffices = reportDTOS.stream()
+                    .filter(e -> excludedOfficeIds.contains(e.getOfficeId()))
+                    .map(r -> {
+                        r.setSl(serial[0]);
+                        r.getMonthlyGrievanceReport().setSl(serial[0]);
+                        serial[0]++;
+                        return r;
+                    })
+                    .collect(Collectors.toList());
+
+            return prioritizedList;
+        }
+        else {
+            for (int i=0;i<reportDTOS.size();i++) {
+                reportDTOS.get(i).setSl((long) (i + 1));
+                reportDTOS.get(i).getMonthlyGrievanceReport().setSl((long) (i + 1));
+            }
+            return new ArrayList<>(reportDTOS);
+        }
+    }
+
 
     public List<GrievanceAndAppealMonthlyReportDTO> getLayerWiseWithChildOfficesBasedReport(Integer level, Long firstSelection, Long secondSelection, Integer fromYear, Integer fromMonth, Integer toYear, Integer toMonth) {
         List<Office> childOffices = this.officeService.getOfficesByLayerLevelWithChildOffices(level, firstSelection, secondSelection, true);

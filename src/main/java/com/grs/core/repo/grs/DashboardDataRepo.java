@@ -1,6 +1,7 @@
 package com.grs.core.repo.grs;
 
 import com.grs.core.domain.GrievanceCurrentStatus;
+import com.grs.core.domain.MediumOfSubmission;
 import com.grs.core.domain.grs.DashboardData;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -1653,6 +1654,72 @@ public interface DashboardDataRepo extends JpaRepository<DashboardData, Long> {
                     "AND office_id in (:officeIds) ")
     Long countAllTimeExpiredAppealsByOfficeIds(@Param("officeIds") List<Long> officeIds, @Param("dayDiff") Long dayDiff);
 
-    // end region
+
+
+    @Query(value = "SELECT COALESCE(SUM(cnt),0) FROM ( " +
+            "SELECT COUNT(DISTINCT complain_id) AS cnt FROM complain_history " +
+            "WHERE current_status IN ('NEW', 'RETAKE') " +
+            "AND DATE(created_at) = DATE_ADD(CURDATE(), INTERVAL ?2 DAY) " +
+            "AND office_id = ?1 ) cxt", nativeQuery = true)
+    Long countTotalComplaintsByOfficeIdForDay(Long officeId, Long dayDiff);
+
+    @Query(value = "SELECT COUNT(DISTINCT complain_id) FROM complain_history " +
+            "WHERE current_status = 'CLOSED' " +
+            "AND DATE(created_at) = DATE_ADD(CURDATE(), INTERVAL ?2 DAY) " +
+            "AND office_id = ?1", nativeQuery = true)
+    Long countResolvedComplaintsByOfficeIdForDay(Long officeId, Long dayDiff);
+
+    @Query(value = "SELECT COALESCE(SUM(cnt), 0) FROM ( " +
+            "SELECT COUNT(DISTINCT complain_id) AS cnt FROM complain_history " +
+            "WHERE current_status IN ('NEW', 'RETAKE') " +
+            "AND created_at < DATE_ADD(CURDATE(), INTERVAL ?2 DAY) " +
+            "AND closed_at IS NULL " +
+            "AND DATEDIFF(DATE_ADD(CURDATE(), INTERVAL ?2 DAY), created_at) > ?3 " +
+            "AND office_id = ?1 ) cxt", nativeQuery = true)
+    Long countTimeExpiredComplaintsByOfficeIdForDay(Long officeId, Long dayDiff, Long numberOfDays);
+
+    @Query(value = "SELECT COALESCE(SUM(cnt), 0) FROM ( " +
+            "SELECT COUNT(DISTINCT complain_id) AS cnt FROM complain_history " +
+            "WHERE current_status IN ('NEW', 'RETAKE') " +
+            "AND (closed_at IS NULL OR closed_at > DATE_ADD(CURDATE(), INTERVAL ?2 DAY)) " +
+            "AND office_id = ?1 " +
+            "AND created_at < DATE_ADD(CURDATE(), INTERVAL ?2 DAY)) cxt", nativeQuery = true)
+    Long countRunningGrievancesByOfficeIdForDay(Long officeId, Long dayDiff);
+
+    @Query(value = "SELECT COUNT(DISTINCT complain_id) FROM complain_history " +
+            "WHERE current_status = 'FORWARDED_OUT' " +
+            "AND DATE(created_at) = DATE_ADD(CURDATE(), INTERVAL ?2 DAY) " +
+            "AND office_id = ?1", nativeQuery = true)
+    Long countForwardedGrievancesByOfficeIdForDay(Long officeId, Long dayDiff);
+
+    @Query(value = "SELECT COALESCE(SUM(cnt), 0) FROM ( " +
+            "SELECT COUNT(DISTINCT complain_id) AS cnt FROM complain_history " +
+            "WHERE current_status IN ('NEW', 'RETAKE') " +
+            "AND DATE(created_at) = DATE_ADD(CURDATE(), INTERVAL ?3 DAY) " +
+            "AND medium_of_submission = ?2 " +
+            "AND office_id = ?1 ) cxt", nativeQuery = true)
+    Long getDailyComplaintsCountByOfficeIdAndMediumOfSubmission(Long officeId, String mediumOfSubmission, Long dayDiff);
+
+    @Query(value =
+            "SELECT COALESCE(SUM(cnt), 0) " +
+                    "FROM (" +
+                    "SELECT COUNT(DISTINCT complain_id) AS cnt " +
+                    "FROM complain_history " +
+                    "WHERE current_status IN ('NEW', 'RETAKE') " +
+                    "AND (closed_at IS NULL OR closed_at > DATE_ADD(CURDATE(), INTERVAL ?2 - 1 DAY)) " +  // Not closed before the previous day
+                    "AND created_at < DATE_ADD(CURDATE(), INTERVAL ?2 DAY) " +  // Created before the given day
+                    "AND office_id = ?1 " +
+                    "AND complain_id NOT IN ( " +
+                    "    SELECT DISTINCT complain_id " +
+                    "    FROM complain_history " +
+                    "    WHERE current_status IN ('NEW','RETAKE') " +
+                    "    AND DATE(created_at) >= DATE_ADD(CURDATE(), INTERVAL ?2 DAY) " + // Exclude complaints created on or after the given day
+                    "    AND office_id = ?1 " +
+                    ") " +
+                    ") cxt ", nativeQuery = true)
+    Long countInheritedComplaintsByOfficeIdForDay(Long officeId, Long dayDiff);
+
+
+
 
 }

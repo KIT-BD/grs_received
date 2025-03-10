@@ -20,6 +20,7 @@ import com.grs.core.dao.TagidDAO;
 import com.grs.core.domain.*;
 import com.grs.core.domain.grs.*;
 import com.grs.core.domain.projapoti.*;
+import com.grs.core.repo.grs.DashboardDataRepo;
 import com.grs.core.repo.grs.DashboardTotalResolvedRepo;
 import com.grs.utils.*;
 import lombok.extern.slf4j.Slf4j;
@@ -65,6 +66,8 @@ public class DashboardService {
 
     @Autowired
     private DashboardTotalResolvedRepo dashboardTotalResolvedRepo;
+    @Autowired
+    private DashboardDataRepo dashboardDataRepo;
 
     @Transactional("transactionManager")
     public DashboardData putDashboardDataRecord(GrievanceForwarding grievanceForwarding) {
@@ -2120,4 +2123,30 @@ public class DashboardService {
 
         return this.dashboardDataDAO.getSafetyNetSummary(officeId, programId);
     }
+
+    public Long countTimeExpiredComplaintsByOfficeIdForDay(Long officeId, Long dayDiff) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, dayDiff.intValue()); // Adjust date instead of month
+        Long days = CalendarUtil.getWorkDaysCountBefore(calendar.getTime(), (int) Constant.GRIEVANCE_EXPIRATION_TIME);
+
+        try {
+            return dashboardDataRepo.countTimeExpiredComplaintsByOfficeIdForDay(officeId, dayDiff, days);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return 0L;
+        }
+    }
+
+    public Long countRunningGrievancesByOfficeIdForDay(Long officeId, Long dayDiff) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, dayDiff.intValue()); // Adjust for days instead of months
+        return dashboardDataRepo.countRunningGrievancesByOfficeIdForDay(officeId, dayDiff);
+    }
+
+//    public Long countInheritedComplaintsByOfficeIdForDay(Long officeId, Long dayDiff) {
+//        Calendar calendar = Calendar.getInstance();
+//        calendar.add(Calendar.DAY_OF_MONTH, dayDiff.intValue()); // Adjust for days instead of months
+//        return dashboardDataRepo.countInheritedComplaintsByOfficeIdForDay(officeId, dayDiff, dayDiff - 1);
+//    }
+
 }

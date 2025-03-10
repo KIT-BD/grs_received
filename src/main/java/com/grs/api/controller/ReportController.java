@@ -170,6 +170,19 @@ public class ReportController {
         log.info("View Page Request : /api/layerWise/{}/reports/from/{}/{}/to/{}/{}", level, fromYear, fromMonth, toYear, toMonth);
         return reportsService.getLayerWiseBasedReport(level, fromYear, fromMonth, toYear, toMonth, authentication);
     }
+    @RequestMapping(value = "/api/layerWise/{level}/reports/from/{fromYear}/{fromMonth}/{fromDate}/to/{toYear}/{toMonth}/{toDate}", method = RequestMethod.GET)
+    public List<GrievanceAndAppealMonthlyReportDTO> getLayerWiseReportDDMMYY(Authentication authentication,
+                                                                       @PathVariable("level") Integer level,
+                                                                       @PathVariable("fromYear") Integer fromYear,
+                                                                       @PathVariable("fromMonth") Integer fromMonth,
+                                                                       @PathVariable("fromDate") Integer fromDate,
+                                                                       @PathVariable("toYear") Integer toYear,
+                                                                       @PathVariable("toMonth") Integer toMonth,
+                                                                       @PathVariable("toDate") Integer toDate) {
+        log.info("View Page Request : /api/layerWise/{}/reports/from/{}/{}/{}/to/{}/{}/{}", level, fromYear, fromMonth, fromDate, toYear, toMonth, toDate);
+//        return reportsService.getLayerWiseBasedReportDDMMYY(level, fromYear, fromMonth, fromDate, toYear, toMonth, toDate, authentication);
+        return reportsService.getLayerWiseBasedReport(level, fromYear, fromMonth, toYear, toMonth, authentication);
+    }
 
     @RequestMapping(value = "/api/layerWiseWithChildOffices/{level}/reports/from/{fromYear}/{fromMonth}/to/{toYear}/{toMonth}", method = RequestMethod.GET)
     public List<GrievanceAndAppealMonthlyReportDTO> getLayerWiseWithChildOfficesReport(Authentication authentication,
