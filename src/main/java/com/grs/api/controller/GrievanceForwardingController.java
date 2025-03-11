@@ -136,8 +136,8 @@ public class GrievanceForwardingController {
     }
 
     @RequestMapping(value = "/api/gro/history/{grievanceId}", method =  RequestMethod.GET)
-    public List<GrievanceForwardingEmployeeRecordsDTO> getGroHistory(@PathVariable("grievanceId") Long grievanceId){
-        return this.grievanceForwardingService.getGroHistory(grievanceId);
+    public List<GrievanceForwardingEmployeeRecordsDTO> getGroHistory(Authentication authentication, @PathVariable("grievanceId") Long grievanceId){
+        return this.grievanceForwardingService.getGroHistory(grievanceId, authentication);
     }
 
     @RequestMapping(value = "/api/grievance/inspection/initiate", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
