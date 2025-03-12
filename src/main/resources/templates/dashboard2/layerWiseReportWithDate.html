@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 
-<div th:fragment="layerWiseReport" th:remove="tag">
+<div th:fragment="layerWiseReportWithDate" th:remove="tag">
     <div class="panel panel-default" style="background: white;">
-        <div class="panel-body" id="layerWiseReport">
-            <div class="font-lg bold text-center margin-bottom-20">অভিযোগ প্রতিকার-সংক্রান্ত স্তরভিত্তিক প্রতিবেদন </div>
+        <div class="panel-body" id="layerWiseReportWithDate">
+            <div class="font-lg bold text-center margin-bottom-20">অভিযোগ প্রতিকার-সংক্রান্ত স্তরভিত্তিক প্রতিবেদন (তারিখসহ)</div>
             <div class="portlet-title remove-on-print" style="margin: 0px 20px;">
                 <div class="row margin-bottom-20 office-selection">
-                    <select id="layerWiseSelect" class="select2 form-control input-inline" data-width="260px">
+                    <select id="layerWiseSelectWithDate" class="select2 form-control input-inline" data-width="260px">
                         <option value="" selected disabled th:text="#{select.x(#{office.type})}"></option>
                         <option value="1" th:text="#{option.ministry.division}"></option>
                         <option value="2" th:text="#{option.directorate}"></option>
@@ -23,7 +23,7 @@
                         <span>মাস</span>
                     </label>
                     <div class="col-sm-3">
-                        <div class='input-group date' id="layerWiseReportFrom">
+                        <div class='input-group date' id="layerWiseReportWithDateFrom">
                             <input class="form-control" style="font-size: 14px!important;" type="text" readonly>
                             <span class="input-group-addon" style="width: auto;">
                             <span class="glyphicon glyphicon-calendar"></span>
@@ -34,7 +34,7 @@
                         <span>থেকে</span>
                     </label>
                     <div class="col-sm-3">
-                        <div class='input-group date' id="layerWiseReportTo">
+                        <div class='input-group date' id="layerWiseReportWithDateTo">
                             <input class="form-control" style="font-size: 14px!important;" type="text" readonly>
                             <span class="input-group-addon" style="width: auto;">
                             <span class="glyphicon glyphicon-calendar"></span>
@@ -57,7 +57,7 @@
                 </div>
             </h4>
             <div class="row">
-                <div class="panel-group accordion" id="accordionLayerWiseReports">
+                <div class="panel-group accordion" id="accordionLayerWiseReportsWithDate">
                     <div class="panel panel-default margin-top-10">
                         <div class="panel-heading">
                             <h4 class="panel-title">
@@ -98,78 +98,78 @@
                             </div>
                         </div>
                     </div>
-                    <div class="panel panel-default margin-top-20">
-                        <div class="panel-heading">
-                            <h4 class="panel-title">
-                                <a class="accordion-toggle caption-subject text-center font-purple bold">আপিল নিষ্পত্তির সারসংক্ষেপ</a>
-                            </h4>
-                        </div>
-                        <div class="panel-collapse in" id="layerWiseReportCollapse_1_2">
-                            <div class="panel-body">
-                                <div class="table-responsive">
-                                    <table class="table table-bordered table-advance table-striped table-hover" id="appealLayerWiseReportTable">
-                                        <thead>
-                                        <tr>
-                                            <th rowspan="2" class="text-center">অফিসের নাম</th>
-                                            <th rowspan="2" class="text-center">বিবেচ্য মাসে প্রাপ্ত আপিলের সংখ্যা</th>
-                                            <th rowspan="2" class="text-center">পূর্ববর্তী মাসের জের</th>
-                                            <th rowspan="2" class="text-center">মোট আপিল</th>
-                                            <th rowspan="2" class="text-center">বিবেচ্য মাসে নিষ্পত্তিকৃত আপিলের সংখ্যা</th>
-                                            <th colspan="2" class="text-center">চলমান আপিলের সংখ্যা</th>
-                                            <th rowspan="2" class="text-center">আপিল নিষ্পত্তির হার (%)</th>
-                                        </tr>
-                                        <tr>
-                                            <th class="text-center">নির্ধারিত সময় অতিক্রান্ত হয়নি</th>
-                                            <th class="text-center">নির্ধারিত সময় অতিক্রান্ত হয়েছে</th>
-                                        </tr>
-                                        </thead>
-                                        <tbody>
-                                        <tr>
-                                            <td colspan='8' class='text-center'>দুঃখিত! কোনো তথ্য পাওয়া যায়নি</td>
-                                        </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+<!--                    <div class="panel panel-default margin-top-20">-->
+<!--                        <div class="panel-heading">-->
+<!--                            <h4 class="panel-title">-->
+<!--                                <a class="accordion-toggle caption-subject text-center font-purple bold">আপিল নিষ্পত্তির সারসংক্ষেপ</a>-->
+<!--                            </h4>-->
+<!--                        </div>-->
+<!--                        <div class="panel-collapse in" id="layerWiseReportCollapse_1_2">-->
+<!--                            <div class="panel-body">-->
+<!--                                <div class="table-responsive">-->
+<!--                                    <table class="table table-bordered table-advance table-striped table-hover" id="appealLayerWiseReportTable">-->
+<!--                                        <thead>-->
+<!--                                        <tr>-->
+<!--                                            <th rowspan="2" class="text-center">অফিসের নাম</th>-->
+<!--                                            <th rowspan="2" class="text-center">বিবেচ্য মাসে প্রাপ্ত আপিলের সংখ্যা</th>-->
+<!--                                            <th rowspan="2" class="text-center">পূর্ববর্তী মাসের জের</th>-->
+<!--                                            <th rowspan="2" class="text-center">মোট আপিল</th>-->
+<!--                                            <th rowspan="2" class="text-center">বিবেচ্য মাসে নিষ্পত্তিকৃত আপিলের সংখ্যা</th>-->
+<!--                                            <th colspan="2" class="text-center">চলমান আপিলের সংখ্যা</th>-->
+<!--                                            <th rowspan="2" class="text-center">আপিল নিষ্পত্তির হার (%)</th>-->
+<!--                                        </tr>-->
+<!--                                        <tr>-->
+<!--                                            <th class="text-center">নির্ধারিত সময় অতিক্রান্ত হয়নি</th>-->
+<!--                                            <th class="text-center">নির্ধারিত সময় অতিক্রান্ত হয়েছে</th>-->
+<!--                                        </tr>-->
+<!--                                        </thead>-->
+<!--                                        <tbody>-->
+<!--                                        <tr>-->
+<!--                                            <td colspan='8' class='text-center'>দুঃখিত! কোনো তথ্য পাওয়া যায়নি</td>-->
+<!--                                        </tr>-->
+<!--                                        </tbody>-->
+<!--                                    </table>-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                        </div>-->
+<!--                    </div>-->
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<script type="text/javascript" th:fragment="layerWiseReportScript">
-
+<script type="text/javascript" th:fragment="layerWiseReportWithDateScript">
     var ministries = [];
 
     function bindlayerWiseInputFieldChangeEvents() {
-        var dateFieldFrom = $("#layerWiseReportFrom");
-        var dateFieldTo = $("#layerWiseReportTo");
+        var dateFieldFrom = $("#layerWiseReportWithDateFrom");
+        var dateFieldTo = $("#layerWiseReportWithDateTo");
         dateFieldFrom.datepicker().on("changeDate", function(event) {
-            $("#layerWiseReport .month-name-from").text(dateFieldFrom.find("input").val());
+            $("#layerWiseReportWithDate .month-name-from").text(dateFieldFrom.find("input").val());
         });
         dateFieldTo.datepicker().on("changeDate", function(event) {
-            $("#layerWiseReport .month-name-to").text(dateFieldTo.find("input").val());
+            $("#layerWiseReportWithDate .month-name-to").text(dateFieldTo.find("input").val());
         });
-        $("#layerWiseReport .office-selection").on("change", "select", function (event) {
+        $("#layerWiseReportWithDate .office-selection").on("change", "select", function (event) {
             event.stopPropagation();
             var officeId = $("#secondSelection").val();
             if(officeId && !isNaN(parseInt(officeId))) {
                 var officeName = $("#secondSelection option:selected").text();
-                $("#layerWiseReport .office-name-selected").text(officeName);
+                $("#layerWiseReportWithDate .office-name-selected").text(officeName);
             } else {
-                $("#layerWiseReport .office-name-selected").text("");
+                $("#layerWiseReportWithDate .office-name-selected").text("");
             }
         })
 
     }
 
     function bindlayerWiseReportViewAction() {
-        $("#layerWiseReport .view-report").on("click", function () {
-            var level = $("#layerWiseSelect").val();
-            var dateFrom = $("#layerWiseReportFrom").datepicker("getDate");
-            var dateTo = $("#layerWiseReportTo").datepicker("getDate");
+
+        $("#layerWiseReportWithDate .view-report").on("click", function () {
+            var level = $("#layerWiseSelectWithDate").val();
+            var dateFrom = $("#layerWiseReportWithDateFrom").datepicker("getDate");
+            var dateTo = $("#layerWiseReportWithDateTo").datepicker("getDate");
             if(!level || isNaN(parseInt(level))) {
                 toastr.error("দপ্তর নির্বাচন সঠিক নয়", null, {positionClass: 'toast-top-center'});
             } else if(!dateFrom || !dateTo) {
@@ -324,7 +324,7 @@
     }
 
     function printlayerWiseReport() {
-        $("#layerWiseReport .print-report").on("click", function () {
+        $("#layerWiseReportWithDate .print-report").on("click", function () {
             var mywindow = window.open('', 'PRINT', "width="+screen.availWidth+",height="+screen.availHeight);
             mywindow.document.write('<html><head>');
             mywindow.document.write('<style> @media screen { body{ font-family: "kalpurushregular" !important;font-size: 8px; box-sizing: border-box; width:98%; height: 98%; margin: 0px; padding: 0px; font-weight: 300; }h1, h2, h3, h4, h5, h6 {font-family: "kalpurushregular" !important;font-size: 8px;}.text-center {text-align: center;} input{ font-size: 8px !important; } .double-line{ width:100%; height: 4.6%; } .single-line{ box-sizing: border-box; width:100%; height: 2.3%; padding-bottom: .2%; } .double-line input{ height: 100%; width: 75%; box-sizing: border-box; float:left; border: thin solid black; padding-left:1%; } .single-line input{ height: 100%; width: 75%; display: inline-block; box-sizing: border-box; float: left; border: thin solid black ; border-width: thin; padding-left:1%; } .input{ height: 100%; width: 63%; display: inline-block; box-sizing: border-box; float: left; } .fee-input{ height: 20%; width: 16%; display: inline-block; float: left; box-sizing: border-box; } .label{ box-sizing: border-box; width: 23%; height: 100%; vertical-align: top; display: inline-block; float: left; margin-right: 2%; padding: .7%; } .label-independent{ box-sizing: border-box; width: 100%; height: 1%; vertical-align: top; display: inline-block; float: left; margin-right: 0%; } .element{ box-sizing: border-box; width: 60% } .left_top{ height: 50%; text-align: left; } .right_bottom{ height: 50%; text-align: right; } .left_bottom{ height: 50%; text-align: left; } table, th, td, tr { font-family: "kalpurushregular"; box-sizing: border-box; border: .5px solid black; border-collapse: collapse; padding: 1px; } .table{ font-family: "kalpurushregular" width: 100%; height: 15%; font-size: 8.6px; } .photo{ box-sizing: border-box; width:100%; height: 13%; } .photo-tabel{ width: 45%; height: 100%; font-size: 8.6px; } .page-break{ page-break-after: always; } .body-border{ border: 1px solid black; padding: 2%;; } .attachements{ width:100%; height: 8%; } td img{ display: block; width:100%; } } @media print{ body{ font-family: "kalpurushregular" !important;font-size: 8px; box-sizing: border-box; width:98%; height: 98%; margin: 0px; padding: 0px; font-weight: 300; }h1, h2, h3, h4, h5, h6 {font-family: "kalpurushregular" !important;font-size: 8px;}.text-center {text-align: center;} input{ font-size: 8px !important; } .double-line{ width:100%; height: 4.6%; } .single-line{ box-sizing: border-box; width:100%; height: 2.3%; padding-bottom: .2%; } .double-line input{ height: 100%; width: 75%; box-sizing: border-box; float:left; border: thin solid black; padding-left:1%; } .single-line input{ height: 100%; width: 75%; display: inline-block; box-sizing: border-box; float: left; border: thin solid black ; border-width: thin; padding-left:1%; } .input{ height: 100%; width: 63%; display: inline-block; box-sizing: border-box; float: left; } .fee-input{ height: 20%; width: 16%; display: inline-block; float: left; box-sizing: border-box; } .label{ box-sizing: border-box; width: 23%; height: 100%; vertical-align: top; display: inline-block; float: left; margin-right: 2%; padding: .7%; } .label-independent{ box-sizing: border-box; width: 100%; height: 1%; vertical-align: top; display: inline-block; float: left; margin-right: 0%; } .element{ box-sizing: border-box; width: 60% } .left_top{ height: 50%; text-align: left; } .right_bottom{ height: 50%; text-align: right; } .left_bottom{ height: 50%; text-align: left; } table, th, td, tr { font-family: "kalpurushregular"; box-sizing: border-box; border: .5px solid black; border-collapse: collapse; padding: 1px; } .table{ font-family: "kalpurushregular" width: 100%; height: 15%; font-size: 8.6px; } .photo{ box-sizing: border-box; width:100%; height: 13%; } .photo-tabel{ width: 45%; height: 100%; font-size: 8.6px; } .page-break{ page-break-after: always; } .body-border{ border: 1px solid black; padding: 2%;; } .attachements{ width:100%; height: 8%; } td img{ display: block; width:100%; } } </style>');
@@ -410,13 +410,13 @@
     }
 
 
-    function initlayerWiseReportTabContents() {
-        initReportDatepicker($("#layerWiseReportFrom"));
-        initReportDatepicker($("#layerWiseReportTo"));
-        $("#layerWiseReport").find(".form-inline").removeClass("form-inline");
+    function initlayerWiseReportWithDateTabContents() {
+        initReportDatepickerDDMMYY($("#layerWiseReportWithDateFrom"));
+        initReportDatepickerDDMMYY($("#layerWiseReportWithDateTo"));
+        $("#layerWiseReportWithDate").find(".form-inline").removeClass("form-inline");
         bindlayerWiseInputFieldChangeEvents();
         bindlayerWiseReportViewAction();
         printlayerWiseReport();
-        $('#layerWiseSelect').select2();
+        $('#layerWiseSelectWithDate').select2();
     }
 </script>

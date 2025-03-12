@@ -47,6 +47,9 @@
     <div class="tab-container" id="tabLayerWiseReport_body">
         <div th:replace="dashboard2/layerWiseReport :: layerWiseReport"></div>
     </div>
+    <div class="tab-container" id="tabLayerWiseReportWithDate_body">
+        <div th:replace="dashboard2/layerWiseReportWithDate :: layerWiseReportWithDate"></div>
+    </div>
     <div class="tab-container" id="tabLocationBasedReport_body">
         <div th:replace="dashboard2/locationBasedReport :: locationBasedReport"></div>
     </div>
@@ -156,6 +159,7 @@
     <th:block th:replace="dashboard2/customReport :: customReportScript"></th:block>
     <th:block th:replace="dashboard2/ministryReport :: ministryReportScript"></th:block>
     <th:block th:replace="dashboard2/layerWiseReport :: layerWiseReportScript"></th:block>
+    <th:block th:replace="dashboard2/layerWiseReportWithDate :: layerWiseReportWithDateScript"></th:block>
     <th:block th:replace="dashboard2/locationBasedReport :: locationBasedReportScript"></th:block>
     <th:block th:replace="dashboard2/safetyNetDashboard :: safetyNetDashboardScript"></th:block>
     <th:block th:replace="dashboard2/upazilaWiseSafetynetGrievanceReport :: upazilaWiseSafetynetGrievanceReportScript"></th:block>
@@ -1807,6 +1811,7 @@
         printRegister();
         printSuggestion();
         initDashboardMenuCollapseAndHide();
+        initlayerWiseReportWithDateTabContents();
 
         initGrievanceGraph("Graph");
         initGrievanceGraph("AppealGraph");

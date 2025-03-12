@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.sql.Timestamp;
 import java.util.Date;
 import java.util.List;
 
@@ -1353,7 +1354,6 @@ public interface DashboardDataRepo extends JpaRepository<DashboardData, Long> {
 
     Long countTotalComplaintsByOfficeIdV2(Long officeId, Long monthDiff);
 
-
     @Query(value =
             "SELECT COALESCE(SUM(cnt), 0) " +
                 "FROM ("+
@@ -1653,6 +1653,63 @@ public interface DashboardDataRepo extends JpaRepository<DashboardData, Long> {
                     "AND office_id in (:officeIds) ")
     Long countAllTimeExpiredAppealsByOfficeIds(@Param("officeIds") List<Long> officeIds, @Param("dayDiff") Long dayDiff);
 
-    // end region
+    @Query(value = "select distinct created_at as cnt from complain_history " +
+            "where current_status in ('NEW','RETAKE') " +
+            "and created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00') " +
+            "and DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59') " +
+            "and office_id = ?1", nativeQuery = true)
+    List<Timestamp> findDistinctTotalSubmitted(Long officeId, Long monthDiff);
 
+    @Query(value = "select distinct created_at from complain_history \n" +
+            "where current_status = 'CLOSED' \n" +
+            "and created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00') \n" +
+            "and DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59') \n" +
+            "and office_id = ?1", nativeQuery = true)
+    List<Timestamp> findDistinctResolvedComplaints(Long officeId, Long monthDiff);
+
+    @Query(value = "select distinct created_at from complain_history \n" +
+            "where current_status in ('NEW','RETAKE') \n" +
+            "and created_at < DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00') \n" +
+            "and closed_at is null \n" +
+            "and DATEDIFF(DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00'), created_at) > 30 \n" +
+            "and office_id = ?1", nativeQuery = true)
+    List<Timestamp> findDistinctTimeExpiredComplaints(Long officeId, Long monthDiff);
+
+    @Query(value = "select distinct created_at from complain_history \n" +
+            "where current_status in ('NEW', 'RETAKE') \n" +
+            "and (closed_at is null or closed_at > DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59')) \n" +
+            "and office_id = ?1 \n" +
+            "and created_at < DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59')", nativeQuery = true)
+    List<Timestamp> findDistinctRunningGrievances(Long officeId, Long monthDiff);
+
+    @Query(value = "select distinct created_at from complain_history \n" +
+            "where current_status = 'FORWARDED_OUT' \n" +
+            "and created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00') \n" +
+            "and DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59') \n" +
+            "and office_id = ?1", nativeQuery = true)
+    List<Timestamp> findDistinctForwardedGrievances(Long officeId, Long monthDiff);
+
+    @Query(value = "select distinct created_at from complain_history \n" +
+            "where current_status in ('NEW', 'RETAKE') \n" +
+            "and created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH), '%Y-%m-01 00:00:00') \n" +
+            "and DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH)), '%Y-%m-%d 23:59:59') \n" +
+            "and medium_of_submission = ?2 \n" +
+            "and office_id = ?1", nativeQuery = true)
+    List<Timestamp> findDistinctMediumOfSubmission(Long officeId, String medium, Long monthDiff);
+
+    @Query(value = "SELECT DISTINCT created_at \n" +
+            "FROM complain_history \n" +
+            "WHERE current_status IN ('NEW', 'RETAKE') \n" +
+            "AND (closed_at IS NULL OR closed_at > DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH)), '%Y-%m-%d 23:59:59')) \n" +
+            "AND created_at < DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH)), '%Y-%m-%d 23:59:59') \n" +
+            "AND office_id = ?1 \n" +
+            "AND complain_id NOT IN (\n" +
+            "    SELECT DISTINCT complain_id \n" +
+            "    FROM complain_history \n" +
+            "    WHERE current_status IN ('NEW', 'RETAKE') \n" +
+            "    AND created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00') \n" +
+            "    AND DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59') \n" +
+            "    AND office_id = ?1\n" +
+            ")", nativeQuery = true)
+    List<Timestamp> findDistinctInheritedComplaints(Long officeId, Long currMonth, Long prevMonth);
 }
