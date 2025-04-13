@@ -66,6 +66,10 @@ public class Utility {
         if (userInformation.getOfficeInformation() != null && userInformation.getOisfUserType() == OISFUserType.GRO) {
             return true;
         }
+        // Cell View Bypass for Anamul Ahsan of Cabinet Division
+        else if (userInformation.getOfficeInformation() != null && userInformation.getOfficeInformation().getEmployeeRecordId().equals(89946L)) {
+            return true;
+        }
         return false;
     }
 
