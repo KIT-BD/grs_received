@@ -194,6 +194,9 @@ public class ReportsService {
             rate = (double) Math.round(rate * 100) / 100;
         }
 
+        // Manual Fix for Resolved Percentage of The Reports that are Greater than 100
+        if (rate > 100.0) rate = 100.0;
+
         return MonthlyReportDTO.builder()
                 .officeId(officeId)
                 .onlineSubmissionCount(onlineSubmission)
@@ -727,6 +730,9 @@ public class ReportsService {
             }
             totalInherited = totalInherited == -1 ? 0 : totalInherited;
             totalInheritedAppeal = totalInheritedAppeal == -1 ? 0 : totalInheritedAppeal;
+
+            // Manual Fix for Resolved Percentage of The Reports that are Greater than 100
+            if (rate > 100.0 ) rate = 100d;
 
             grievanceAndAppealMonthlyReportDTOS.add(
                     GrievanceAndAppealMonthlyReportDTO.builder()
