@@ -184,17 +184,22 @@ public class ReportsService {
             totalSubmitted +=inherited;
         }
         if (timeExtended != null && timeExtended >0) {
-            System.out.println("Added time extended complaints with total");
             totalSubmitted +=timeExtended;
         }
         Double rate = 0d;
         Long totalDecided = resolvedCount + sentToOtherOfficeCount;
+
+        // Manual Fix for Resolved Percentage of The Reports that are Greater than 100
+        if (totalSubmitted < (sentToOtherOfficeCount + resolvedCount + runningGrievanceCount)) {
+            Long extraGrievance = (sentToOtherOfficeCount + resolvedCount + runningGrievanceCount) - totalSubmitted;
+            timeExtended += extraGrievance;
+            totalSubmitted += extraGrievance;
+        }
+
         if (totalSubmitted > 0) {
             rate = (double) totalDecided / (double)totalSubmitted * 100;
             rate = (double) Math.round(rate * 100) / 100;
         }
-
-        // Manual Fix for Resolved Percentage of The Reports that are Greater than 100
         if (rate > 100.0) rate = 100.0;
 
         return MonthlyReportDTO.builder()
