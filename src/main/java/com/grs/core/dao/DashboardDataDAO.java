@@ -151,7 +151,7 @@ public class DashboardDataDAO {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.MONTH, monthDiff.intValue());
         calendar.set(Calendar.DAY_OF_MONTH, 1);
-        return dashboardDataRepo.countRunningGrievancesByOfficeIdV2(officeId, monthDiff);
+        return dashboardDataRepo.countRunningGrievancesByOfficeIdV2(officeId, monthDiff, monthDiff - 1);
     }
 
     public Long countInheritedComplaintsByOfficeId(Long officeId, Long monthDiff) {

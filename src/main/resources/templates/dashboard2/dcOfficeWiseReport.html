@@ -68,6 +68,7 @@
                                             <th rowspan="2" class="text-center">অফিসের নাম</th>
                                             <th colspan="3" class="text-center">বিবেচ্য মাসে প্রাপ্ত অভিযোগের সংখ্যা</th>
                                             <th rowspan="2" class="text-center">পূর্ববর্তী মাসের জের</th>
+                                            <th rowspan="2" class="text-center">সময় বর্ধিত</th>
                                             <th rowspan="2" class="text-center">মোট অভিযোগ</th>
                                             <th rowspan="2" class="text-center">অন্য দপ্তরে প্রেরিত</th>
                                             <th rowspan="2" class="text-center">বিবেচ্য মাসে নিষ্পত্তিকৃত অভিযোগ</th>
@@ -312,7 +313,7 @@
                     var appealReportBody = "<tr class='text-center'><td>(ক)</td><td>(খ)</td><td>(গ)</td><td>(ঘ)</td><td>(ঙ)</td><td>(চ)</td><td>(ছ)</td></tr>";
                     var hasAppealReportFlag = false;
 
-                    var totalNew = 0, totalInherited = 0, sendToOtherOffices = 0, totalResolved = 0, totalRunning = 0, timeExpired = 0;
+                    var totalNew = 0, totalInherited = 0, sendToOtherOffices = 0, totalResolved = 0, totalRunning = 0, timeExpired = 0, timeExtended = 0;
                     var totalNewAppeal = 0, totalInheritedAppeal = 0, totalResolvedAppeal = 0, totalRunningAppeal = 0, timeExpiredAppeal = 0;
 
                     response.forEach(function (item) {
@@ -328,6 +329,7 @@
                                 "<td>" + ("" + monthlyGrievanceReport.conventionalMethodSubmissionCount).toBanglaNumber() + "</td>" +
                                 "<td>" + ("" + monthlyGrievanceReport.selfMotivatedAccusationCount).toBanglaNumber() + "</td>" +
                                 "<td>" + ("" + monthlyGrievanceReport.inheritedFromLastMonthCount).toBanglaNumber() + "</td>" +
+                                "<td>" + ("" + monthlyGrievanceReport.timeExtendedCount).toBanglaNumber() + "</td>" +
                                 "<td>" + ("" + monthlyGrievanceReport.totalCount).toBanglaNumber() + "</td>" +
                                 "<td>" + ("" + monthlyGrievanceReport.sentToOtherCount).toBanglaNumber() + "</td>" +
                                 "<td>" + ("" + monthlyGrievanceReport.resolvedCount).toBanglaNumber() + "</td>" +
@@ -343,6 +345,7 @@
                             totalResolved += monthlyGrievanceReport.resolvedCount;
                             totalRunning += monthlyGrievanceReport.runningCount;
                             timeExpired += monthlyGrievanceReport.timeExpiredCount;
+                            timeExtended += monthlyGrievanceReport.timeExtendedCount;
                         } else {
                             grievanceReportBody += "<tr class='text-center'>" +
                                 "<td colspan='10'>কোনো তথ্য পাওয়া যায়নি</td>" +
@@ -380,12 +383,13 @@
                         "<td colspan='2'>সর্বমোট</td>" +
                         "<td colspan='3'>" + ("" + totalNew).toBanglaNumber() + "</td>" +
                         "<td>" + ("" + totalInherited).toBanglaNumber() + "</td>" +
-                        "<td>" + ("" + (totalNew + totalInherited)).toBanglaNumber() + "</td>" +
+                        "<td>" + ("" + timeExtended).toBanglaNumber() + "</td>" +
+                        "<td>" + ("" + (totalNew + totalInherited + timeExtended)).toBanglaNumber() + "</td>" +
                         "<td>" + ("" + sendToOtherOffices).toBanglaNumber() + "</td>" +
                         "<td>" + ("" + totalResolved).toBanglaNumber() + "</td>" +
                         "<td>" + ("" + totalRunning).toBanglaNumber() + "</td>" +
                         "<td>" + ("" + timeExpired).toBanglaNumber() + "</td>" +
-                        "<td>" + ("" + ((totalResolved + sendToOtherOffices) * 100 / (totalNew + totalInherited)).toFixed(2)).toBanglaNumber() + "</td>" +
+                        "<td>" + ("" + ((totalResolved + sendToOtherOffices) * 100 / (totalNew + totalInherited + timeExtended)).toFixed(2)).toBanglaNumber() + "</td>" +
                         "</tr>";
 
                     // First append the report body
