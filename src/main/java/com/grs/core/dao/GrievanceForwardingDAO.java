@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.converter.json.GsonBuilderUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -210,6 +211,12 @@ public class GrievanceForwardingDAO {
 
         Long officeId = userInformation.getOfficeInformation().getOfficeId();
         Long officeUnitOrganogramId = userInformation.getOfficeInformation().getOfficeUnitOrganogramId();
+
+        // Cell View Bypass for Anamul Ahsan of Cabinet Division
+        if(userInformation.getOfficeInformation().getEmployeeRecordId().equals(89946L)){
+            officeUnitOrganogramId=12L;
+        }
+
         Specification specification = this.getListViewSpecification(officeUnitOrganogramId, officeId, listViewType, userInformation.getUserId());
         return this.grievanceForwardingRepo.findAll(specification, pageable);
     }
@@ -231,6 +238,12 @@ public class GrievanceForwardingDAO {
         Long officeId = userInformation.getOfficeInformation().getOfficeId();
         Long officeUnitOrganogramId = userInformation.getOfficeInformation().getOfficeUnitOrganogramId();
         Long userId = userInformation.getUserId();
+
+        // Cell View Bypass for Anamul Ahsan of Cabinet Division
+        if(userInformation.getOfficeInformation().getEmployeeRecordId().equals(89946L)){
+            officeUnitOrganogramId=12L;
+        }
+
         Specification<GrievanceForwarding> specification = this.getListViewSpecificationWithSearch(officeUnitOrganogramId, officeId, userId, listViewType, seachCriteria);
         return this.grievanceForwardingRepo.findAll(specification, pageable);
     }
@@ -241,6 +254,12 @@ public class GrievanceForwardingDAO {
         Long officeId = userInformation.getOfficeInformation().getOfficeId();
         Long officeUnitOrganogramId = userInformation.getOfficeInformation().getOfficeUnitOrganogramId();
         Long userId = userInformation.getUserId();
+
+        // Cell View Bypass for Anamul Ahsan of Cabinet Division
+        if(userInformation.getOfficeInformation().getEmployeeRecordId().equals(89946L)){
+            officeUnitOrganogramId=12L;
+        }
+
         Specification specification = this.getListViewSpecificationWithSearch(officeUnitOrganogramId, officeId, userId, listViewType, "");
         return Long.valueOf(this.grievanceForwardingRepo.findAll(specification).size());
     }
