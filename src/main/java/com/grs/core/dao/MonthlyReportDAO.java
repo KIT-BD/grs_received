@@ -157,6 +157,7 @@ public class MonthlyReportDAO {
                 .sentToOtherCount(grievanceReportDTO.getSentToOtherCount())
                 .resolvedCount(grievanceReportDTO.getResolvedCount())
                 .timeExpiredCount(grievanceReportDTO.getTimeExpiredCount())
+                .timeExtendedCount(grievanceReportDTO.getTimeExtendedCount())
                 .runningCount(grievanceReportDTO.getRunningCount())
                 .resolveRate(grievanceReportDTO.getRate())
                 .appealOnlineSubmissionCount(appealReportDTO.getOnlineSubmissionCount())

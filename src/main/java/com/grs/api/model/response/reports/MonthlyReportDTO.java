@@ -19,6 +19,7 @@ public class MonthlyReportDTO {
     private Long resolvedCount;
     private Long timeExpiredCount;
     private Long runningCount;
+    private Long timeExtendedCount;
     private Double rate;
     private Long sl;
 
@@ -34,6 +35,7 @@ public class MonthlyReportDTO {
         this.resolvedCount = 0L;
         this.timeExpiredCount = 0L;
         this.runningCount = 0L;
+        this.timeExtendedCount = 0L;
         this.rate = 0.0;
     }
 }

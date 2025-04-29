@@ -58,6 +58,9 @@ public class MonthlyReport {
     @Column(name = "time_expired")
     private Long timeExpiredCount;
 
+    @Column(name = "time_extended")
+    private Long timeExtendedCount;
+
     @Column(name = "running")
     private Long runningCount;
 
