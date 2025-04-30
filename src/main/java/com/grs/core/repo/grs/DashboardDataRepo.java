@@ -1589,8 +1589,31 @@ public interface DashboardDataRepo extends JpaRepository<DashboardData, Long> {
 
     @Query(value = "select coalesce(sum(cnt), 0) from (select count(distinct complain_id) as cnt from complain_history where current_status in ('APPEAL') " +
             "and (closed_at is null or closed_at > DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59')) " +
-            "and office_id = ?1 and created_at < DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59')) cxt", nativeQuery = true)
-    Long countRunningAppealsByOfficeIdV2(Long officeId, Long monthDiff);
+            "and office_id = ?1 " +
+            "and created_at between DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH), '%Y-%m-01 00:00:00')" +
+            "    AND DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59')) cxt", nativeQuery = true)
+    Long countRunningAppealsByOfficeIdV2(Long officeId, Long monthDiff, Long prevMonth);
+
+
+    @Query(value =
+            "SELECT COALESCE(SUM(cnt), 0) " +
+                    "FROM ("+
+                    " SELECT COUNT(DISTINCT complain_id) AS cnt" +
+                    " FROM complain_history" +
+                    " WHERE current_status IN ('APPEAL')" +
+                    "   AND (closed_at IS NULL OR closed_at > DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH)), '%Y-%m-%d 23:59:59'))" +
+                    "   AND created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH), '%Y-%m-01 00:00:00')" +
+                    "       AND DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH)), '%Y-%m-%d 23:59:59')" +
+                    "   AND office_id = ?1" +
+                    "   AND complain_id NOT IN (" +
+                    "     SELECT DISTINCT complain_id" +
+                    "     FROM complain_history" +
+                    "     WHERE current_status IN ('APPEAL')" +
+                    "       AND created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00')" +
+                    "         AND DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59')" +
+                    "       AND office_id = ?1)" +
+                    ") cxt ", nativeQuery = true)
+    Long countInheritedAppealsByOfficeIdV2(Long officeId, Long currMonth, Long prevMonth);
 
 
     @Query(value = "select coalesce(sum(cnt),0) from (select count(distinct complain_id) AS cnt from complain_history where current_status in ('APPEAL') " +

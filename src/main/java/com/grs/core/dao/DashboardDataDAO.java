@@ -321,7 +321,7 @@ public class DashboardDataDAO {
     }
 
     public Long countRunningAppealsByOfficeIdV2(Long officeId, Long monthDiff) {
-        return dashboardDataRepo.countRunningAppealsByOfficeIdV2(officeId, monthDiff);
+        return dashboardDataRepo.countRunningAppealsByOfficeIdV2(officeId, monthDiff, monthDiff - 1);
     }
 
     public Long countAppealsByOfficeAndMediumOfSubmission(Long officeId, MediumOfSubmission mediumOfSubmission, Long monthDiff) {
