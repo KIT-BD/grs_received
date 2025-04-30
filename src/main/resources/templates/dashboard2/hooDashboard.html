@@ -12,9 +12,9 @@
 
 <div th:fragment="hooDashboard" th:remove="tag">
     <div class="app-title">
-        <div class="col-md-12 col-sm-12 col-12 date">
+        <div class="col-md-12 col-sm-12 col-12 date" style="background-color: #164d1f">
             <span th:text="${currentDateMonthYear}"></span>
-            <h2 id="officeName" style="display: none;"><span th:text="${officeName}" th:remove="tag"></span> এর
+            <h2 id="officeName" style="display: none; color: white"><span th:text="${officeName}" th:remove="tag"></span> এর
                 ড্যাশবোর্ড</h2>
             <h2 id="officeNameCell" style="display: none;">মন্ত্রিপরিষদ বিভাগের অভিযোগ ব্যবস্থাপনা সেল</h2>
             <h2 id="officeNameCoordinator" style="display: none;">মাঠ পর্যায়ের সমন্বয়কের ড্যাশবোর্ড</h2>

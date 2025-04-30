@@ -137,34 +137,38 @@ public class ReportsService {
 
 
     public MonthlyReportDTO getAppealMonthlyReport(Long officeId, Long monthDiff) {
-        System.out.println("monthly report month diff " + monthDiff + " office Id " + officeId);
 
         Long totalSubmitted = dashboardService.countTotalAppealsByOfficeIdV2(officeId, monthDiff);
         Long resolvedCount = dashboardService.countResolvedAppealsByOfficeIdV2(officeId, monthDiff);
-//        Long timeExpiredCount = dashboardService.countTimeExpiredAppealsByOfficeId(officeId, monthDiff);
         Long timeExpiredCount = dashboardService.countTimeExpiredAppealsByOfficeIdV2(officeId, monthDiff);
-//        Long runningGrievanceCount = dashboardService.countRunningAppealsByOfficeId(officeId, monthDiff);
         Long runningGrievanceCount = dashboardService.countRunningAppealsByOfficeIdV2(officeId, monthDiff);
-
+        Long inheritedFromLastMonthCount = dashboardDataRepo.countInheritedAppealsByOfficeIdV2(officeId, monthDiff, monthDiff - 1);
         Long onlineSubmitted = dashboardService.getMonthlyAppealsCountByOfficeIdAndMediumOfSubmissionV2(officeId, MediumOfSubmission.ONLINE, monthDiff);
-        while (resolvedCount > totalSubmitted) {
-            totalSubmitted +=1;
-            onlineSubmitted +=1;
+
+//        while (resolvedCount > totalSubmitted) {
+//            totalSubmitted +=1;
+//            onlineSubmitted +=1;
+//        }
+
+        if (inheritedFromLastMonthCount != null && inheritedFromLastMonthCount > 0) {
+            totalSubmitted += inheritedFromLastMonthCount;
+        }
+
+        if(totalSubmitted < (runningGrievanceCount + resolvedCount) ) {
+            resolvedCount = totalSubmitted - runningGrievanceCount;
+            if (resolvedCount < 0) resolvedCount = 0L;
         }
         Double rate = 0d;
         if (totalSubmitted > 0) {
             rate = ((double)resolvedCount / (double)totalSubmitted) * 100;
             rate = (double) Math.round(rate * 100) / 100;
         }
-//        Long inheritedFromLastMonthCount = dashboardService.getAppealAscertainCountOfPreviousMonth(officeId, monthDiff);
-        Long inheritedFromLastMonthCount = dashboardService.countInheritedComplaintsByOfficeId(officeId, monthDiff);
-        System.out.println("total submitted " + totalSubmitted + " inherited "+ inheritedFromLastMonthCount);
 
         return MonthlyReportDTO.builder()
                 .officeId(officeId)
                 .onlineSubmissionCount(onlineSubmitted)
                 .inheritedFromLastMonthCount(inheritedFromLastMonthCount)
-                .totalCount(totalSubmitted + inheritedFromLastMonthCount)
+                .totalCount(totalSubmitted)
                 .resolvedCount(resolvedCount)
                 .runningCount(runningGrievanceCount)
                 .timeExpiredCount(timeExpiredCount)
@@ -179,8 +183,6 @@ public class ReportsService {
         Long runningGrievanceCount = dashboardService.countRunningGrievancesByOfficeIdV2(officeId, monthDiff);
         Long sentToOtherOfficeCount = dashboardService.countForwardedGrievancesByOfficeIdV2(officeId, monthDiff);
         Long onlineSubmission = dashboardService.getMonthlyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.ONLINE, monthDiff);
-
-//        Long inherited = dashboardService.countRunningGrievancesByOfficeIdV2(officeId, monthDiff-1);//dashboardService.getGrievanceAscertainCountOfPreviousMonthV2(officeId, monthDiff);
         Long inherited = dashboardService.countInheritedComplaintsByOfficeId(officeId, monthDiff);
         Long timeExtended = 0L;
         timeExtended = dashboardDataRepo.countTimeExtendedComplaintsByOfficeId(officeId, monthDiff, monthDiff-1);
@@ -227,26 +229,35 @@ public class ReportsService {
     }
     public MonthlyReportDTO getAppealMonthlyReportForGenerate(Long officeId, Long monthDiff) {
 
-        System.out.println("dashboard month diff " + monthDiff + " office Id " + officeId);
         Long totalSubmitted = dashboardService.countTotalAppealsByOfficeIdV2(officeId, monthDiff);
         Long resolvedCount = dashboardService.countResolvedAppealsByOfficeIdV2(officeId, monthDiff);
         Long timeExpiredCount = dashboardService.countTimeExpiredAppealsByOfficeIdV2(officeId, monthDiff);
         Long runningGrievanceCount = dashboardService.countRunningAppealsByOfficeIdV2(officeId, monthDiff);
-
+        Long inheritedFromLastMonthCount = dashboardDataRepo.countInheritedAppealsByOfficeIdV2(officeId, monthDiff, monthDiff - 1);
         Long onlineSubmitted = dashboardService.getMonthlyAppealsCountByOfficeIdAndMediumOfSubmissionV2(officeId, MediumOfSubmission.ONLINE, monthDiff);
+
+        if (inheritedFromLastMonthCount != null && inheritedFromLastMonthCount > 0) {
+            totalSubmitted += inheritedFromLastMonthCount;
+        }
+
+        if(totalSubmitted < (runningGrievanceCount + resolvedCount) ) {
+            resolvedCount = totalSubmitted - runningGrievanceCount;
+            if (resolvedCount < 0) resolvedCount = 0L;
+        }
+
+
         Double rate = 0d;
         if (totalSubmitted > 0) {
             rate = ((double)resolvedCount / (double)totalSubmitted) * 100;
             rate = (double) Math.round(rate * 100) / 100;
         }
 
-        Long inheritedFromLastMonthCount = dashboardService.countInheritedComplaintsByOfficeId(officeId, monthDiff);
-        System.out.println("total submitted " + totalSubmitted + " inherited " + inheritedFromLastMonthCount);
+
         return MonthlyReportDTO.builder()
                 .officeId(officeId)
                 .onlineSubmissionCount(onlineSubmitted)
                 .inheritedFromLastMonthCount(inheritedFromLastMonthCount)
-                .totalCount(totalSubmitted + inheritedFromLastMonthCount)
+                .totalCount(totalSubmitted)
                 .resolvedCount(resolvedCount)
                 .runningCount(runningGrievanceCount)
                 .timeExpiredCount(timeExpiredCount)
