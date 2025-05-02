@@ -25,16 +25,15 @@ import com.grs.core.model.EmployeeOrganogram;
 import com.grs.core.model.EmptyJsonResponse;
 import com.grs.core.model.ListViewType;
 import com.grs.core.repo.grs.BaseEntityManager;
+import com.grs.core.repo.grs.DashboardDataRepo;
 import com.grs.core.repo.grs.GrievanceForwardingRepo;
+import com.grs.core.repo.grs.GrievanceRepo;
 import com.grs.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.StringUtils;
 import org.reflections.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +52,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class GrievanceService {
+
+    @Autowired
+    private GrievanceRepo grievanceRepo;
+
     @Autowired
     private GrievanceDAO grievanceDAO;
     @Autowired
@@ -1676,6 +1679,29 @@ public class GrievanceService {
         } else {
             log.info("==NOT OUTBOX STARTED===");
             forwardings = this.grievanceForwardingDAO.getListViewDTOPageWithSearching(userInformation, pageable, listViewType, value);
+            List<Grievance> inboxes = this.grievanceRepo.getInbox(
+                    userInformation.getOfficeInformation().getOfficeId(),
+                    0L,
+                    -1L
+                    );
+
+            List<GrievanceDTO> grievanceDTOS = new ArrayList<>();
+            if (listViewType.equals(ListViewType.NORMAL_INBOX)) {
+                for (Grievance grievance : inboxes) {
+                    GrievanceDTO grievanceDTO = this.convertToGrievanceDTO(grievance);
+                    grievanceDTO.setIsSeen(false);
+                    grievanceDTO.setIsCC(false);
+                    grievanceDTO.setIsExpired(grievance.getCreatedAt().before(date));
+                    grievanceDTOS.add(grievanceDTO);
+                }
+                int total = inboxes.size();
+                int start = pageable.getOffset();
+                int end = Math.min((start + pageable.getPageSize()), total);
+
+                List<GrievanceDTO> subList = grievanceDTOS.subList(start, end);
+
+                return new PageImpl<>(subList, pageable, total);
+            }
             log.info("==DONE NOT OUTBOX===");
         }
 
@@ -1713,6 +1739,8 @@ public class GrievanceService {
                     break;
             }
 
+//            System.out.println(grievanceDTO);
+//            return new GrievanceDTO();
             return grievanceDTO;
         });
     }
