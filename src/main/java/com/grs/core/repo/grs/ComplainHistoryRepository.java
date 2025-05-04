@@ -42,19 +42,6 @@ public interface ComplainHistoryRepository extends JpaRepository<ComplainHistory
             nativeQuery = true)
     List<ComplainHistory> getTimeExpiredGrievancesByOfficeId(@Param("officeId") Long officeId);
 
-//    @Query("SELECT c FROM ComplainHistory c " +
-//            "WHERE c.id IN (" +
-//            "   SELECT MAX(c2.id) FROM ComplainHistory c2 " +
-//            "   WHERE c2.officeId = :officeId " +
-//            "   AND c2.complainId NOT IN (" +
-//            "       SELECT c3.complainId FROM ComplainHistory c3 " +
-//            "       WHERE c3.currentStatus IN ('NEW', 'RETAKE', 'FORWARDED_OUT', 'CLOSED')" +
-//            "   ) " +
-//            "   GROUP BY c2.complainId" +
-//            ") " +
-//            "ORDER BY c.createdAt DESC")
-//    Page<ComplainHistory> getPageableDashboardDataAppealRegister(Long officeId, Pageable pageable);
-
     @Query("SELECT c FROM ComplainHistory c " +
             "WHERE c.id IN (" +
             "   SELECT MAX(c2.id) FROM ComplainHistory c2 " +
@@ -69,9 +56,27 @@ public interface ComplainHistoryRepository extends JpaRepository<ComplainHistory
             "SELECT * FROM complain_history " +
                     "WHERE id IN (" +
                     "SELECT MAX(id) FROM complain_history " +
-                    "WHERE office_id = 2287 AND current_status IN ('CLOSED') " +
+                    "WHERE office_id = :officeId AND current_status IN ('CLOSED') " +
                     "GROUP BY complain_id) ORDER BY created_at DESC",
             nativeQuery = true
     )
-    List<ComplainHistory> getAllResolutions();
+    List<ComplainHistory> getAllResolutions(@Param("officeId") Long officeId);
+
+    @Query(value = "SELECT * FROM complain_history " +
+            "WHERE current_status IN ('APPEAL', 'CELL_APPEAL') " +
+            "AND created_at < DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 0 MONTH), '%Y-%m-01 00:00:00') " +
+            "AND closed_at IS NULL " +
+            "AND DATEDIFF(DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 0 MONTH), '%Y-%m-01 00:00:00'), created_at) > 30 " +
+            "AND office_id = :officeId",
+            nativeQuery = true)
+    List<ComplainHistory> getTimeExpiredAppealsByOfficeId(@Param("officeId") Long officeId);
+
+    @Query(value =
+            "SELECT * FROM complain_history " +
+                    "WHERE id IN (" +
+                    "SELECT MAX(id) FROM complain_history " +
+                    "WHERE office_id = :officeId AND current_status IN ('APPEAL_CLOSED') " +
+                    "GROUP BY complain_id) ORDER BY created_at DESC",
+            nativeQuery = true)
+    List<ComplainHistory> getResolvedAppealsOfCurrentMonthByOfficeId(@Param("officeId") Long officeId);
 }

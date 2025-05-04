@@ -575,10 +575,8 @@ public class DashboardService {
         return currentMonthResolutions;
     }
 
-    public List<MonthlyGrievanceResolutionDTO> getResolutionsInCurrentMonth(Long officeId, Long monthDiff) {
-//        List<DashboardData> dashboardDataList = dashboardDataDAO.getResolvedGrievancesOfCurrentMonthByOfficeId(officeId, monthDiff);
-//        return getCurrentMonthResolutionsAsList(dashboardDataList);
-        List<ComplainHistory> resolvedHistories = complainHistoryRepository.getAllResolutions();
+    public List<MonthlyGrievanceResolutionDTO> getResolutionsInCurrentMonth(Long officeId) {
+        List<ComplainHistory> resolvedHistories = complainHistoryRepository.getAllResolutions(officeId);
         return resolvedHistories.stream()
                 .map(this::convertComplainHistoryToMonthlyGrievanceResolutionDTO)
                 .collect(Collectors.toList());
@@ -610,9 +608,9 @@ public class DashboardService {
     }
 
 
-    public List<MonthlyGrievanceResolutionDTO> getAppealResolutionsInCurrentMonth(Long officeId, Long monthDiff) {
-        List<DashboardData> dashboardDataList = dashboardDataDAO.getResolvedAppealsOfCurrentMonthByOfficeId(officeId, monthDiff);
-        return getCurrentMonthResolutionsAsList(dashboardDataList);
+    public List<MonthlyGrievanceResolutionDTO> getAppealResolutionsInCurrentMonth(Long officeId) {
+        List<ComplainHistory> complainHistories = complainHistoryRepository.getResolvedAppealsOfCurrentMonthByOfficeId(officeId);
+        return complainHistories.stream().map(this::convertComplainHistoryToMonthlyGrievanceResolutionDTO).collect(Collectors.toList());
     }
 
     public List<ExpiredGrievanceInfoDTO> getExpiredGrievancesInformationAsList(List<DashboardData> dashboardDataList, Boolean isAppeal) {
@@ -674,8 +672,8 @@ public class DashboardService {
     }
 
     public List<NudgeableGrievanceDTO> getTimeExpiredAppealDTOList(Long officeId) {
-        List<DashboardData> dataList = dashboardDataDAO.getTimeExpiredAppealsByOfficeId(officeId);
-        return convertToNudgeableGrievanceList(dataList);
+        List<ComplainHistory> complainHistories = complainHistoryRepository.getTimeExpiredAppealsByOfficeId(officeId);
+        return convertToNudgeableGrievanceListFromComplainHistory(complainHistories);
     }
 
     public List<NudgeableGrievanceDTO> convertToNudgeableGrievanceList(List<DashboardData> dashboardDataList) {
@@ -1458,6 +1456,7 @@ public class DashboardService {
         map.put("name", name);
         map.put("email", email);
         map.put("phoneNumber", phoneNumber);
+        map.put("subject", grievance.getSubject());
         map.put("serviceName", serviceName);
         return map;
     }
@@ -1540,10 +1539,9 @@ public class DashboardService {
         dto.setComplainantEmail(complainantAndServiceInfo.get("email"));
         dto.setComplainantMobile(complainantAndServiceInfo.get("phoneNumber"));
         dto.setService(complainantAndServiceInfo.get("serviceName"));
-        dto.setCaseNumber(complainantAndServiceInfo.get("caseNumber")); // if exists in map
-        dto.setSubject(complainantAndServiceInfo.get("subject")); // if exists in map
+        dto.setCaseNumber(complainantAndServiceInfo.get("caseNumber"));
+        dto.setSubject(complainantAndServiceInfo.get("subject"));
 
-        // Handle enum or type conversion
         if (complainHistory.getMediumOfSubmission() != null) {
             dto.setMedium(MediumOfSubmission.valueOf(complainHistory.getMediumOfSubmission()));
         }
@@ -1556,10 +1554,9 @@ public class DashboardService {
             dto.setCurrentStatus(GrievanceCurrentStatus.valueOf(complainHistory.getCurrentStatus()));
         }
 
-        // Optional: Handle domain-specific info if available
-        dto.setRootCause(null); // No equivalent in entity
-        dto.setRemedyMeasures(null); // No equivalent in entity
-        dto.setPreventionMeasures(null); // No equivalent in entity
+        dto.setRootCause(null);
+        dto.setRemedyMeasures(null);
+        dto.setPreventionMeasures(null);
 
         return dto;
     }
