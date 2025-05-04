@@ -1529,13 +1529,12 @@ public class DashboardService {
     }
 
     public Page<RegisterDTO> getPageableDashboardDataForGrievanceRegister(Long officeId, String trackingNumber, Pageable pageable) {
-        Page<DashboardData> dashboardDataList;
 
         Page<ComplainHistory> complainHistories = null;
 
         if(trackingNumber != null) {
             // If tracking number is provided, search by officeId and tracking number
-            dashboardDataList = dashboardDataDAO.getPageableDashboardDataForGrievanceRegisterByTrackingNumber(officeId, trackingNumber, pageable);
+            complainHistories = dashboardDataDAO.getPageableDashboardDataForGrievanceRegisterByTrackingNumber(officeId, trackingNumber, pageable);
         } else {
             // If no tracking number is provided, return the default paginated data
             complainHistories = dashboardDataDAO.getPageableDashboardDataForGrievanceRegister(officeId, pageable);

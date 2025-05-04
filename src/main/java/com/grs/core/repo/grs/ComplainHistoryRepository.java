@@ -12,6 +12,19 @@ import org.springframework.stereotype.Repository;
 public interface ComplainHistoryRepository extends JpaRepository<ComplainHistory, Long> {
 
     @Query("SELECT c FROM ComplainHistory c " +
-            "WHERE c.officeId = :officeId AND c.currentStatus NOT IN ('APPEAL', 'APPEAL_CLOSED', 'CELL_APPEAL')")
+            "WHERE c.id IN (" +
+            "   SELECT MAX(c2.id) FROM ComplainHistory c2 " +
+            "   WHERE c2.officeId = :officeId " +
+            "   AND c2.currentStatus NOT IN ('APPEAL', 'APPEAL_CLOSED', 'CELL_APPEAL') " +
+            "   GROUP BY c2.complainId" +
+            ") " +
+            "ORDER BY c.createdAt DESC")
     Page<ComplainHistory> findGrievanceRegisterGrievances(@Param("officeId") Long officeId, Pageable pageable);
+
+    @Query("SELECT c FROM ComplainHistory c " +
+            "WHERE c.officeId       = ?1 " +
+            "  AND c.trackingNumber = ?2 " +
+            "  AND c.currentStatus NOT IN ('APPEAL', 'APPEAL_CLOSED', 'CELL_APPEAL')")
+    Page<ComplainHistory> findGrievanceRegisterGrievancesByTrackingNumber(Long officeId, String trackingNumber, Pageable pageable);
+
 }
