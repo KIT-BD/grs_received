@@ -20,6 +20,7 @@ import com.grs.core.dao.TagidDAO;
 import com.grs.core.domain.*;
 import com.grs.core.domain.grs.*;
 import com.grs.core.domain.projapoti.*;
+import com.grs.core.repo.grs.ComplainHistoryRepository;
 import com.grs.core.repo.grs.DashboardTotalResolvedRepo;
 import com.grs.utils.*;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +67,8 @@ public class DashboardService {
 
     @Autowired
     private DashboardTotalResolvedRepo dashboardTotalResolvedRepo;
+    @Autowired
+    private ComplainHistoryRepository complainHistoryRepository;
 
     @Transactional("transactionManager")
     public DashboardData putDashboardDataRecord(GrievanceForwarding grievanceForwarding) {
@@ -573,9 +576,39 @@ public class DashboardService {
     }
 
     public List<MonthlyGrievanceResolutionDTO> getResolutionsInCurrentMonth(Long officeId, Long monthDiff) {
-        List<DashboardData> dashboardDataList = dashboardDataDAO.getResolvedGrievancesOfCurrentMonthByOfficeId(officeId, monthDiff);
-        return getCurrentMonthResolutionsAsList(dashboardDataList);
+//        List<DashboardData> dashboardDataList = dashboardDataDAO.getResolvedGrievancesOfCurrentMonthByOfficeId(officeId, monthDiff);
+//        return getCurrentMonthResolutionsAsList(dashboardDataList);
+        List<ComplainHistory> resolvedHistories = complainHistoryRepository.getAllResolutions();
+        return resolvedHistories.stream()
+                .map(this::convertComplainHistoryToMonthlyGrievanceResolutionDTO)
+                .collect(Collectors.toList());
     }
+
+    public MonthlyGrievanceResolutionDTO convertComplainHistoryToMonthlyGrievanceResolutionDTO(ComplainHistory complainHistory) {
+        WeakHashMap<String, String> complainantAndServiceInfo = getComplainantInfoAndServiceName(complainHistory);
+        Grievance grievance = grievanceService.findGrievanceById(complainHistory.getComplainId());
+
+        Date closedDate = complainHistory.getClosedAt();
+        if (complainHistory.getCurrentStatus() != null && complainHistory.getCurrentStatus().contains("FORWARDED")) {
+            closedDate = complainHistory.getCreatedAt(); // Fallback if forwarded
+        }
+
+        System.out.println(complainantAndServiceInfo);
+
+        return MonthlyGrievanceResolutionDTO.builder()
+                .id(complainHistory.getComplainId())
+                .subject(grievance.getSubject())
+                .serviceName(complainantAndServiceInfo.get("serviceName"))
+                .closedDate(closedDate)
+                .groIdentifiedCause(grievance.getGroIdentifiedCause())
+                .groDecision(grievance.getGroDecision())
+                .groSuggestion(grievance.getGroSuggestion())
+                .aoIdentifiedCause(grievance.getAppealOfficerIdentifiedCause())
+                .aoDecision(grievance.getAppealOfficerDecision())
+                .aoSuggestion(grievance.getAppealOfficerSuggestion())
+                .build();
+    }
+
 
     public List<MonthlyGrievanceResolutionDTO> getAppealResolutionsInCurrentMonth(Long officeId, Long monthDiff) {
         List<DashboardData> dashboardDataList = dashboardDataDAO.getResolvedAppealsOfCurrentMonthByOfficeId(officeId, monthDiff);
