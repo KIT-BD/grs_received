@@ -25,6 +25,7 @@ import com.grs.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -1379,6 +1380,44 @@ public class DashboardService {
         return map;
     }
 
+    public WeakHashMap<String, String> getComplainantInfoAndServiceName(ComplainHistory complainHistory) {
+        String email = "", phoneNumber = "", name = "", serviceName = "";
+        WeakHashMap<String, String> map = new WeakHashMap<>();
+        Grievance grievance = grievanceService.findGrievanceById(complainHistory.getComplainId());
+
+        // Determine complainant info
+        if ("NAGORIK".equalsIgnoreCase(complainHistory.getGrievanceType())) {
+                Complainant complainant = complainantService.findOne(grievance.getComplainantId());
+                if (complainant != null) {
+                    email = complainant.getEmail();
+                    phoneNumber = complainant.getPhoneNumber();
+                    name = complainant.getName();
+                }
+        } else {
+            if (complainHistory.getOfficeOrigin() != null && complainHistory.getOfficeOrigin() > 0L) {
+                EmployeeRecord employeeRecord = officeService.findEmployeeRecordById(grievance.getComplainantId());
+                if (employeeRecord != null) {
+                    email = employeeRecord.getPersonalEmail();
+                    phoneNumber = employeeRecord.getPersonalMobile();
+                    name = employeeRecord.getNameBangla();
+                }
+            }
+        }
+
+        if (complainHistory.getComplainId() != null) {
+            if (grievance != null) {
+                serviceName = grievance.getOtherService(); // Fallback field
+            }
+        }
+
+        map.put("name", name);
+        map.put("email", email);
+        map.put("phoneNumber", phoneNumber);
+        map.put("serviceName", serviceName);
+        return map;
+    }
+
+
     public List<RegisterDTO> getDashboardDataForGrievanceRegister(Long officeId) {
         List<DashboardData> dashboardDataList = dashboardDataDAO.getDashboardDataForCurrentMonthGrievanceRegister(0L, officeId);
         List<RegisterDTO> registerEntries = new ArrayList();
@@ -1436,6 +1475,51 @@ public class DashboardService {
                 .build();
     }
 
+    public RegisterDTO convertComplainHistoryToRegisterDTO(ComplainHistory complainHistory) {
+        WeakHashMap<String, String> complainantAndServiceInfo = getComplainantInfoAndServiceName(complainHistory);
+
+        Date closedDate = complainHistory.getClosedAt();
+        if (complainHistory.getCurrentStatus() != null && complainHistory.getCurrentStatus().contains("FORWARDED")) {
+            closedDate = complainHistory.getCreatedAt(); // assuming no updatedAt field in entity
+        }
+
+        RegisterDTO dto = new RegisterDTO();
+        dto.setId(complainHistory.getComplainId());
+        dto.setGrievanceId(complainHistory.getComplainId());
+        dto.setTrackingNumber(complainHistory.getTrackingNumber());
+        dto.setDateEng(DateTimeConverter.convertDateToString(complainHistory.getCreatedAt()));
+        dto.setDateBng(BanglaConverter.getDateBanglaFromEnglish(dto.getDateEng()));
+        dto.setClosingOrRejectingDateEng(DateTimeConverter.convertDateToString(closedDate));
+        dto.setClosingOrRejectingDateBng(BanglaConverter.getDateBanglaFromEnglish(dto.getClosingOrRejectingDateEng()));
+        dto.setComplainantName(complainantAndServiceInfo.get("name"));
+        dto.setComplainantEmail(complainantAndServiceInfo.get("email"));
+        dto.setComplainantMobile(complainantAndServiceInfo.get("phoneNumber"));
+        dto.setService(complainantAndServiceInfo.get("serviceName"));
+        dto.setCaseNumber(complainantAndServiceInfo.get("caseNumber")); // if exists in map
+        dto.setSubject(complainantAndServiceInfo.get("subject")); // if exists in map
+
+        // Handle enum or type conversion
+        if (complainHistory.getMediumOfSubmission() != null) {
+            dto.setMedium(MediumOfSubmission.valueOf(complainHistory.getMediumOfSubmission()));
+        }
+
+        if (complainHistory.getGrievanceType() != null) {
+            dto.setServiceType(ServiceType.valueOf(complainHistory.getGrievanceType()));
+        }
+
+        if (complainHistory.getCurrentStatus() != null) {
+            dto.setCurrentStatus(GrievanceCurrentStatus.valueOf(complainHistory.getCurrentStatus()));
+        }
+
+        // Optional: Handle domain-specific info if available
+        dto.setRootCause(null); // No equivalent in entity
+        dto.setRemedyMeasures(null); // No equivalent in entity
+        dto.setPreventionMeasures(null); // No equivalent in entity
+
+        return dto;
+    }
+
+
     public RegisterDTO convertDashboardDataToAppealRegisterDTO(DashboardData dashboardData) {
         RegisterDTO registerDTO = convertDashboardDataToRegisterDTO(dashboardData);
         DashboardData dashboardDataInGrievancePhase = dashboardDataDAO.getDashboardDataForGrievancePhaseOfAppeal(dashboardData.getGrievanceId());
@@ -1447,15 +1531,18 @@ public class DashboardService {
     public Page<RegisterDTO> getPageableDashboardDataForGrievanceRegister(Long officeId, String trackingNumber, Pageable pageable) {
         Page<DashboardData> dashboardDataList;
 
+        Page<ComplainHistory> complainHistories = null;
+
         if(trackingNumber != null) {
             // If tracking number is provided, search by officeId and tracking number
             dashboardDataList = dashboardDataDAO.getPageableDashboardDataForGrievanceRegisterByTrackingNumber(officeId, trackingNumber, pageable);
         } else {
             // If no tracking number is provided, return the default paginated data
-            dashboardDataList = dashboardDataDAO.getPageableDashboardDataForGrievanceRegister(officeId, pageable);
+            complainHistories = dashboardDataDAO.getPageableDashboardDataForGrievanceRegister(officeId, pageable);
         }
 
-        return dashboardDataList.map(this::convertDashboardDataToRegisterDTO);
+        assert complainHistories != null;
+        return complainHistories.map(this::convertComplainHistoryToRegisterDTO);
     }
 
     public Page<RegisterDTO> getPageableDashboardDataForAppealRegister(Long officeId, Pageable pageable) {

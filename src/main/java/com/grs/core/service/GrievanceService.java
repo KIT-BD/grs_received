@@ -1679,29 +1679,6 @@ public class GrievanceService {
         } else {
             log.info("==NOT OUTBOX STARTED===");
             forwardings = this.grievanceForwardingDAO.getListViewDTOPageWithSearching(userInformation, pageable, listViewType, value);
-            List<Grievance> inboxes = this.grievanceRepo.getInbox(
-                    userInformation.getOfficeInformation().getOfficeId(),
-                    0L,
-                    -1L
-                    );
-
-            List<GrievanceDTO> grievanceDTOS = new ArrayList<>();
-            if (listViewType.equals(ListViewType.NORMAL_INBOX)) {
-                for (Grievance grievance : inboxes) {
-                    GrievanceDTO grievanceDTO = this.convertToGrievanceDTO(grievance);
-                    grievanceDTO.setIsSeen(false);
-                    grievanceDTO.setIsCC(false);
-                    grievanceDTO.setIsExpired(grievance.getCreatedAt().before(date));
-                    grievanceDTOS.add(grievanceDTO);
-                }
-                int total = inboxes.size();
-                int start = pageable.getOffset();
-                int end = Math.min((start + pageable.getPageSize()), total);
-
-                List<GrievanceDTO> subList = grievanceDTOS.subList(start, end);
-
-                return new PageImpl<>(subList, pageable, total);
-            }
             log.info("==DONE NOT OUTBOX===");
         }
 
