@@ -20,6 +20,7 @@ import com.grs.core.dao.TagidDAO;
 import com.grs.core.domain.*;
 import com.grs.core.domain.grs.*;
 import com.grs.core.domain.projapoti.*;
+import com.grs.core.repo.grs.ComplainHistoryRepository;
 import com.grs.core.repo.grs.DashboardTotalResolvedRepo;
 import com.grs.utils.*;
 import lombok.extern.slf4j.Slf4j;
@@ -66,6 +67,8 @@ public class DashboardService {
 
     @Autowired
     private DashboardTotalResolvedRepo dashboardTotalResolvedRepo;
+    @Autowired
+    private ComplainHistoryRepository complainHistoryRepository;
 
     @Transactional("transactionManager")
     public DashboardData putDashboardDataRecord(GrievanceForwarding grievanceForwarding) {
@@ -636,8 +639,8 @@ public class DashboardService {
     }
 
     public List<NudgeableGrievanceDTO> getTimeExpiredGrievanceDTOList(Long officeId) {
-        List<DashboardData> dataList = dashboardDataDAO.getTimeExpiredGrievancesByOfficeId(officeId);
-        return convertToNudgeableGrievanceList(dataList);
+        List<ComplainHistory> dataList = complainHistoryRepository.getTimeExpiredGrievancesByOfficeId(officeId);
+        return convertToNudgeableGrievanceListFromComplainHistory(dataList);
     }
 
     public List<NudgeableGrievanceDTO> getTimeExpiredAppealDTOList(Long officeId) {
@@ -649,6 +652,18 @@ public class DashboardService {
         List<NudgeableGrievanceDTO> timeExpiredGrievances = dashboardDataList.stream()
                 .map(dashboardData -> {
                     Grievance grievance = grievanceService.findGrievanceById(dashboardData.getGrievanceId());
+                    return NudgeableGrievanceDTO.builder()
+                            .grievance(grievanceService.convertToGrievanceDTO(grievance))
+                            .grievanceCurrentLocationList(getGrievanceCurrentLocation(grievance))
+                            .build();
+                }).collect(Collectors.toList());
+        return timeExpiredGrievances;
+    }
+
+    public List<NudgeableGrievanceDTO> convertToNudgeableGrievanceListFromComplainHistory(List<ComplainHistory> dashboardDataList) {
+        List<NudgeableGrievanceDTO> timeExpiredGrievances = dashboardDataList.stream()
+                .map(dashboardData -> {
+                    Grievance grievance = grievanceService.findGrievanceById(dashboardData.getComplainId());
                     return NudgeableGrievanceDTO.builder()
                             .grievance(grievanceService.convertToGrievanceDTO(grievance))
                             .grievanceCurrentLocationList(getGrievanceCurrentLocation(grievance))
@@ -1545,8 +1560,10 @@ public class DashboardService {
     }
 
     public Page<RegisterDTO> getPageableDashboardDataForAppealRegister(Long officeId, Pageable pageable) {
-        Page<DashboardData> dashboardDataList = dashboardDataDAO.getPageableDashboardDataAppealRegister(officeId, pageable);
-        return dashboardDataList.map(this::convertDashboardDataToAppealRegisterDTO);
+        Page<ComplainHistory> complainHistories = null;
+        complainHistories = complainHistoryRepository.getPageableDashboardDataAppealRegister(officeId, pageable);
+        assert complainHistories != null;
+        return complainHistories.map(this::convertComplainHistoryToRegisterDTO);
     }
 
     public Page<RegisterDTO> getPageableDashboardDataForAppealedComplaints(Long officeId, Pageable pageable) {
