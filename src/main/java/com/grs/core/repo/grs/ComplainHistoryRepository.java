@@ -33,7 +33,6 @@ public interface ComplainHistoryRepository extends JpaRepository<ComplainHistory
             "  AND c.currentStatus NOT IN ('APPEAL', 'APPEAL_CLOSED', 'CELL_APPEAL')")
     Page<ComplainHistory> findGrievanceRegisterGrievancesByTrackingNumber(Long officeId, String trackingNumber, Pageable pageable);
 
-
     @Query(value = "SELECT * FROM complain_history " +
                     "WHERE current_status IN ('NEW', 'RETAKE') " +
                     "AND created_at < DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 0 MONTH), '%Y-%m-01 00:00:00') " +
@@ -65,5 +64,14 @@ public interface ComplainHistoryRepository extends JpaRepository<ComplainHistory
             ") " +
             "ORDER BY c.createdAt DESC")
     Page<ComplainHistory> getPageableDashboardDataAppealRegister(@Param("officeId") Long officeId, Pageable pageable);
-
+    
+    @Query(value =
+            "SELECT * FROM complain_history " +
+                    "WHERE id IN (" +
+                    "SELECT MAX(id) FROM complain_history " +
+                    "WHERE office_id = 2287 AND current_status IN ('CLOSED') " +
+                    "GROUP BY complain_id) ORDER BY created_at DESC",
+            nativeQuery = true
+    )
+    List<ComplainHistory> getAllResolutions();
 }
