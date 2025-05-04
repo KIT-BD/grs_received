@@ -73,6 +73,11 @@ public class Utility {
         return false;
     }
 
+    public static Boolean isUserAnAppealOfficer(Authentication authentication) {
+        UserInformation userInformation = extractUserInformationFromAuthentication(authentication);
+        return userInformation.getOfficeInformation() != null && userInformation.getIsAppealOfficer();
+    }
+
     public static Boolean isCellGRO(Authentication authentication) {
         UserInformation userInformation = extractUserInformationFromAuthentication(authentication);
         if (userInformation.getUserType().equals(UserType.OISF_USER)) {
