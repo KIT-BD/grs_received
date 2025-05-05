@@ -8,6 +8,7 @@
                 <thead>
                 <tr>
                     <th class="text-center">ক্রমিক</th>
+                    <th class="text-center">ট্র্যাকিং নম্বর</th>
                     <th class="text-center">অভিযোগের বিষয়</th>
                     <th class="text-center">অভিযোগ সংশ্লিষ্ট সেবা</th>
                     <th class="text-center">ধরন</th>
@@ -43,3 +44,19 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript" th:fragment="grievanceTimeExpiredScript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("grievancesListForNudge");
+
+        table.addEventListener("click", function (event) {
+            const targetRow = event.target.closest("tr");
+
+            if (targetRow && targetRow.parentElement.tagName.toLowerCase() === "tbody") {
+                const cells = targetRow.cells;
+                const grievanceId = cells[0].innerText.trim();
+                window.location.href = `/viewGrievances.do?id=${grievanceId}`;
+            }
+        });
+    });
+</script>

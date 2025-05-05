@@ -25,16 +25,15 @@ import com.grs.core.model.EmployeeOrganogram;
 import com.grs.core.model.EmptyJsonResponse;
 import com.grs.core.model.ListViewType;
 import com.grs.core.repo.grs.BaseEntityManager;
+import com.grs.core.repo.grs.DashboardDataRepo;
 import com.grs.core.repo.grs.GrievanceForwardingRepo;
+import com.grs.core.repo.grs.GrievanceRepo;
 import com.grs.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.StringUtils;
 import org.reflections.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +52,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class GrievanceService {
+
+    @Autowired
+    private GrievanceRepo grievanceRepo;
+
     @Autowired
     private GrievanceDAO grievanceDAO;
     @Autowired
@@ -1713,6 +1716,8 @@ public class GrievanceService {
                     break;
             }
 
+//            System.out.println(grievanceDTO);
+//            return new GrievanceDTO();
             return grievanceDTO;
         });
     }
