@@ -778,6 +778,7 @@
                     var grievance = obj.grievance;
                     var currentLocationList = obj.grievanceCurrentLocationList;
                     bodyContents += "<tr style='cursor: pointer;'>" +
+                        "<td style='display:none;'>" + grievance.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
                         "<td>" + convertToBangla(grievance.trackingNumberEnglish) + "</td>" +
                         "<td>" + grievance.subject + "</td>" +

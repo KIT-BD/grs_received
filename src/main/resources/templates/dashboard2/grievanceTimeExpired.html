@@ -54,25 +54,8 @@
 
             if (targetRow && targetRow.parentElement.tagName.toLowerCase() === "tbody") {
                 const cells = targetRow.cells;
-                const trackingNumber = cells[1].innerText.trim();
-
-                $.ajax({
-                    url: `/api/search/trx/${trackingNumber}`,
-                    type: "GET",
-                    success: function(response) {
-                        if (response.single) {
-                            window.location.href = `/viewGrievances.do?id=${response.id}`;
-                        } else {
-                            alert("প্রদত্ত নম্বরের জন্য কোনো অভিযোগ পাওয়া যায়নি।")
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.log("Error fetching grievance data: " + xhr.responseText);
-                        alert(`প্রদত্ত নম্বরের জন্য কোনো অভিযোগ পাওয়া যায়নি।`);
-                    }
-                });
-
-                alert("Tracking Number: " + trackingNumber + "\nSubject: " + subject);
+                const grievanceId = cells[0].innerText.trim();
+                window.location.href = `/viewGrievances.do?id=${grievanceId}`;
             }
         });
     });
