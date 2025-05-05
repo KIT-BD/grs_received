@@ -25,3 +25,19 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript" th:fragment="grievanceResolvedScript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("currentMonthResolutions");
+
+        table.addEventListener("click", function (event) {
+            const targetRow = event.target.closest("tr");
+
+            if (targetRow && targetRow.parentElement.tagName.toLowerCase() === "tbody") {
+                const cells = targetRow.cells;
+                const grievanceId = cells[0].innerText.trim();
+                window.location.href = `/viewGrievances.do?id=${grievanceId}`;
+            }
+        });
+    });
+</script>
