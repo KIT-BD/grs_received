@@ -777,6 +777,7 @@
                     var currentLocationList = obj.grievanceCurrentLocationList;
                     bodyContents += "<tr>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
+                        "<td>" + convertToBangla(grievance.trackingNumberEnglish) + "</td>" +
                         "<td>" + grievance.subject + "</td>" +
                         "<td>" + grievance.serviceNameBangla + "</td>" +
                         "<td>" + grievance.typeBangla + "</td>" +
@@ -1264,6 +1265,7 @@
                 currentMonthResolutions.forEach(function (rowObj, index) {
                     bodyContent += "<tr>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
+                        "<td>" + convertToBangla(rowObj.trackingNumber) + "</td>" +
                         "<td>" + rowObj.subject + "</td>" +
                         "<td>" + rowObj.serviceName + "</td>" +
                         "<td>" + new Date(rowObj.closedDate).toISOString().slice(0, 10).toBanglaNumber() + "</td>" +
@@ -1291,6 +1293,7 @@
                 currentMonthResolutions.forEach(function (rowObj, index) {
                     bodyContent += "<tr>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
+                        "<td>" + convertToBangla(rowObj.trackingNumber) + "</td>" +
                         "<td>" + rowObj.subject + "</td>" +
                         "<td>" + rowObj.serviceName + "</td>" +
                         "<td>" + new Date(rowObj.closedDate).toISOString().slice(0, 10).toBanglaNumber() + "</td>" +

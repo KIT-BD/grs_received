@@ -13,6 +13,7 @@ import java.util.Date;
 @Builder
 public class MonthlyGrievanceResolutionDTO {
     Long id;
+    String trackingNumber;
     String subject;
     String serviceName;
     Date closedDate;
