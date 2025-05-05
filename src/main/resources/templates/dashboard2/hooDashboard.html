@@ -147,12 +147,14 @@
     <th:block th:replace="dashboard2/currentMonthReport :: currentMonthReportScript"></th:block>
     <th:block th:replace="dashboard2/grievanceRegister :: grievanceRegisterScript"></th:block>
     <th:block th:replace="dashboard2/grievanceTimeExpired :: grievanceTimeExpiredScript"></th:block>
+    <th:block th:replace="dashboard2/grievanceResolvedCurrentMonth :: grievanceResolvedScript"></th:block>
     <th:block th:replace="dashboard2/appealRegister :: appealRegisterScript"></th:block>
     <th:block th:replace="dashboard2/suggestions :: suggestionsScript"></th:block>
     <th:block th:replace="dashboard2/searchByTrackingNumber :: searchByTrxScript"></th:block>
     <th:block th:replace="dashboard2/subOfficesReports :: subOfficesReportsScript"></th:block>
     <th:block th:replace="dashboard2/appealedComplaints :: appealedComplaintsScript"></th:block>
     <th:block th:replace="dashboard2/appealTimeExpired :: appealTimeExpiredScript"></th:block>
+    <th:block th:replace="dashboard2/appealResolved :: appealResolvedScript"></th:block>
     <th:block th:replace="dashboard2/tagidList :: tagidListScript"></th:block>
     <th:block th:replace="officeSelection :: officeSelectionScript"></th:block>
     <th:block th:replace="dashboard2/customReport :: customReportScript"></th:block>
@@ -1266,7 +1268,8 @@
             var bodyContent = "";
             if (currentMonthResolutions.length > 0) {
                 currentMonthResolutions.forEach(function (rowObj, index) {
-                    bodyContent += "<tr>" +
+                    bodyContent += "<tr style='cursor:pointer;'>" +
+                        "<td style='display: none;'>" + rowObj.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
                         "<td>" + convertToBangla(rowObj.trackingNumber) + "</td>" +
                         "<td>" + rowObj.subject + "</td>" +
@@ -1294,7 +1297,8 @@
             var bodyContent = "";
             if (currentMonthResolutions.length > 0) {
                 currentMonthResolutions.forEach(function (rowObj, index) {
-                    bodyContent += "<tr>" +
+                    bodyContent += "<tr style='cursor:pointer;'>" +
+                        "<td style='display: none;'>" + rowObj.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
                         "<td>" + convertToBangla(rowObj.trackingNumber) + "</td>" +
                         "<td>" + rowObj.subject + "</td>" +
