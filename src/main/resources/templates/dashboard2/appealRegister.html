@@ -323,7 +323,7 @@
                     var size = itemPerPage;            // Page size
 
                     // Add 'data-id' and 'onclick' attributes to the <tr> element
-                    var grievanceDetailsUrl = "viewGrievances.do?id=" + row.id + "&tab=" + currentTab + "&page=" + page + "&size=" + size;
+                    var grievanceDetailsUrl = "viewAppealGrievances.do?id=" + row.id + "&tab=" + currentTab + "&page=" + page + "&size=" + size;
                     return "<a href='" + grievanceDetailsUrl + "' class='clickable-link tooltips' data-toggle='tooltip' title='অভিযোগের বিস্তারিত দেখুন'>" + data + "</a>";
                 }
             }, {
@@ -349,7 +349,7 @@
 
             // Get the row data and build the URL
             var rowData = table1.DataTable().row(this).data();
-            var grievanceDetailsUrl = "viewGrievances.do?id=" + rowData.id + "&tab=appealRegister&page=" + appealCurrentPage + "&size=" + itemPerPage;
+            var grievanceDetailsUrl = "viewAppealGrievances.do?id=" + rowData.id + "&tab=appealRegister&page=" + appealCurrentPage + "&size=" + itemPerPage;
 
             // Simulate loading by adding a delay before navigating to the details page
             setTimeout(function() {
