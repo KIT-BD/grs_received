@@ -303,8 +303,6 @@ public class DashboardDataDAO {
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         Long days = CalendarUtil.getWorkDaysCountBefore(calendar.getTime(), (int) Constant.GRIEVANCE_EXPIRATION_TIME);
 
-        System.out.println(officeId+" "+monthDiff+" "+days);
-
         return dashboardDataRepo.countTimeExpiredAppealsByOfficeIdV2(officeId, monthDiff, days);
     }
 

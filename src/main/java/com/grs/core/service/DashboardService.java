@@ -591,10 +591,9 @@ public class DashboardService {
             closedDate = complainHistory.getCreatedAt(); // Fallback if forwarded
         }
 
-        System.out.println(complainantAndServiceInfo);
-
         return MonthlyGrievanceResolutionDTO.builder()
                 .id(complainHistory.getComplainId())
+                .trackingNumber(grievance.getTrackingNumber())
                 .subject(grievance.getSubject())
                 .serviceName(complainantAndServiceInfo.get("serviceName"))
                 .closedDate(closedDate)
