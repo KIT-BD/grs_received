@@ -146,11 +146,13 @@
     <th:block th:replace="dashboard2/centralDashboardLandingPage :: centralDashboardLandingPageScript"></th:block>
     <th:block th:replace="dashboard2/currentMonthReport :: currentMonthReportScript"></th:block>
     <th:block th:replace="dashboard2/grievanceRegister :: grievanceRegisterScript"></th:block>
+    <th:block th:replace="dashboard2/grievanceTimeExpired :: grievanceTimeExpiredScript"></th:block>
     <th:block th:replace="dashboard2/appealRegister :: appealRegisterScript"></th:block>
     <th:block th:replace="dashboard2/suggestions :: suggestionsScript"></th:block>
     <th:block th:replace="dashboard2/searchByTrackingNumber :: searchByTrxScript"></th:block>
     <th:block th:replace="dashboard2/subOfficesReports :: subOfficesReportsScript"></th:block>
     <th:block th:replace="dashboard2/appealedComplaints :: appealedComplaintsScript"></th:block>
+    <th:block th:replace="dashboard2/appealTimeExpired :: appealTimeExpiredScript"></th:block>
     <th:block th:replace="dashboard2/tagidList :: tagidListScript"></th:block>
     <th:block th:replace="officeSelection :: officeSelectionScript"></th:block>
     <th:block th:replace="dashboard2/customReport :: customReportScript"></th:block>
@@ -775,7 +777,7 @@
                 list.forEach(function (obj, index) {
                     var grievance = obj.grievance;
                     var currentLocationList = obj.grievanceCurrentLocationList;
-                    bodyContents += "<tr>" +
+                    bodyContents += "<tr style='cursor: pointer;'>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
                         "<td>" + convertToBangla(grievance.trackingNumberEnglish) + "</td>" +
                         "<td>" + grievance.subject + "</td>" +
@@ -849,7 +851,8 @@
                 list.forEach(function (obj, index) {
                     var grievance = obj.grievance;
                     var currentLocationList = obj.grievanceCurrentLocationList;
-                    bodyContents += "<tr>" +
+                    bodyContents += "<tr style='cursor:pointer;'>" +
+                        "<td style='display: none;'>" + grievance.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
                         "<td>" + convertToBangla(grievance.trackingNumberEnglish) + "</td>" +
                         "<td>" + grievance.subject + "</td>" +
