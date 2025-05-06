@@ -72,4 +72,8 @@ public interface OfficeRepo extends JpaRepository<Office, Long> {
 
     @Query(value = "SELECT * FROM offices o WHERE LOWER(o.office_name_bng) LIKE LOWER(CONCAT('%', :nameBn, '%'))", nativeQuery = true)
     List<Office> findByOfficeNameBng(@Param("nameBn") String nameBn);
+
+    List<Office> findByParentOfficeId(Long parentOfficeId);
+
+    boolean existsByParentOfficeId(Long parentOfficeId);
 }

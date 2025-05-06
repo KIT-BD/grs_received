@@ -11,6 +11,8 @@ import com.grs.core.domain.projapoti.EmployeeOffice;
 import com.grs.core.domain.projapoti.Office;
 import com.grs.core.domain.projapoti.OfficeOriginUnit;
 import com.grs.core.domain.projapoti.OfficeUnitOrganogram;
+import com.grs.core.repo.grs.OfficesGRORepo;
+import com.grs.core.repo.projapoti.OfficeRepo;
 import com.grs.utils.Utility;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -39,6 +41,10 @@ public class OfficeOrganogramService {
     private OfficesGroService officesGroService;
     @Autowired
     private OfficeOriginUnitDAO officeOriginUnitDAO;
+    @Autowired
+    private OfficesGRORepo officesGRORepo;
+    @Autowired
+    private OfficeRepo officeRepo;
 
     public OfficeUnitOrganogram findOne(Long id) {
         return this.officeUnitOrganogramDAO.findOne(id);
@@ -241,43 +247,28 @@ public class OfficeOrganogramService {
             String type = splittedNodeId[0];
             officeMinistryId = splittedNodeId[1];
             parentOfficeId = splittedNodeId[2];
-            List<Office> listOfficesDTO = officesGroService.findByAppealOfficer(
-                    userInformation.getOfficeInformation().getOfficeId(),
-                    userInformation.getOfficeInformation().getOfficeUnitOrganogramId());
-            if (listOfficesDTO.size() > 0) {
-                for (Office officesDTO : listOfficesDTO) {
-                    if (officesDTO.getParentOfficeId() == Long.parseLong(parentOfficeId)) {
+            List<Office> childOffices = officeRepo.findByParentOfficeId(Long.parseLong(parentOfficeId));
+
+            if (!childOffices.isEmpty()) {
+                for (Office office : childOffices) {
+                    if (office.getParentOfficeId() == Long.parseLong(parentOfficeId)) {
                         TreeNodeDTO node = TreeNodeDTO.builder()
-                                .id("office_" + officeMinistryId + "_" + officesDTO.getId())
-                                .dataId("office_" + officeMinistryId + "_" + officesDTO.getId())
-                                .text("<span style='color: blue'>" + officesDTO.getNameBangla() + "</span>")
+                                .id("office_" + officeMinistryId + "_" + office.getId())
+                                .dataId("office_" + officeMinistryId + "_" + office.getId())
+                                .text("<span style='color: blue'>" + office.getNameBangla() + "</span>")
                                 .icon("fa fa-caret-square-o-right")
                                 .build();
 
-                        if (officesDTO.getOfficeLayer().getLayerLevel() >= 5) {
-                            node.setChildren(false);
+                        if (office.getOfficeLayer() == null || office.getOfficeLayer().getLayerLevel() == null || office.getOfficeLayer().getLayerLevel() >= 5) {
+                            node.setChildren(true);
                         } else {
-                            List<Office> listChildOfficesDTO = officesGroService.findByAppealOfficer(
-                                    userInformation.getOfficeInformation().getOfficeId(),
-                                    userInformation.getOfficeInformation().getOfficeUnitOrganogramId());
-                            if (listChildOfficesDTO.size() > 0) {
-                                node.setChildren(true);
-                            } else {
-                                node.setChildren(false);
-                            }
+                            boolean hasMoreChildren = officeRepo.existsByParentOfficeId(office.getId());
+                            node.setChildren(hasMoreChildren);
                         }
+
                         listTreeNodeDTO.add(node);
                     }
                 }
-            } else {
-                TreeNodeDTO treeNodeDTO = TreeNodeDTO.builder()
-                        .id("")
-                        .icon("fa fa-ban")
-                        .children(false)
-                        .text("<i>তথ্য নেই</i>")
-                        .build();
-
-                listTreeNodeDTO.add(treeNodeDTO);
             }
         }
         return listTreeNodeDTO;
