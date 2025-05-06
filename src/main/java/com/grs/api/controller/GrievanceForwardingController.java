@@ -43,6 +43,11 @@ public class GrievanceForwardingController {
         return this.grievanceForwardingService.getAllComplaintMovementHistoryByGrievance(grievanceId, authentication);
     }
 
+    @RequestMapping(value = "/api/grievance/forward/appealMovementHistory/{grievanceId}", method = RequestMethod.GET)
+    public List<GrievanceForwardingEmployeeRecordsDTO> getAllAppealComplaintMovements(@PathVariable("grievanceId") Long grievanceId, Authentication authentication) {
+        return this.grievanceForwardingService.getAllComplaintAppealMovementHistoryByGrievance(grievanceId, authentication);
+    }
+
     @RequestMapping(value = "/api/grievance/forward/complainant/{grievanceId}", method = RequestMethod.GET)
     public List<GrievanceForwardingEmployeeRecordsDTO> getAllComplainantComplaintMovements(@PathVariable("grievanceId") Long grievanceId, Authentication authentication) {
         return this.grievanceForwardingService.getAllComplainantComplaintMovementHistoryByGrievance(grievanceId, authentication);
