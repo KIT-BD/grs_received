@@ -497,9 +497,9 @@ public class GrievanceForwardingService {
     public List<GrievanceForwardingEmployeeRecordsDTO> getAllComplaintMovementHistoryByGrievance(Long grievanceId, Authentication authentication) {
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
-        List<GrievanceForwarding> grievanceForwardings = getAllUserRelatedForwardings(grievance, userInformation);
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
 
-        return grievanceForwardings.stream()
+        List<GrievanceForwardingEmployeeRecordsDTO> complaintMovements = grievanceForwardings.stream()
                 .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
                         .toGroNameBangla(grievanceForwarding.getToEmployeeNameBangla())
                         .fromGroNameBangla(grievanceForwarding.getFromEmployeeNameBangla())
@@ -530,6 +530,8 @@ public class GrievanceForwardingService {
                         .from_office_unit_organogram_id(grievanceForwarding.getFromOfficeUnitOrganogramId())
                         .build())
                 .collect(Collectors.toList());
+        Collections.reverse(complaintMovements);
+        return complaintMovements;
     }
 
     public List<GrievanceForwardingEmployeeRecordsDTO> getAllComplaintAppealMovementHistoryByGrievance(Long grievanceId, Authentication authentication) {
