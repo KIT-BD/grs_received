@@ -1588,6 +1588,25 @@ public class GrievanceForwardingService {
     public GenericResponse sendToAppealOfficer(Authentication authentication, GrievanceForwardingNoteDTO grievanceForwardingNoteDTO) {
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         OfficesGRO officesGRO = this.officesGroService.findOfficesGroByOfficeId(userInformation.getOfficeInformation().getOfficeId());
+
+        Grievance grievance = grievanceService.findGrievanceById(grievanceForwardingNoteDTO.getGrievanceId());
+        List<GrievanceForwarding> grievanceForwardings;
+        grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
+
+        List<GrievanceForwarding> appeals = grievanceForwardings.stream()
+                .filter(mv -> "APPEAL".equalsIgnoreCase(mv.getAction()))
+                .sorted(Comparator.comparing(GrievanceForwarding::getId).reversed())
+                .collect(Collectors.toList());
+
+
+        GrievanceForwarding previous = appeals.get(1);
+
+        if(userInformation.getOfficeInformation().getOfficeId().equals(0L)) {
+
+            officesGRO = this.officesGroService.findOfficesGroByOfficeId(previous.getToOfficeId());
+
+        }
+
         if (officesGRO == null || officesGRO.getAppealOfficeId() == 0 || officesGRO.getAppealOfficeId() == null) {
             String successMessage = "দুঃখিত সামান্য ত্রুটির জন্য আপিল অফিসারের কাছে অভিযোগটি পাঠানো যাচ্ছে না!";
             return new GenericResponse(false, successMessage);
@@ -1598,7 +1617,7 @@ public class GrievanceForwardingService {
         if (aoEmployeeOffice == null) {
             return new GenericResponse(false, "আপনার বাছাইকৃত দপ্তরটি সেটআপ করা নেই।");
         }
-        Grievance grievance = grievanceService.findGrievanceById(grievanceForwardingNoteDTO.getGrievanceId());
+
         GrievanceCurrentStatus prevStatus = grievance.getGrievanceCurrentStatus();
         Long toOfficeId = officesGRO.getAppealOfficeId();
         grievance.setGrievanceCurrentStatus(GrievanceCurrentStatus.FORWARDED_TO_AO);
