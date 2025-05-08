@@ -236,6 +236,26 @@ public class ReportController {
 
     }
 
+    @RequestMapping (value = "/api/timeBased/layer-level/{layerLevel}/officeOrigin/{officeOrigin}/offices/{officeId}/reports/from/{fromYear}/{fromMonth}/to/{toYear}/{toMonth}", method = RequestMethod.GET)
+    public List<GrievanceAndAppealMonthlyReportDTO> getTimeBasedReport(
+            Authentication authentication,
+            @PathVariable("officeId") Long officeId,
+            @PathVariable("layerLevel") Long layerLevel,
+            @PathVariable("officeOrigin") Long officeOrigin,
+            @PathVariable("fromYear") Integer fromYear,
+            @PathVariable("fromMonth") Integer fromMonth,
+            @PathVariable("toYear") Integer toYear,
+            @PathVariable("toMonth") Integer toMonth
+    ) {
+        if(authentication != null){
+            return reportsService.getTimeBasedReport(officeId, layerLevel, officeOrigin, fromYear, fromMonth, toYear, toMonth);
+        }
+        else {
+            return null;
+        }
+
+    }
+
 
     @RequestMapping(value = "/api/report/regenerate/{year}/{month}", method = RequestMethod.GET)
     public void regenerateRepoort(Authentication authentication, @PathVariable("year") String year, @PathVariable("month") String month) {
