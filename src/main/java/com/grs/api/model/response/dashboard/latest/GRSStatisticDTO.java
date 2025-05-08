@@ -12,6 +12,7 @@ public class GRSStatisticDTO {
     public long runningGrievances;    //Count of grievances that are not yet resolved or rejected or forwarded to other office
     public long forwardedGrievances;  // Count of grievances that are forwarded to appeal officer or child offices GRO or GRO of any other office
     public long timeExpiredGrievances;// Count of grievances whose minimum days(60 days) allowed for resolving has been already expired
+    public long timeExtendedGrievances;
     public long resolvedGrievances;   // Count of grievances that are resolved within this month
     public float resolveRate;// Rate calculation of grievances that get resolved by excluding forwarded grievances from total grievances submitted
     public float rateOfAppealedGrievance;// Rate calculation of total submitted grievances of this office that are requested for appeal after getting resolved
@@ -45,6 +46,7 @@ public class GRSStatisticDTO {
             this.month = monthlyReport.getMonth();
             this.year = monthlyReport.getYear();
             this.currentMonthAcceptance = 0;
+            this.timeExtendedGrievances = 0;
             if (monthlyReport.getOnlineSubmissionCount() != null) {
                 this.currentMonthAcceptance += monthlyReport.getOnlineSubmissionCount();
             }
@@ -54,12 +56,15 @@ public class GRSStatisticDTO {
             if (monthlyReport.getSelfMotivatedAccusationCount() != null) {
                 this.currentMonthAcceptance += monthlyReport.getSelfMotivatedAccusationCount();
             }
+            if (monthlyReport.getTimeExtendedCount() != null) {
+                this.timeExtendedGrievances += monthlyReport.getTimeExtendedCount();
+            }
             this.ascertainOfLastMonth = monthlyReport.getInheritedFromLastMonthCount();
             this.runningGrievances = monthlyReport.getRunningCount();
             this.forwardedGrievances = monthlyReport.getSentToOtherCount();
             this.timeExpiredGrievances = monthlyReport.getTimeExpiredCount();
             this.resolvedGrievances = monthlyReport.getResolvedCount();
-            this.totalSubmittedGrievance = this.currentMonthAcceptance + this.ascertainOfLastMonth;
+            this.totalSubmittedGrievance = this.currentMonthAcceptance + this.ascertainOfLastMonth + this.timeExtendedGrievances;
             Double rate = 0d;
             if (this.totalSubmittedGrievance >0) {
                 Long totalDecided = monthlyReport.getResolvedCount() + monthlyReport.getSentToOtherCount();

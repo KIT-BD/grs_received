@@ -14,6 +14,7 @@ import com.grs.core.domain.projapoti.Office;
 import com.grs.core.domain.projapoti.OfficeLayer;
 import com.grs.core.domain.projapoti.OfficeMinistry;
 import com.grs.core.repo.grs.BaseEntityManager;
+import com.grs.core.repo.grs.DashboardDataRepo;
 import com.grs.utils.CacheUtil;
 import com.grs.utils.Constant;
 import com.grs.utils.Utility;
@@ -59,6 +60,8 @@ public class ReportsService {
     private GrievanceService grievanceService;
     @Autowired
     private BaseEntityManager baseEntityManager;
+    @Autowired
+    private DashboardDataRepo dashboardDataRepo;
 
     public GrievanceMonthlyReportsDTO getGrievanceMonthlyReportsSummarry(String month, Office office) {
         Date date = new Date(Long.valueOf(month));
@@ -134,25 +137,37 @@ public class ReportsService {
 
 
     public MonthlyReportDTO getAppealMonthlyReport(Long officeId, Long monthDiff) {
+
         Long totalSubmitted = dashboardService.countTotalAppealsByOfficeIdV2(officeId, monthDiff);
         Long resolvedCount = dashboardService.countResolvedAppealsByOfficeIdV2(officeId, monthDiff);
-        Long timeExpiredCount = dashboardService.countTimeExpiredAppealsByOfficeId(officeId, monthDiff);
-        Long runningGrievanceCount = dashboardService.countRunningAppealsByOfficeId(officeId, monthDiff);
+        Long timeExpiredCount = dashboardService.countTimeExpiredAppealsByOfficeIdV2(officeId, monthDiff);
+        Long runningGrievanceCount = dashboardService.countRunningAppealsByOfficeIdV2(officeId, monthDiff);
+        Long inheritedFromLastMonthCount = dashboardDataRepo.countInheritedAppealsByOfficeIdV2(officeId, monthDiff, monthDiff - 1);
+        Long onlineSubmitted = dashboardService.getMonthlyAppealsCountByOfficeIdAndMediumOfSubmissionV2(officeId, MediumOfSubmission.ONLINE, monthDiff);
 
-        Long onlineSubmitted = dashboardService.getMonthlyAppealsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.ONLINE, monthDiff);
-        while (resolvedCount > totalSubmitted) {
-            totalSubmitted +=1;
-            onlineSubmitted +=1;
+//        while (resolvedCount > totalSubmitted) {
+//            totalSubmitted +=1;
+//            onlineSubmitted +=1;
+//        }
+
+        if (inheritedFromLastMonthCount != null && inheritedFromLastMonthCount > 0) {
+            totalSubmitted += inheritedFromLastMonthCount;
+        }
+
+        if(totalSubmitted < (runningGrievanceCount + resolvedCount) ) {
+            resolvedCount = totalSubmitted - runningGrievanceCount;
+            if (resolvedCount < 0) resolvedCount = 0L;
         }
         Double rate = 0d;
         if (totalSubmitted > 0) {
             rate = ((double)resolvedCount / (double)totalSubmitted) * 100;
             rate = (double) Math.round(rate * 100) / 100;
         }
+
         return MonthlyReportDTO.builder()
                 .officeId(officeId)
                 .onlineSubmissionCount(onlineSubmitted)
-                .inheritedFromLastMonthCount(dashboardService.getAppealAscertainCountOfPreviousMonth(officeId, monthDiff))
+                .inheritedFromLastMonthCount(inheritedFromLastMonthCount)
                 .totalCount(totalSubmitted)
                 .resolvedCount(resolvedCount)
                 .runningCount(runningGrievanceCount)
@@ -168,9 +183,9 @@ public class ReportsService {
         Long runningGrievanceCount = dashboardService.countRunningGrievancesByOfficeIdV2(officeId, monthDiff);
         Long sentToOtherOfficeCount = dashboardService.countForwardedGrievancesByOfficeIdV2(officeId, monthDiff);
         Long onlineSubmission = dashboardService.getMonthlyComplaintsCountByOfficeIdAndMediumOfSubmission(officeId, MediumOfSubmission.ONLINE, monthDiff);
-
-//        Long inherited = dashboardService.countRunningGrievancesByOfficeIdV2(officeId, monthDiff-1);//dashboardService.getGrievanceAscertainCountOfPreviousMonthV2(officeId, monthDiff);
         Long inherited = dashboardService.countInheritedComplaintsByOfficeId(officeId, monthDiff);
+        Long timeExtended = 0L;
+        timeExtended = dashboardDataRepo.countTimeExtendedComplaintsByOfficeId(officeId, monthDiff, monthDiff-1);
 
         if (totalSubmitted == null ) {
             totalSubmitted = 0L;
@@ -178,12 +193,24 @@ public class ReportsService {
         if (inherited != null && inherited >0) {
             totalSubmitted +=inherited;
         }
+        if (timeExtended != null && timeExtended >0) {
+            totalSubmitted +=timeExtended;
+        }
         Double rate = 0d;
         Long totalDecided = resolvedCount + sentToOtherOfficeCount;
+
+        // Manual Fix for Resolved Percentage of The Reports that are Greater than 100
+        if (totalSubmitted < (sentToOtherOfficeCount + resolvedCount + runningGrievanceCount)) {
+            Long extraGrievance = (sentToOtherOfficeCount + resolvedCount + runningGrievanceCount) - totalSubmitted;
+            timeExtended += extraGrievance;
+            totalSubmitted += extraGrievance;
+        }
+
         if (totalSubmitted > 0) {
             rate = (double) totalDecided / (double)totalSubmitted * 100;
             rate = (double) Math.round(rate * 100) / 100;
         }
+        if (rate > 100.0) rate = 100.0;
 
         return MonthlyReportDTO.builder()
                 .officeId(officeId)
@@ -196,25 +223,40 @@ public class ReportsService {
                 .resolvedCount(resolvedCount)
                 .runningCount(runningGrievanceCount)
                 .timeExpiredCount(timeExpiredCount)
+                .timeExtendedCount(timeExtended)
                 .rate(rate)
                 .build();
     }
     public MonthlyReportDTO getAppealMonthlyReportForGenerate(Long officeId, Long monthDiff) {
+
         Long totalSubmitted = dashboardService.countTotalAppealsByOfficeIdV2(officeId, monthDiff);
         Long resolvedCount = dashboardService.countResolvedAppealsByOfficeIdV2(officeId, monthDiff);
         Long timeExpiredCount = dashboardService.countTimeExpiredAppealsByOfficeIdV2(officeId, monthDiff);
         Long runningGrievanceCount = dashboardService.countRunningAppealsByOfficeIdV2(officeId, monthDiff);
-
+        Long inheritedFromLastMonthCount = dashboardDataRepo.countInheritedAppealsByOfficeIdV2(officeId, monthDiff, monthDiff - 1);
         Long onlineSubmitted = dashboardService.getMonthlyAppealsCountByOfficeIdAndMediumOfSubmissionV2(officeId, MediumOfSubmission.ONLINE, monthDiff);
+
+        if (inheritedFromLastMonthCount != null && inheritedFromLastMonthCount > 0) {
+            totalSubmitted += inheritedFromLastMonthCount;
+        }
+
+        if(totalSubmitted < (runningGrievanceCount + resolvedCount) ) {
+            resolvedCount = totalSubmitted - runningGrievanceCount;
+            if (resolvedCount < 0) resolvedCount = 0L;
+        }
+
+
         Double rate = 0d;
         if (totalSubmitted > 0) {
             rate = ((double)resolvedCount / (double)totalSubmitted) * 100;
             rate = (double) Math.round(rate * 100) / 100;
         }
+
+
         return MonthlyReportDTO.builder()
                 .officeId(officeId)
                 .onlineSubmissionCount(onlineSubmitted)
-                .inheritedFromLastMonthCount(dashboardService.countRunningAppealsByOfficeIdV2(officeId, monthDiff-1))
+                .inheritedFromLastMonthCount(inheritedFromLastMonthCount)
                 .totalCount(totalSubmitted)
                 .resolvedCount(resolvedCount)
                 .runningCount(runningGrievanceCount)
@@ -437,7 +479,7 @@ public class ReportsService {
                             monthlyGR.setInheritedFromLastMonthCount(monthlyGR.getInheritedFromLastMonthCount() + monthlyGrievanceReport.getInheritedFromLastMonthCount());
                         }
                         if (monthlyGrievanceReport.getTotalCount() != null) {
-                            monthlyGR.setTotalCount(monthlyGR.getTotalCount() + monthlyGrievanceReport.getTotalCount());
+                            monthlyGR.setTotalCount(monthlyGR.getTotalCount() + monthlyGrievanceReport.getTotalCount() + monthlyGrievanceReport.getTimeExtendedCount());
                         }
                         if (monthlyGrievanceReport.getSentToOtherCount() != null) {
                             monthlyGR.setSentToOtherCount(monthlyGR.getSentToOtherCount() + monthlyGrievanceReport.getSentToOtherCount());
@@ -453,6 +495,9 @@ public class ReportsService {
                         }
                         if (monthlyGrievanceReport.getRate() != null) {
                             monthlyGR.setRate((monthlyGR.getRate() + monthlyGrievanceReport.getRate()));
+                        }
+                        if (monthlyGrievanceReport.getTimeExtendedCount() != null) {
+                            monthlyGR.setTimeExtendedCount((monthlyGR.getTimeExtendedCount() + monthlyGrievanceReport.getTimeExtendedCount()));
                         }
                     }
                     MonthlyReportDTO monthlyAppealReport = reportDTO.getMonthlyAppealReport();
@@ -658,6 +703,7 @@ public class ReportsService {
             Long totalResolved = 0L;
             Long totalRunning = 0L;
             Long timeExpired = 0L;
+            Long timeExtended = 0L;
             Long totalNewAppeal = 0L;
             Long totalInheritedAppeal = -1L;
             Long totalResolvedAppeal = 0L;
@@ -682,11 +728,13 @@ public class ReportsService {
                     totalConventional += monthlyGrievanceReport.getConventionalMethodSubmissionCount();
                     totalNew += (monthlyGrievanceReport.getOnlineSubmissionCount()
                             + monthlyGrievanceReport.getConventionalMethodSubmissionCount()
-                            + monthlyGrievanceReport.getSelfMotivatedAccusationCount());
+                            + monthlyGrievanceReport.getSelfMotivatedAccusationCount()
+                            + monthlyGrievanceReport.getTimeExtendedCount());
                     sendToOtherOffices += monthlyGrievanceReport.getSentToOtherCount();
                     totalResolved += monthlyGrievanceReport.getResolvedCount();
                     totalRunning = monthlyGrievanceReport.getRunningCount();
                     timeExpired = monthlyGrievanceReport.getTimeExpiredCount();
+                    timeExtended = monthlyGrievanceReport.getTimeExtendedCount();
                 }
                 if (monthlyAppealReport != null) {
                     if (totalInheritedAppeal == -1) {
@@ -712,6 +760,9 @@ public class ReportsService {
             totalInherited = totalInherited == -1 ? 0 : totalInherited;
             totalInheritedAppeal = totalInheritedAppeal == -1 ? 0 : totalInheritedAppeal;
 
+            // Manual Fix for Resolved Percentage of The Reports that are Greater than 100
+            if (rate > 100.0 ) rate = 100d;
+
             grievanceAndAppealMonthlyReportDTOS.add(
                     GrievanceAndAppealMonthlyReportDTO.builder()
                             .month(fromMonth)
@@ -731,6 +782,7 @@ public class ReportsService {
                                             .runningCount(totalRunning)
                                             .rate(rate)
                                             .timeExpiredCount(timeExpired)
+                                            .timeExtendedCount(timeExtended)
                                             .build()
                             )
                             .monthlyAppealReport(

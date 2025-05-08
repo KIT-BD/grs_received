@@ -18,6 +18,18 @@ import java.util.List;
  */
 @Repository
 public interface GrievanceRepo extends JpaRepository<Grievance, Long> {
+
+    @Query(nativeQuery = true, value =
+            "select * from grs_only_3.complaints where id in (select distinct complain_id from grs_only_3.complain_history where current_status in ('NEW', 'RETAKE')\n" +
+                    "and (closed_at is null or closed_at > DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59')) " +
+                    "and office_id = ?1 and created_at between DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?3 MONTH), '%Y-%m-01 00:00:00') " +
+                    "and DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59'))")
+    List<Grievance> getInbox(Long officeId, Long monthDiff, Long prevMonth);
+
+    @Query(nativeQuery = true, value =
+            "select * from grs_only_3.complaints where id in (select distinct complain_id from complain_history where current_status ='CLOSED' and created_at BETWEEN DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH), '%Y-%m-01 00:00:00') and DATE_FORMAT(LAST_DAY(DATE_ADD(CURDATE(), INTERVAL ?2 MONTH)), '%Y-%m-%d 23:59:59') and office_id=?1)")
+    List<Grievance> getClosed(Long officeId, Long monthDiff);
+
     @Query(value="SELECT coalesce(max(CONVERT(tracking_number ,UNSIGNED INTEGER)),0) FROM complaints c where tracking_number not like '01%' and tracking_number not like '1%'",
     nativeQuery = true)
     public long findMaxTrackingNumber();

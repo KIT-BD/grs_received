@@ -40,8 +40,11 @@
 <!--                                                            <img src="/assets/layouts/layout3/img/ovijog_dakhil_up.png" id="btn_obhijog_dakhil" onmouseenter="loadHoverState(this)" onmouseleave="loadNormalState(this)" />-->
 <!--                                                        </a>-->
                                                             <a th:if="${!isLoggedIn}" href="javascript:addPublicGrievanceWithoutLoginButtonEventHandler()" class="">
-                                                                <img src="/assets/layouts/layout3/img/ovijog_dakhil_up.png" class="btn_obhijog_dakhil" onmouseenter="loadHoverState(this)" onmouseleave="loadNormalState(this)" />
+                                                            <img src="/assets/layouts/layout3/img/ovijog_dakhil_up.png" class="btn_obhijog_dakhil" onmouseenter="loadHoverState(this)" onmouseleave="loadNormalState(this)" style="margin-bottom: 10px"/>
                                                             </a>
+                                                        <img src="/assets/layouts/layout3/img/333_up.png" class="btn_333_up"
+                                                             onclick="callNumber()" onmouseenter="loadHoverState(this)" onmouseleave="loadNormalState(this)" />
+
                                                             <a th:if="${isLoggedIn && !isOthersComplainant && !isOisfUser}" href="javascript: addPublicGrievanceButtonEventHandler()" class="">
                                                                 <img src="/assets/layouts/layout3/img/ovijog_dakhil_up.png" class="btn_obhijog_dakhil" onmouseenter="loadHoverState(this)" onmouseleave="loadNormalState(this)" />
                                                             </a>
@@ -322,41 +325,48 @@
 
 <div th:replace="includes/footer_includes :: footer"> </div>
 <script type="text/javascript">
-    $(document).ready(function() {
-        if (languageCode == "en") {
+    $(document).ready(function () {
+        if (languageCode === "en") {
             $(".btn_obhijog_dakhil").attr("src", "/assets/layouts/layout3/img/Submit-Grievance.png");
+            $(".btn_333").attr("src", "/assets/layouts/layout3/img/333.png");
         } else {
             $(".btn_obhijog_dakhil").attr("src", "/assets/layouts/layout3/img/ovijog_dakhil_up.png");
+            $(".btn_333").attr("src", "/assets/layouts/layout3/img/333.png"); // Ensure Bengali version if available
         }
     });
 
     function loadHoverState(obj) {
-        if (languageCode == "en") {
-            obj.src = "/assets/layouts/layout3/img/Submit-Grievance-pressed.png";
-        } else {
-            obj.src = "/assets/layouts/layout3/img/ovijog_dakhil_down.png";
+        if (obj.classList.contains("btn_obhijog_dakhil")) {
+            obj.src = (languageCode === "en")
+                ? "/assets/layouts/layout3/img/Submit-Grievance-pressed.png"
+                : "/assets/layouts/layout3/img/ovijog_dakhil_down.png";
+        } else if (obj.classList.contains("btn_333_up")) {
+            obj.src = "/assets/layouts/layout3/img/333_down.png"; // Optional hover image if available
         }
     }
 
     function loadNormalState(obj) {
-        if (languageCode == "en") {
-            obj.src = "/assets/layouts/layout3/img/Submit-Grievance.png";
-        } else {
-            obj.src = "/assets/layouts/layout3/img/ovijog_dakhil_up.png";
+        if (obj.classList.contains("btn_obhijog_dakhil")) {
+            obj.src = (languageCode === "en")
+                ? "/assets/layouts/layout3/img/Submit-Grievance.png"
+                : "/assets/layouts/layout3/img/ovijog_dakhil_up.png";
+        } else if (obj.classList.contains("btn_333_up")) {
+            obj.src = "/assets/layouts/layout3/img/333_up.png";
         }
     }
 
-    function appealButtonClickEventHandler(){
-        var authToken = $.cookie("Authorization")
-        if ( authToken!=null ){
+    function callNumber() {
+        window.location.href = 'tel:333';
+    }
+
+    function appealButtonClickEventHandler() {
+        var authToken = $.cookie("Authorization");
+        if (authToken != null) {
             $(location).attr('href', '/viewGrievances.do');
         } else {
             $(location).attr('href', '/login?a=0');
         }
     }
-
-
-
 </script>
 </body>
 </html>

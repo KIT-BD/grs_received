@@ -12,9 +12,9 @@
 
 <div th:fragment="hooDashboard" th:remove="tag">
     <div class="app-title">
-        <div class="col-md-12 col-sm-12 col-12 date">
+        <div class="col-md-12 col-sm-12 col-12 date" style="background-color: #164d1f">
             <span th:text="${currentDateMonthYear}"></span>
-            <h2 id="officeName" style="display: none;"><span th:text="${officeName}" th:remove="tag"></span> এর
+            <h2 id="officeName" style="display: none; color: white"><span th:text="${officeName}" th:remove="tag"></span> এর
                 ড্যাশবোর্ড</h2>
             <h2 id="officeNameCell" style="display: none;">মন্ত্রিপরিষদ বিভাগের অভিযোগ ব্যবস্থাপনা সেল</h2>
             <h2 id="officeNameCoordinator" style="display: none;">মাঠ পর্যায়ের সমন্বয়কের ড্যাশবোর্ড</h2>
@@ -146,11 +146,15 @@
     <th:block th:replace="dashboard2/centralDashboardLandingPage :: centralDashboardLandingPageScript"></th:block>
     <th:block th:replace="dashboard2/currentMonthReport :: currentMonthReportScript"></th:block>
     <th:block th:replace="dashboard2/grievanceRegister :: grievanceRegisterScript"></th:block>
+    <th:block th:replace="dashboard2/grievanceTimeExpired :: grievanceTimeExpiredScript"></th:block>
+    <th:block th:replace="dashboard2/grievanceResolvedCurrentMonth :: grievanceResolvedScript"></th:block>
     <th:block th:replace="dashboard2/appealRegister :: appealRegisterScript"></th:block>
     <th:block th:replace="dashboard2/suggestions :: suggestionsScript"></th:block>
     <th:block th:replace="dashboard2/searchByTrackingNumber :: searchByTrxScript"></th:block>
     <th:block th:replace="dashboard2/subOfficesReports :: subOfficesReportsScript"></th:block>
     <th:block th:replace="dashboard2/appealedComplaints :: appealedComplaintsScript"></th:block>
+    <th:block th:replace="dashboard2/appealTimeExpired :: appealTimeExpiredScript"></th:block>
+    <th:block th:replace="dashboard2/appealResolved :: appealResolvedScript"></th:block>
     <th:block th:replace="dashboard2/tagidList :: tagidListScript"></th:block>
     <th:block th:replace="officeSelection :: officeSelectionScript"></th:block>
     <th:block th:replace="dashboard2/customReport :: customReportScript"></th:block>
@@ -775,8 +779,10 @@
                 list.forEach(function (obj, index) {
                     var grievance = obj.grievance;
                     var currentLocationList = obj.grievanceCurrentLocationList;
-                    bodyContents += "<tr>" +
+                    bodyContents += "<tr style='cursor: pointer;'>" +
+                        "<td style='display:none;'>" + grievance.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
+                        "<td>" + convertToBangla(grievance.trackingNumberEnglish) + "</td>" +
                         "<td>" + grievance.subject + "</td>" +
                         "<td>" + grievance.serviceNameBangla + "</td>" +
                         "<td>" + grievance.typeBangla + "</td>" +
@@ -848,8 +854,10 @@
                 list.forEach(function (obj, index) {
                     var grievance = obj.grievance;
                     var currentLocationList = obj.grievanceCurrentLocationList;
-                    bodyContents += "<tr>" +
+                    bodyContents += "<tr style='cursor:pointer;'>" +
+                        "<td style='display: none;'>" + grievance.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
+                        "<td>" + convertToBangla(grievance.trackingNumberEnglish) + "</td>" +
                         "<td>" + grievance.subject + "</td>" +
                         "<td>" + grievance.serviceNameBangla + "</td>" +
                         "<td>" + grievance.typeBangla + "</td>" +
@@ -1261,8 +1269,10 @@
             var bodyContent = "";
             if (currentMonthResolutions.length > 0) {
                 currentMonthResolutions.forEach(function (rowObj, index) {
-                    bodyContent += "<tr>" +
+                    bodyContent += "<tr style='cursor:pointer;'>" +
+                        "<td style='display: none;'>" + rowObj.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
+                        "<td>" + convertToBangla(rowObj.trackingNumber) + "</td>" +
                         "<td>" + rowObj.subject + "</td>" +
                         "<td>" + rowObj.serviceName + "</td>" +
                         "<td>" + new Date(rowObj.closedDate).toISOString().slice(0, 10).toBanglaNumber() + "</td>" +
@@ -1288,8 +1298,10 @@
             var bodyContent = "";
             if (currentMonthResolutions.length > 0) {
                 currentMonthResolutions.forEach(function (rowObj, index) {
-                    bodyContent += "<tr>" +
+                    bodyContent += "<tr style='cursor:pointer;'>" +
+                        "<td style='display: none;'>" + rowObj.id + "</td>" +
                         "<td>" + ("" + (index + 1)).toBanglaNumber() + "</td>" +
+                        "<td>" + convertToBangla(rowObj.trackingNumber) + "</td>" +
                         "<td>" + rowObj.subject + "</td>" +
                         "<td>" + rowObj.serviceName + "</td>" +
                         "<td>" + new Date(rowObj.closedDate).toISOString().slice(0, 10).toBanglaNumber() + "</td>" +

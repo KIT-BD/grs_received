@@ -19,6 +19,7 @@ import javax.persistence.Query;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 @Repository
@@ -245,9 +246,14 @@ public class BaseEntityManager {
     //TODO:: Date wise report
     public Long[] getDailyReport(Long layerLevel, Long officeOrigin, Long customLayer, Long officeId, Date fromDate, Date toDate) {
 
-        String sql = "select count(distinct complain_id) from complain_history where current_status ='NEW' and created_at BETWEEN :fromDate and :toDate ";
+
+        String sql = "select count(distinct complain_id) as cnt " +
+                    "from complain_history " +
+                    "where current_status in ('NEW','RETAKE') " +
+                    "and created_at BETWEEN :fromDate AND :toDate ";
 
         String where = " ";
+
         Map<String, Object> params = new HashMap<>();
         if (officeId != null && officeId != 9999) {
             where += " and office_id =:officeId ";
@@ -295,8 +301,10 @@ public class BaseEntityManager {
         }
 
 
-        sql = "select count(distinct complain_id) from complain_history where current_status ='CLOSED' " +
-                "and created_at BETWEEN :fromDate and :toDate ";
+        sql =   "select count(distinct complain_id) as cnt " +
+                "from complain_history " +
+                "where current_status = 'CLOSED' " +
+                "and created_at BETWEEN :fromDate AND :toDate ";
 
         query = entityManager.createNativeQuery(sql + where)
                 .setParameter("fromDate", fromDate)
@@ -313,13 +321,15 @@ public class BaseEntityManager {
 //
         Long workDaysCountBefore = CalendarUtil.getWorkDaysCountBefore(fromDate, (int) Constant.GRIEVANCE_EXPIRATION_TIME);
 
-        sql = "select count(distinct complain_id) from complain_history " +
-                "where current_status in ('NEW', 'CLOSED') and created_at <:fromDate " +
-                "and ((closed_at >:toDate or closed_at is null) and DATEDIFF(created_at, closed_at) > 0 and DATEDIFF(created_at, closed_at) >:workDaysCountBefore)";
+        sql =   "select count(distinct complain_id) as cnt " +
+                "from complain_history " +
+                "where current_status in ('NEW','RETAKE') " +
+                "and created_at < :fromDate " +
+                "and closed_at is null " +
+                "and DATEDIFF(:fromDate, created_at) > :workDaysCountBefore ";
 
         query = entityManager.createNativeQuery(sql + where)
                 .setParameter("fromDate", fromDate)
-                .setParameter("toDate", toDate)
                 .setParameter("workDaysCountBefore", workDaysCountBefore);
 
         if (params.size() > 0) {
@@ -332,10 +342,15 @@ public class BaseEntityManager {
         }
 
 
-        sql = "select count(distinct complain_id) from complain_history where current_status = 'NEW' " +
-                "and (closed_at is null or closed_at >:toDate) and created_at < :toDate ";
+        Date expiredDateThreshold = new Date(fromDate.getTime() - TimeUnit.DAYS.toMillis(30));
+
+        sql = "select count(distinct complain_id) from complain_history " +
+                "where current_status in ('NEW', 'RETAKE') " +
+                "and created_at >= :expiredDateThreshold " +
+                "and (closed_at is null or closed_at > :toDate)";
 
         query = entityManager.createNativeQuery(sql + where)
+                .setParameter("expiredDateThreshold", expiredDateThreshold)
                 .setParameter("toDate", toDate);
 
         if (params.size() > 0) {
@@ -364,7 +379,7 @@ public class BaseEntityManager {
         }
 
 
-        sql = "select count(distinct complain_id) from complain_history where current_status ='NEW' " +
+        sql = "select count(distinct complain_id) from complain_history where current_status in ('NEW','RETAKE') " +
                 "and created_at BETWEEN :fromDate and :toDate and medium_of_submission=:mediumOfSubmission ";
 
 
@@ -416,12 +431,14 @@ public class BaseEntityManager {
         params.remove("mediumOfSubmission");
 
 
-        sql = "select count(distinct complain_id) from complain_history where current_status = 'NEW' " +
-                "and (closed_at is null or closed_at > :fromDate) and created_at < :fromDate ";
+        sql = "select count(distinct complain_id) from complain_history where current_status in ('NEW','RETAKE') " +
+                "and (closed_at is null or closed_at > :toDate) and (created_at between :expiredDateThreshold and :fromDate)";
 
 
         query = entityManager.createNativeQuery(sql + where)
-                .setParameter("fromDate", fromDate);
+                .setParameter("fromDate", fromDate)
+                .setParameter("toDate", toDate)
+                .setParameter("expiredDateThreshold", expiredDateThreshold);
 
         if (params.size() > 0) {
             params.forEach(query::setParameter);

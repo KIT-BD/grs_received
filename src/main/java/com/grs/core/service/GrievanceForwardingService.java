@@ -497,9 +497,9 @@ public class GrievanceForwardingService {
     public List<GrievanceForwardingEmployeeRecordsDTO> getAllComplaintMovementHistoryByGrievance(Long grievanceId, Authentication authentication) {
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
-        List<GrievanceForwarding> grievanceForwardings = getAllUserRelatedForwardings(grievance, userInformation);
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
 
-        return grievanceForwardings.stream()
+        List<GrievanceForwardingEmployeeRecordsDTO> complaintMovements = grievanceForwardings.stream()
                 .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
                         .toGroNameBangla(grievanceForwarding.getToEmployeeNameBangla())
                         .fromGroNameBangla(grievanceForwarding.getFromEmployeeNameBangla())
@@ -530,6 +530,43 @@ public class GrievanceForwardingService {
                         .from_office_unit_organogram_id(grievanceForwarding.getFromOfficeUnitOrganogramId())
                         .build())
                 .collect(Collectors.toList());
+        Collections.reverse(complaintMovements);
+        return complaintMovements;
+    }
+
+    public List<GrievanceForwardingEmployeeRecordsDTO> getAllComplaintAppealMovementHistoryByGrievance(Long grievanceId, Authentication authentication) {
+        Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
+
+        List<GrievanceForwardingEmployeeRecordsDTO> complaintMovements = grievanceForwardings.stream()
+                .filter(gf -> gf.getAction() != null && gf.getAction().toUpperCase().contains("APPEAL"))
+                .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
+                        .toGroNameBangla(grievanceForwarding.getToEmployeeNameBangla())
+                        .fromGroNameBangla(grievanceForwarding.getFromEmployeeNameBangla())
+                        .toGroNameEnglish(grievanceForwarding.getToEmployeeNameEnglish())
+                        .fromGroNameEnglish(grievanceForwarding.getFromEmployeeNameEnglish())
+                        .comment(grievanceForwarding.getComment())
+                        .action(grievanceForwarding.getAction())
+                        .createdAtEng(DateTimeConverter.convertDateToStringForTimeline(grievanceForwarding.getCreatedAt()))
+                        .createdAtBng(BanglaConverter.getDateBanglaFromEnglish(DateTimeConverter.convertDateToStringForTimeline(grievanceForwarding.getCreatedAt())))
+                        .createdAtFullEng(DateTimeConverter.convertDateToStringForTimelineFull(grievanceForwarding.getCreatedAt()))
+                        .createdAtFullBng(BanglaConverter.getDateBanglaFromEnglishFull(DateTimeConverter.convertDateToStringForTimelineFull(grievanceForwarding.getCreatedAt())))
+                        .files(getFiles(grievanceForwarding))
+                        .toDesignationNameBangla(grievanceForwarding.getToEmployeeDesignationBangla())
+                        .fromDesignationNameBangla(grievanceForwarding.getFromEmployeeDesignationBangla())
+                        .toOfficeNameBangla(grievanceForwarding.getToOfficeNameBangla())
+                        .fromOfficeNameBangla(grievanceForwarding.getFromOfficeNameBangla())
+                        .toOfficeUnitNameBangla(grievanceForwarding.getToEmployeeUnitNameBangla())
+                        .fromOfficeUnitNameBangla(grievanceForwarding.getFromEmployeeUnitNameBangla())
+                        .fromGroUsername(grievanceForwarding.getFromEmployeeUsername())
+                        .isCC(grievanceForwarding.getIsCC())
+                        .isCommitteeHead(grievanceForwarding.getIsCommitteeHead())
+                        .isCommitteeMember(grievanceForwarding.getIsCommitteeMember())
+                        .assignedRole(grievanceForwarding.getAssignedRole())
+                        .build())
+                .collect(Collectors.toList());
+        Collections.reverse(complaintMovements);
+        return complaintMovements;
     }
 
     public List<FileDerivedDTO> getFiles(GrievanceForwarding grievanceForwarding) {
@@ -1994,19 +2031,19 @@ public class GrievanceForwardingService {
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         OfficesGRO officesGRO = this.officesGroService.findOfficesGroByOfficeId(grievance.getOfficeId());
-        List<GrievanceForwarding> grievanceForwardings;
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
 
-        if (userInformation.getOfficeInformation().getOfficeId().equals(0L)){
-            grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
-        } else {
-            grievanceForwardings = this.grievanceForwardingDAO.getAllRelatedComplaintMovements(
-                    grievanceId,
-                    officesGRO.getOfficeId(),
-                    new ArrayList<Long>() {{
-                        add(officesGRO.getGroOfficeUnitOrganogramId());
-                    }},
-                    "%APPEAL%");
-        }
+//        if (userInformation.getOfficeInformation().getOfficeId().equals(0L)){
+//            grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
+//        } else {
+//            grievanceForwardings = this.grievanceForwardingDAO.getAllRelatedComplaintMovements(
+//                    grievanceId,
+//                    officesGRO.getOfficeId(),
+//                    new ArrayList<Long>() {{
+//                        add(officesGRO.getGroOfficeUnitOrganogramId());
+//                    }},
+//                    "%APPEAL%");
+//        }
 
         List<GrievanceForwardingEmployeeRecordsDTO> complaintMovements = grievanceForwardings.stream()
                 .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
@@ -2034,6 +2071,7 @@ public class GrievanceForwardingService {
                         .assignedRole(grievanceForwarding.getAssignedRole())
                         .build())
                 .collect(Collectors.toList());
+        Collections.reverse(complaintMovements);
         return complaintMovements;
     }
 

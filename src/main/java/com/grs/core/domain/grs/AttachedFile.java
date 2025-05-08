@@ -18,6 +18,7 @@ import javax.persistence.*;
 @AllArgsConstructor
 @Builder
 @Table(name = "complaint_attachments")
+@ToString(exclude = "grievance")
 public class AttachedFile extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
