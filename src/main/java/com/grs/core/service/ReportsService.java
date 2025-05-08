@@ -718,10 +718,8 @@ public class ReportsService {
 
             return reportDTOS;
         } else {
-            // Fetch report for a single office
-            List<GrievanceAndAppealMonthlyReportDTO> reportDTOSCombined =getCustomReport(layerLevel, officeId, fromYear, fromMonth, toYear, toMonth);
-
-            List<GrievanceAndAppealMonthlyReportDTO> reportDTOS = Collections.singletonList(mergeMonthlyReports(reportDTOSCombined));
+            Office office = officeService.getOffice(officeId);
+            List<GrievanceAndAppealMonthlyReportDTO> reportDTOS = getMultipleOfficesMergedReport(Collections.singletonList(office),fromYear, fromMonth, toYear, toMonth);
 
             // Set the serial number (sl) after sorting
             long serialNumber = 1;
@@ -738,74 +736,6 @@ public class ReportsService {
 
             return reportDTOS;
         }
-    }
-
-    public GrievanceAndAppealMonthlyReportDTO mergeMonthlyReports(List<GrievanceAndAppealMonthlyReportDTO> monthlyReports) {
-        if (monthlyReports == null || monthlyReports.isEmpty()) {
-            return null;
-        }
-
-        MonthlyReportDTO grievanceSummary = new MonthlyReportDTO();
-        MonthlyReportDTO appealSummary = new MonthlyReportDTO();
-
-        for (GrievanceAndAppealMonthlyReportDTO dto : monthlyReports) {
-            MonthlyReportDTO grievance = dto.getMonthlyGrievanceReport();
-            if (grievance != null) {
-                grievanceSummary.setOnlineSubmissionCount(grievanceSummary.getOnlineSubmissionCount() + safe(grievance.getOnlineSubmissionCount()));
-                grievanceSummary.setConventionalMethodSubmissionCount(grievanceSummary.getConventionalMethodSubmissionCount() + safe(grievance.getConventionalMethodSubmissionCount()));
-                grievanceSummary.setSelfMotivatedAccusationCount(grievanceSummary.getSelfMotivatedAccusationCount() + safe(grievance.getSelfMotivatedAccusationCount()));
-                grievanceSummary.setInheritedFromLastMonthCount(grievanceSummary.getInheritedFromLastMonthCount() + safe(grievance.getInheritedFromLastMonthCount()));
-                grievanceSummary.setTotalCount(grievanceSummary.getTotalCount() + safe(grievance.getTotalCount()));
-                grievanceSummary.setSentToOtherCount(grievanceSummary.getSentToOtherCount() + safe(grievance.getSentToOtherCount()));
-                grievanceSummary.setResolvedCount(grievanceSummary.getResolvedCount() + safe(grievance.getResolvedCount()));
-                grievanceSummary.setTimeExpiredCount(grievanceSummary.getTimeExpiredCount() + safe(grievance.getTimeExpiredCount()));
-                grievanceSummary.setRunningCount(grievanceSummary.getRunningCount() + safe(grievance.getRunningCount()));
-                grievanceSummary.setTimeExtendedCount(grievanceSummary.getTimeExtendedCount() + safe(grievance.getTimeExtendedCount()));
-            }
-
-            MonthlyReportDTO appeal = dto.getMonthlyAppealReport();
-            if (appeal != null) {
-                appealSummary.setOnlineSubmissionCount(appealSummary.getOnlineSubmissionCount() + safe(appeal.getOnlineSubmissionCount()));
-                appealSummary.setConventionalMethodSubmissionCount(appealSummary.getConventionalMethodSubmissionCount() + safe(appeal.getConventionalMethodSubmissionCount()));
-                appealSummary.setSelfMotivatedAccusationCount(appealSummary.getSelfMotivatedAccusationCount() + safe(appeal.getSelfMotivatedAccusationCount()));
-                appealSummary.setInheritedFromLastMonthCount(appealSummary.getInheritedFromLastMonthCount() + safe(appeal.getInheritedFromLastMonthCount()));
-                appealSummary.setTotalCount(appealSummary.getTotalCount() + safe(appeal.getTotalCount()));
-                appealSummary.setSentToOtherCount(appealSummary.getSentToOtherCount() + safe(appeal.getSentToOtherCount()));
-                appealSummary.setResolvedCount(appealSummary.getResolvedCount() + safe(appeal.getResolvedCount()));
-                appealSummary.setTimeExpiredCount(appealSummary.getTimeExpiredCount() + safe(appeal.getTimeExpiredCount()));
-                appealSummary.setRunningCount(appealSummary.getRunningCount() + safe(appeal.getRunningCount()));
-                appealSummary.setTimeExtendedCount(appealSummary.getTimeExtendedCount() + safe(appeal.getTimeExtendedCount()));
-            }
-        }
-
-        // Optionally compute rates
-        if (grievanceSummary.getTotalCount() != 0) {
-            double rate = (grievanceSummary.getResolvedCount() * 100.0) / grievanceSummary.getTotalCount();
-            grievanceSummary.setRate(BigDecimal.valueOf(rate).setScale(2, RoundingMode.HALF_UP).doubleValue());
-        }
-
-        if (appealSummary.getTotalCount() != 0) {
-            double rate = (appealSummary.getResolvedCount() * 100.0) / appealSummary.getTotalCount();
-            appealSummary.setRate(BigDecimal.valueOf(rate).setScale(2, RoundingMode.HALF_UP).doubleValue());
-        }
-
-        // Take common values from the first item
-        GrievanceAndAppealMonthlyReportDTO first = monthlyReports.get(0);
-
-        return GrievanceAndAppealMonthlyReportDTO.builder()
-                .officeId(first.getOfficeId())
-                .officeName(first.getOfficeName())
-                .officeLevel(first.getOfficeLevel())
-                .year(null)
-                .month(null)
-                .sl(1L)
-                .monthlyGrievanceReport(grievanceSummary)
-                .monthlyAppealReport(appealSummary)
-                .build();
-    }
-
-    private long safe(Long value) {
-        return value != null ? value : 0L;
     }
 
 
