@@ -218,17 +218,19 @@
                     officeOrigin = $("#firstSelection").val();
                 }
 
-                let url = "/api/layer-level/" + layerLevel + "/officeOrigin/" + officeOrigin + "/customLayer/" + customLayer + "/offices/" + officeId +
-                    "/reports/from/" + dateFrom.getFullYear() + "/" + (dateFrom.getMonth() + 1) + "/" + dateFrom.getDate()
-                    + "/to/" + dateTo.getFullYear() + "/" + (dateTo.getMonth() + 1) + "/" + dateTo.getDate();
+                let url = "/api/timeBased/layer-level/"+layerLevel+"/officeOrigin/"+officeOrigin+"/offices/"+officeId+"/reports/from/"+dateFrom.getFullYear()+"/"+(dateFrom.getMonth() + 1)+"/to/"+dateTo.getFullYear()+"/"+(dateTo.getMonth() + 1);
+
+                // let url = "/api/layer-level/" + layerLevel + "/officeOrigin/" + officeOrigin + "/customLayer/" + customLayer + "/offices/" + officeId +
+                //     "/reports/from/" + dateFrom.getFullYear() + "/" + (dateFrom.getMonth() + 1) + "/" + dateFrom.getDate()
+                //     + "/to/" + dateTo.getFullYear() + "/" + (dateTo.getMonth() + 1) + "/" + dateTo.getDate();
                 blockUI();
                 $.getJSON(url, function (response) {
                     var grievanceReportBody = "<tr class='text-center'><td>(ক)</td><td>(খ)</td><td>(গ)</td><td>(ঘ)</td><td>(ঙ)</td><td>(চ)</td><td>(ছ)</td><td>(জ)</td><td>(ঝ)</td><td>(ঞ)</td></tr>";
                     var appealReportBody = "<tr class='text-center'><td>(ক)</td><td>(খ)</td><td>(গ)</td><td>(ঘ)</td><td>(ঙ)</td><td>(চ)</td><td>(ছ)</td></tr>";
                     var hasAppealReportFlag = false;
                     response.forEach(function (item, index) {
-                        var monthlyGrievanceReport = item.dailyGrievanceReport;
-                        var monthlyAppealReport = item.dailyAppealReport;
+                        var monthlyGrievanceReport = item.monthlyGrievanceReport;
+                        var monthlyAppealReport = item.monthlyAppealReport;
                         if (monthlyGrievanceReport) {
                             grievanceReportBody += "<tr class='text-center'>" +
                                 "<td>" + ("" + monthlyGrievanceReport["onlineSubmissionCount"]).toBanglaNumber() + "</td>" +
