@@ -703,8 +703,8 @@
     }
 
     function initCustomReportTabContents() {
-        initReportDatepickerDDMMYY($("#customReportFrom"));
-        initReportDatepickerDDMMYY($("#customReportTo"));
+        initReportDatepicker($("#customReportFrom"));
+        initReportDatepicker($("#customReportTo"));
         // bindOfficeLayersChangeActionsForReport("", "appendAllIfExist");
         $("#customReport").find(".form-inline").removeClass("form-inline");
         bindInputFieldChangeEvents();
