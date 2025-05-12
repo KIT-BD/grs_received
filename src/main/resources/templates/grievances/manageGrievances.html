@@ -19,18 +19,18 @@
             </div>
             <div class="topnav">
                 <button type="submit" style="
-              float: right;
-              padding: 6px;
-              margin-top: 8px;
-              width: 2%;
-              font-size: 16px;
-            " id="searchButton"><i class="fa fa-search"></i>
+                  float: right;
+                  padding: 6px;
+                  margin-top: 8px;
+                  width: 2%;
+                  font-size: 16px;
+" id="searchButton"><i class="fa fa-search"></i>
                 </button>
                 <input type="text" placeholder="খুঁজুন.." style="
               float: right;
               padding: 6px;
               margin-top: 8px;
-              font-size: 17px;
+              font-size: 16px;
               width: 30%;
               border: 1px solid #ccc;
             " id="listSearch" />
@@ -878,16 +878,16 @@
             </div>
         </div>
     </div>
-    <div class="modal fade" id="ajaxProcessingModal" tabindex="-1" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-body">
-                    <img src="assets/global/img/loading-spinner-grey.gif" alt="" class="loading" />
-                    <span> &nbsp;&nbsp;লোড হচ্ছে... দয়া করে অপেক্ষা করুন </span>
-                </div>
-            </div>
-        </div>
-    </div>
+<!--    <div class="modal fade" id="ajaxProcessingModal" tabindex="-1" data-backdrop="static" data-keyboard="false">-->
+<!--        <div class="modal-dialog">-->
+<!--            <div class="modal-content">-->
+<!--                <div class="modal-body">-->
+<!--                    <img src="assets/global/img/loading-spinner-grey.gif" alt="" class="loading" />-->
+<!--                    <span> &nbsp;&nbsp;লোড হচ্ছে... দয়া করে অপেক্ষা করুন </span>-->
+<!--                </div>-->
+<!--            </div>-->
+<!--        </div>-->
+<!--    </div>-->
 </div>
 
 <div th:fragment="manageGrievancesIncludeScript" th:remove="tag">
@@ -1162,7 +1162,7 @@
                     var bgColorStyle = "bg-white";
                     if (aData.isExpired) {
                         $(nRow).addClass(bgColorStyle + " font text-danger ");
-                    } else if (aData.isSeen == false) {
+                    } else if (aData.isSeen === false) {
                         $(nRow).addClass(bgColorStyle + " font-lg bold");
                     } else {
                         $(nRow).addClass(bgColorStyle + " greyishFont ");
@@ -1523,7 +1523,8 @@
 
         var searchSizeLocal =
             $("[name='isMobileLogin']").val() == "true" ? 5 : searchSize;
-        $("#ajaxProcessingModal").modal("show");
+        // $("#ajaxProcessingModal").modal("show");
+        blockUI();
         var pageNo = 0;
 
         if (currentView == "inbox") {
@@ -1667,7 +1668,8 @@
                             .find("[data-toggle='tooltip']")
                             .tooltip();
                     }
-                    $("#ajaxProcessingModal").modal("hide");
+                    // $("#ajaxProcessingModal").modal("hide");
+                    unblockUI();
                 } else {
                     var totalPages = response.totalPages;
                     var totalElements = response.totalElements;
@@ -1929,7 +1931,9 @@
                                 .tooltip();
                             break;
                     }
-                    $("#ajaxProcessingModal").modal("hide");
+                    // $("#ajaxProcessingModal").modal("hide");
+                    unblockUI();
+
                 }
             },
         });
@@ -1938,7 +1942,8 @@
     function searchComplaintsList() {
         var searchSizeLocal =
             $("[name='isMobileLogin']").val() == "true" ? 5 : searchSize;
-        $("#ajaxProcessingModal").modal("show");
+        // $("#ajaxProcessingModal").modal("show");
+        blockUI();
         var pageNo = 0;
         var SearchFieldNo;
         if (currentView == "inbox") {
