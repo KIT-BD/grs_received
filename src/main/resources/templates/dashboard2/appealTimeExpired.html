@@ -8,6 +8,7 @@
                 <thead>
                 <tr>
                     <th class="text-center">ক্রমিক</th>
+                    <th class="text-center">ট্র্যাকিং নম্বর</th>
                     <th class="text-center">আপিলের বিষয়</th>
                     <th class="text-center">আপিল সংশ্লিষ্ট সেবা</th>
                     <th class="text-center">ধরন</th>
@@ -21,3 +22,19 @@
         </div>
     </div>
 </div>
+
+<script type="text/javascript" th:fragment="appealTimeExpiredScript">
+    document.addEventListener("DOMContentLoaded", function () {
+        const table = document.getElementById("appealsListForNudge");
+
+        table.addEventListener("click", function (event) {
+            const targetRow = event.target.closest("tr");
+
+            if (targetRow && targetRow.parentElement.tagName.toLowerCase() === "tbody") {
+                const cells = targetRow.cells;
+                const grievanceId = cells[0].innerText.trim();
+                window.location.href = `/viewAppealGrievances.do?id=${grievanceId}`;
+            }
+        });
+    });
+</script>

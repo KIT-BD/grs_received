@@ -119,7 +119,7 @@ public class DashboardController {
         return GrievanceResolutionStatisticsDTO.builder()
                 .resolutionTypeInfo(dashboardService.getResolutionTypeInfo(officeId))
                 .unacceptedGrievancesCounts(dashboardService.getUnacceptedGrievancesInfo(officeId))
-                .currentMonthResolutions(dashboardService.getResolutionsInCurrentMonth(officeId, 0L))
+                .currentMonthResolutions(dashboardService.getResolutionsInCurrentMonth(officeId))
                 .build();
     }
 
@@ -135,12 +135,12 @@ public class DashboardController {
 
     @GetMapping("/office/{office_id}/grievances/current-month-resolution")
     public List<MonthlyGrievanceResolutionDTO> getGrievanceResolutionsOfCurrentMonth(@PathVariable("office_id") Long officeId) {
-        return dashboardService.getResolutionsInCurrentMonth(officeId, 0L);
+        return dashboardService.getResolutionsInCurrentMonth(officeId);
     }
 
     @GetMapping("/office/{office_id}/appeals/resolution-statistics")
     public List<MonthlyGrievanceResolutionDTO> getStatisticsOfAppealResolution(@PathVariable("office_id") Long officeId) {
-        return dashboardService.getAppealResolutionsInCurrentMonth(officeId, 0L);
+        return dashboardService.getAppealResolutionsInCurrentMonth(officeId);
     }
 
     @GetMapping("/office/{office_id}/grievances/expired")

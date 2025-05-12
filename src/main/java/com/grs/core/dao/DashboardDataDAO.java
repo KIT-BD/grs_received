@@ -6,13 +6,11 @@ import com.grs.api.model.response.dashboard.DashboardRatingDTO;
 import com.grs.core.domain.GrievanceCountByService;
 import com.grs.core.domain.GrievanceCurrentStatus;
 import com.grs.core.domain.MediumOfSubmission;
+import com.grs.core.domain.grs.ComplainHistory;
 import com.grs.core.domain.grs.DashboardData;
 import com.grs.core.domain.grs.GrsStatistics;
 import com.grs.core.domain.grs.YearlyDashboardStatistics;
-import com.grs.core.repo.grs.BaseEntityManager;
-import com.grs.core.repo.grs.DashboardDataRepo;
-import com.grs.core.repo.grs.GrsStatisticsRepo;
-import com.grs.core.repo.grs.YearlyDashboardStatisticsRepo;
+import com.grs.core.repo.grs.*;
 import com.grs.utils.CalendarUtil;
 import com.grs.utils.Constant;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +41,8 @@ public class DashboardDataDAO {
 
     @Autowired
     private BaseEntityManager baseEntityManager;
+    @Autowired
+    private ComplainHistoryRepository complainHistoryRepository;
 
     public DashboardData findOne(Long id) {
         return dashboardDataRepo.findOne(id);
@@ -303,8 +303,6 @@ public class DashboardDataDAO {
         calendar.set(Calendar.DAY_OF_MONTH, 1);
         Long days = CalendarUtil.getWorkDaysCountBefore(calendar.getTime(), (int) Constant.GRIEVANCE_EXPIRATION_TIME);
 
-        System.out.println(officeId+" "+monthDiff+" "+days);
-
         return dashboardDataRepo.countTimeExpiredAppealsByOfficeIdV2(officeId, monthDiff, days);
     }
 
@@ -472,27 +470,12 @@ public class DashboardDataDAO {
         return dashboardDataRepo.findByGrievanceIdAndComplaintStatusNotAppeal(grievanceId);
     }
 
-    public Page<DashboardData> getPageableDashboardDataForGrievanceRegister(Long officeId, Pageable pageable) {
-        List<GrievanceCurrentStatus> nonAppealStatusList = new ArrayList();
-        for (GrievanceCurrentStatus status : GrievanceCurrentStatus.values()) {
-            if (!status.name().contains("APPEAL")) {
-                nonAppealStatusList.add(status);
-            }
-        }
-        return dashboardDataRepo.findByOfficeIdAndComplaintStatusInOrderByCreatedAtDesc(officeId, nonAppealStatusList, pageable);
+    public Page<ComplainHistory> getPageableDashboardDataForGrievanceRegister(Long officeId, Pageable pageable) {
+        return complainHistoryRepository.findGrievanceRegisterGrievances(officeId, pageable);
     }
 
-    public Page<DashboardData> getPageableDashboardDataForGrievanceRegisterByTrackingNumber(Long officeId, String trackingNumber, Pageable pageable) {
-        // Filter out statuses containing "APPEAL"
-        List<GrievanceCurrentStatus> nonAppealStatusList = new ArrayList<>();
-        for (GrievanceCurrentStatus status : GrievanceCurrentStatus.values()) {
-            if (!status.name().contains("APPEAL")) {
-                nonAppealStatusList.add(status);
-            }
-        }
-
-        // Call the repository method to find data by officeId, trackingNumber, and non-appeal statuses
-        return dashboardDataRepo.findByOfficeIdAndTrackingNumberAndComplaintStatusInOrderByCreatedAtDesc(officeId, trackingNumber, nonAppealStatusList, pageable);
+    public Page<ComplainHistory> getPageableDashboardDataForGrievanceRegisterByTrackingNumber(Long officeId, String trackingNumber, Pageable pageable) {
+        return complainHistoryRepository.findGrievanceRegisterGrievancesByTrackingNumber(officeId, trackingNumber, pageable);
     }
 
     public Page<DashboardData> getPageableDashboardDataAppealRegister(Long officeId, Pageable pageable) {

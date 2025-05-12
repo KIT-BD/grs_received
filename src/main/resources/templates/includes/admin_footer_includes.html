@@ -45,11 +45,100 @@
             return engNum;
         };
 
+        // function blockUI() {
+        //     var isEnglish = (languageCode == "en");
+        //     var msg = isEnglish ? "Loading... Just a moment please" : "লোড হচ্ছে... দয়া করে অপেক্ষা করুন";
+        //     $.blockUI({
+        //         message: '<h1>' + msg + '</h1>'
+        //     });
+        // }
+
         function blockUI() {
             var isEnglish = (languageCode == "en");
             var msg = isEnglish ? "Loading... Just a moment please" : "লোড হচ্ছে... দয়া করে অপেক্ষা করুন";
+
+            // Append styles if not already present
+            if (!document.getElementById("custom-loader-style")) {
+                const style = document.createElement("style");
+                style.id = "custom-loader-style";
+                style.innerHTML = `
+            *,
+            *::before,
+            *::after {
+              box-sizing: border-box;
+            }
+
+            .loader {
+              position: fixed;
+              top: 0;
+              right: 0;
+              bottom: 0;
+              left: 0;
+              display: flex;
+              justify-content: center;
+              align-items: center;
+              z-index: 10000;
+            }
+
+            .loader::before,
+            .loader::after {
+              content: '';
+              position: absolute;
+              border: 3px solid;
+              border-radius: 4em;
+            }
+
+            .loader::before {
+              width: 30px;
+              height: 30px;
+              border-color: red red transparent red;
+              animation: animate-inner 1.4s linear infinite;
+            }
+
+            .loader::after {
+              width: 60px;
+              height: 60px;
+              border-color: green green green transparent;
+              animation: animate-outer 1.8s linear infinite;
+            }
+
+            @keyframes animate-inner {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(360deg); }
+            }
+
+            @keyframes animate-outer {
+              from { transform: rotate(0deg); }
+              to { transform: rotate(-360deg); }
+            }
+
+            .loader-text {
+              position: absolute;
+              top: calc(50% + 45px);
+              text-align: center;
+              font-size: 18px;
+              font-family: 'Segoe UI', sans-serif;
+              color: #333;
+            }
+        `;
+                document.head.appendChild(style);
+            }
+
+            // Set blockUI content
             $.blockUI({
-                message: '<h1>' + msg + '</h1>'
+                message: `
+            <div class="loader">
+                <div class="loader-text">${msg}</div>
+            </div>
+        `,
+                css: {
+                    backgroundColor: 'transparent',
+                    border: 'none'
+                },
+                overlayCSS: {
+                    backgroundColor: '#fff',
+                    opacity: 0.8
+                }
             });
         }
 

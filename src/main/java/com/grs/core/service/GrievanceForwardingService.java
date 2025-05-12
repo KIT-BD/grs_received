@@ -497,9 +497,9 @@ public class GrievanceForwardingService {
     public List<GrievanceForwardingEmployeeRecordsDTO> getAllComplaintMovementHistoryByGrievance(Long grievanceId, Authentication authentication) {
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
-        List<GrievanceForwarding> grievanceForwardings = getAllUserRelatedForwardings(grievance, userInformation);
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
 
-        return grievanceForwardings.stream()
+        List<GrievanceForwardingEmployeeRecordsDTO> complaintMovements = grievanceForwardings.stream()
                 .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
                         .toGroNameBangla(grievanceForwarding.getToEmployeeNameBangla())
                         .fromGroNameBangla(grievanceForwarding.getFromEmployeeNameBangla())
@@ -530,6 +530,43 @@ public class GrievanceForwardingService {
                         .from_office_unit_organogram_id(grievanceForwarding.getFromOfficeUnitOrganogramId())
                         .build())
                 .collect(Collectors.toList());
+        Collections.reverse(complaintMovements);
+        return complaintMovements;
+    }
+
+    public List<GrievanceForwardingEmployeeRecordsDTO> getAllComplaintAppealMovementHistoryByGrievance(Long grievanceId, Authentication authentication) {
+        Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
+
+        List<GrievanceForwardingEmployeeRecordsDTO> complaintMovements = grievanceForwardings.stream()
+                .filter(gf -> gf.getAction() != null && gf.getAction().toUpperCase().contains("APPEAL"))
+                .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
+                        .toGroNameBangla(grievanceForwarding.getToEmployeeNameBangla())
+                        .fromGroNameBangla(grievanceForwarding.getFromEmployeeNameBangla())
+                        .toGroNameEnglish(grievanceForwarding.getToEmployeeNameEnglish())
+                        .fromGroNameEnglish(grievanceForwarding.getFromEmployeeNameEnglish())
+                        .comment(grievanceForwarding.getComment())
+                        .action(grievanceForwarding.getAction())
+                        .createdAtEng(DateTimeConverter.convertDateToStringForTimeline(grievanceForwarding.getCreatedAt()))
+                        .createdAtBng(BanglaConverter.getDateBanglaFromEnglish(DateTimeConverter.convertDateToStringForTimeline(grievanceForwarding.getCreatedAt())))
+                        .createdAtFullEng(DateTimeConverter.convertDateToStringForTimelineFull(grievanceForwarding.getCreatedAt()))
+                        .createdAtFullBng(BanglaConverter.getDateBanglaFromEnglishFull(DateTimeConverter.convertDateToStringForTimelineFull(grievanceForwarding.getCreatedAt())))
+                        .files(getFiles(grievanceForwarding))
+                        .toDesignationNameBangla(grievanceForwarding.getToEmployeeDesignationBangla())
+                        .fromDesignationNameBangla(grievanceForwarding.getFromEmployeeDesignationBangla())
+                        .toOfficeNameBangla(grievanceForwarding.getToOfficeNameBangla())
+                        .fromOfficeNameBangla(grievanceForwarding.getFromOfficeNameBangla())
+                        .toOfficeUnitNameBangla(grievanceForwarding.getToEmployeeUnitNameBangla())
+                        .fromOfficeUnitNameBangla(grievanceForwarding.getFromEmployeeUnitNameBangla())
+                        .fromGroUsername(grievanceForwarding.getFromEmployeeUsername())
+                        .isCC(grievanceForwarding.getIsCC())
+                        .isCommitteeHead(grievanceForwarding.getIsCommitteeHead())
+                        .isCommitteeMember(grievanceForwarding.getIsCommitteeMember())
+                        .assignedRole(grievanceForwarding.getAssignedRole())
+                        .build())
+                .collect(Collectors.toList());
+        Collections.reverse(complaintMovements);
+        return complaintMovements;
     }
 
     public List<FileDerivedDTO> getFiles(GrievanceForwarding grievanceForwarding) {
@@ -1588,42 +1625,88 @@ public class GrievanceForwardingService {
     public GenericResponse sendToAppealOfficer(Authentication authentication, GrievanceForwardingNoteDTO grievanceForwardingNoteDTO) {
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         OfficesGRO officesGRO = this.officesGroService.findOfficesGroByOfficeId(userInformation.getOfficeInformation().getOfficeId());
+
+        Grievance grievance = grievanceService.findGrievanceById(grievanceForwardingNoteDTO.getGrievanceId());
+        List<GrievanceForwarding> grievanceForwardings;
+        grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
+
+        List<GrievanceForwarding> appeals = grievanceForwardings.stream()
+                .filter(mv -> "APPEAL".equalsIgnoreCase(mv.getAction()))
+                .sorted(Comparator.comparing(GrievanceForwarding::getId).reversed())
+                .collect(Collectors.toList());
+
+
+        GrievanceForwarding previous = appeals.get(1);
+
+        if(userInformation.getOfficeInformation().getOfficeId().equals(0L)) {
+
+            officesGRO = this.officesGroService.findOfficesGroByOfficeId(previous.getToOfficeId());
+
+        }
+
         if (officesGRO == null || officesGRO.getAppealOfficeId() == 0 || officesGRO.getAppealOfficeId() == null) {
             String successMessage = "দুঃখিত সামান্য ত্রুটির জন্য আপিল অফিসারের কাছে অভিযোগটি পাঠানো যাচ্ছে না!";
             return new GenericResponse(false, successMessage);
         }
         EmployeeOffice groEmployeeOffice = this.officeService.findEmployeeOfficeByOfficeAndOfficeUnitOrganogramAndStatus(officesGRO.getOfficeId(), officesGRO.getGroOfficeUnitOrganogramId(), true);
+        if(userInformation.getOfficeInformation().getOfficeId().equals(0L)) {
+            groEmployeeOffice = this.officeService.findEmployeeOfficeByOfficeAndOfficeUnitOrganogramAndStatus(userInformation.getOfficeInformation().getOfficeId(), userInformation.getOfficeInformation().getOfficeUnitOrganogramId(), true);
+        }
         EmployeeOffice aoEmployeeOffice = this.officeService.findEmployeeOfficeByOfficeAndOfficeUnitOrganogramAndStatus(officesGRO.getAppealOfficeId(), officesGRO.getAppealOfficerOfficeUnitOrganogramId(), true);
 
         if (aoEmployeeOffice == null) {
             return new GenericResponse(false, "আপনার বাছাইকৃত দপ্তরটি সেটআপ করা নেই।");
         }
-        Grievance grievance = grievanceService.findGrievanceById(grievanceForwardingNoteDTO.getGrievanceId());
+
         GrievanceCurrentStatus prevStatus = grievance.getGrievanceCurrentStatus();
         Long toOfficeId = officesGRO.getAppealOfficeId();
         grievance.setGrievanceCurrentStatus(GrievanceCurrentStatus.FORWARDED_TO_AO);
         grievance.setOtherService(grievance.getServiceOrigin() == null ? grievance.getOtherService() : grievance.getServiceOrigin().getServiceNameBangla());
         grievance.setServiceOrigin(null);
         grievance.setSendToAoOfficeId(toOfficeId);
-        GrievanceForwarding grievanceForwarding = this.getGrievanceForwarding(
-                grievance,
-                grievanceForwardingNoteDTO.getNote(),
-                "FORWARDED_TO_AO",
-                aoEmployeeOffice.getEmployeeRecord().getId(),
-                groEmployeeOffice.getEmployeeRecord().getId(),
-                toOfficeId,
-                officesGRO.getGroOfficeId(),
-                officesGRO.getAppealOfficerOfficeUnitOrganogramId(),
-                officesGRO.getGroOfficeUnitOrganogramId(),
-                null,
-                false,
-                false,
-                false,
-                null,
-                prevStatus,
-                RoleType.GRO,
-                userInformation.getUsername()
-        );
+
+        GrievanceForwarding grievanceForwarding = GrievanceForwarding.builder()
+                .grievance(grievance)
+                .comment(grievanceForwardingNoteDTO.getNote())
+                .action("FORWARDED_TO_AO")
+                .toEmployeeRecordId(aoEmployeeOffice.getEmployeeRecord().getId())
+                .fromEmployeeRecordId(groEmployeeOffice.getEmployeeRecord().getId())
+                .toOfficeId(toOfficeId)
+                .fromOfficeId(officesGRO.getGroOfficeId())
+                .toOfficeUnitOrganogramId(officesGRO.getAppealOfficerOfficeUnitOrganogramId())
+                .fromOfficeUnitOrganogramId(officesGRO.getGroOfficeUnitOrganogramId())
+                .isCurrent(null)
+                .isCC(false)
+                .isCommitteeHead(false)
+                .isCommitteeMember(false)
+                .deadlineDate(null)
+                .currentStatus(prevStatus)
+                .assignedRole(RoleType.GRO)
+                .fromEmployeeUsername(userInformation.getUsername())
+                .build();
+
+        if(userInformation.getOfficeInformation().getOfficeId().equals(0L)) {
+            GrievanceForwardingDTO grievanceLaetestForwarding = this.getLatestForwardingEntry(grievance.getId());
+            if (grievanceLaetestForwarding.getAction().equals("APPEAL")) {
+
+                grievanceForwarding.setFromOfficeUnitOrganogramId(groEmployeeOffice.getOfficeUnitOrganogram().getId());
+                grievanceForwarding.setFromOfficeId(groEmployeeOffice.getOffice().getId());
+                grievanceForwarding.setFromOfficeUnitId(groEmployeeOffice.getOfficeUnit().getId());
+                grievanceForwarding.setToOfficeUnitId(aoEmployeeOffice.getOfficeUnit().getId());
+                grievanceForwarding.setFromEmployeeNameBangla(groEmployeeOffice.getEmployeeRecord().getNameBangla());
+                grievanceForwarding.setFromEmployeeNameEnglish(groEmployeeOffice.getEmployeeRecord().getNameEnglish());
+                grievanceForwarding.setFromEmployeeDesignationBangla(groEmployeeOffice.getDesignation());
+                grievanceForwarding.setFromOfficeNameBangla(groEmployeeOffice.getOffice().getNameBangla());
+                grievanceForwarding.setFromEmployeeUnitNameBangla(groEmployeeOffice.getOfficeUnit().getUnitNameBangla());
+
+                grievanceForwarding.setToEmployeeNameBangla(aoEmployeeOffice.getEmployeeRecord().getNameBangla());
+                grievanceForwarding.setToEmployeeNameEnglish(aoEmployeeOffice.getEmployeeRecord().getNameEnglish());
+                grievanceForwarding.setToEmployeeDesignationBangla(aoEmployeeOffice.getDesignation());
+                grievanceForwarding.setToOfficeNameBangla(aoEmployeeOffice.getOffice().getNameBangla());
+                grievanceForwarding.setToEmployeeUnitNameBangla(aoEmployeeOffice.getOfficeUnit().getUnitNameBangla());
+            }
+        }
+
         try {
             this.grievanceService.saveGrievance(grievance);
             this.grievanceForwardingDAO.forwardGrievanceRemovingFromInbox(grievanceForwarding);
@@ -1975,19 +2058,19 @@ public class GrievanceForwardingService {
         UserInformation userInformation = Utility.extractUserInformationFromAuthentication(authentication);
         Grievance grievance = this.grievanceService.findGrievanceById(grievanceId);
         OfficesGRO officesGRO = this.officesGroService.findOfficesGroByOfficeId(grievance.getOfficeId());
-        List<GrievanceForwarding> grievanceForwardings;
+        List<GrievanceForwarding> grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
 
-        if (userInformation.getOfficeInformation().getOfficeId().equals(0L)){
-            grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
-        } else {
-            grievanceForwardings = this.grievanceForwardingDAO.getAllRelatedComplaintMovements(
-                    grievanceId,
-                    officesGRO.getOfficeId(),
-                    new ArrayList<Long>() {{
-                        add(officesGRO.getGroOfficeUnitOrganogramId());
-                    }},
-                    "%APPEAL%");
-        }
+//        if (userInformation.getOfficeInformation().getOfficeId().equals(0L)){
+//            grievanceForwardings = this.grievanceForwardingDAO.getAllComplaintMovement(grievance);
+//        } else {
+//            grievanceForwardings = this.grievanceForwardingDAO.getAllRelatedComplaintMovements(
+//                    grievanceId,
+//                    officesGRO.getOfficeId(),
+//                    new ArrayList<Long>() {{
+//                        add(officesGRO.getGroOfficeUnitOrganogramId());
+//                    }},
+//                    "%APPEAL%");
+//        }
 
         List<GrievanceForwardingEmployeeRecordsDTO> complaintMovements = grievanceForwardings.stream()
                 .map(grievanceForwarding -> GrievanceForwardingEmployeeRecordsDTO.builder()
@@ -2015,6 +2098,7 @@ public class GrievanceForwardingService {
                         .assignedRole(grievanceForwarding.getAssignedRole())
                         .build())
                 .collect(Collectors.toList());
+        Collections.reverse(complaintMovements);
         return complaintMovements;
     }
 

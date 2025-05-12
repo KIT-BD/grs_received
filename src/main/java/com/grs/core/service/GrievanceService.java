@@ -25,16 +25,15 @@ import com.grs.core.model.EmployeeOrganogram;
 import com.grs.core.model.EmptyJsonResponse;
 import com.grs.core.model.ListViewType;
 import com.grs.core.repo.grs.BaseEntityManager;
+import com.grs.core.repo.grs.DashboardDataRepo;
 import com.grs.core.repo.grs.GrievanceForwardingRepo;
+import com.grs.core.repo.grs.GrievanceRepo;
 import com.grs.utils.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.StringUtils;
 import org.reflections.util.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,6 +52,10 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class GrievanceService {
+
+    @Autowired
+    private GrievanceRepo grievanceRepo;
+
     @Autowired
     private GrievanceDAO grievanceDAO;
     @Autowired
@@ -1663,10 +1666,11 @@ public class GrievanceService {
 
     public Page<GrievanceDTO> getListViewWithSearching(UserInformation userInformation, String value, ListViewType listViewType, Pageable pageable) {
         Date date = new Date();
-        Long expTime = CalendarUtil.getWorkDaysCountBefore(date, (int) Constant.GRIEVANCE_EXPIRATION_TIME);
+        Long expTime = CalendarUtil.getWorkDaysCountBefore(date, (int) Constant.GRIEVANCE_EXTENDED_EXPIRATION_TIME);
         date.setTime(date.getTime() - expTime * 24 * 60 * 60 * 1000);
         Page<GrievanceForwarding> forwardings;
-        if(listViewType.equals(ListViewType.NORMAL_OUTBOX)) {
+
+        if (listViewType.equals(ListViewType.NORMAL_OUTBOX)) {
             Long officeId = userInformation.getOfficeInformation().getOfficeId();
             Long officeUnitOrganogramId = userInformation.getOfficeInformation().getOfficeUnitOrganogramId();
             Long userId = userInformation.getUserId();
@@ -1679,7 +1683,7 @@ public class GrievanceService {
             log.info("==DONE NOT OUTBOX===");
         }
 
-        return forwardings.map(source -> {
+        List<GrievanceDTO> dtoList = forwardings.getContent().stream().map(source -> {
             Grievance grievance = source.getGrievance();
             GrievanceDTO grievanceDTO = this.convertToGrievanceDTO(grievance);
             switch (listViewType) {
@@ -1687,7 +1691,6 @@ public class GrievanceService {
                     GrievanceForwarding closeEntry = this.grievanceForwardingDAO.findRecentlyClosedOrRejectedOne(Long.parseLong(grievanceDTO.getId()));
                     grievanceDTO.setExpectedDateOfClosingEnglish(closeEntry.getCreatedAt().toString());
                     grievanceDTO.setExpectedDateOfClosingBangla(BanglaConverter.getDateBanglaFromEnglish(closeEntry.getCreatedAt().toString()));
-
                     if (!grievanceDTO.getStatusEnglish().contains("CLOSED")) {
                         grievanceDTO.setStatusBangla("নিষ্পত্তি(" + grievanceDTO.getStatusBangla() + ")");
                         grievanceDTO.setStatusEnglish("Closed(" + grievanceDTO.getStatusEnglish() + ")");
@@ -1705,7 +1708,6 @@ public class GrievanceService {
                 case APPEAL_OUTBOX:
                 case APPEAL_CLOSED:
                     break;
-
                 default:
                     grievanceDTO.setIsSeen(source.getIsSeen());
                     grievanceDTO.setIsCC(source.getIsCC());
@@ -1714,7 +1716,18 @@ public class GrievanceService {
             }
 
             return grievanceDTO;
-        });
+        }).sorted((dto1, dto2) -> {
+            try {
+                SimpleDateFormat sdf = new SimpleDateFormat("dd-MM-yyyy hh:mm:ss:a");
+                Date d1 = sdf.parse(dto1.getDateEnglish());
+                Date d2 = sdf.parse(dto2.getDateEnglish());
+                return d2.compareTo(d1);
+            } catch (Exception e) {
+                return 0;
+            }
+        }).collect(Collectors.toList());
+
+        return new PageImpl<>(dtoList, pageable, forwardings.getTotalElements());
     }
 
     public Page<GrievanceComplainantInfoDTO> getComplainantViewForReport(List<Office> childOffices, Integer fromYear, Integer fromMonth, Integer toYear, Integer toMonth, Pageable pageable) {

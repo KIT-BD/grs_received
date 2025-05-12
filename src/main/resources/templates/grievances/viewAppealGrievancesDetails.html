@@ -938,6 +938,40 @@
         </div>
     </div>
 
+    <div aria-hidden="true" class="modal fade bs-modal-lg" id="modalSendToAppealOfficer" role="basic" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button aria-hidden="true" class="close" data-dismiss="modal" type="button"></button>
+                    <h4 class="modal-title">আপীল কর্মকর্তা এর নিকট প্রেরণ </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label">আপিল কর্মকর্তার নিকট প্রেরণের কারণ লিপিবদ্ধ
+                                        করুন:</label>
+                                    <div class="summernote" id="sentToAppealOfficerNote" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix">&nbsp;</div>
+                    </div>
+                    <!--</form>-->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn dark btn-outline btn-primary btn-action" onclick="sendToAppealOfficer();"
+                            type="button">প্রেরণ করুন
+                    </button>
+                    <button class="btn dark btn-outline" data-dismiss="modal" type="button">বাতিল</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
     <div class="modal fade bs-modal-lg" id="modalAskForHearing" tabindex="-1" role="basic" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -1596,6 +1630,7 @@
             $("#actionButton").removeClass("hidden");
             $select = $("#actionButtonMenus");
             $select.html("");
+            console.log(data.menuOptions)
             $.each(data.menuOptions.grievanceMenus, function(key, val) {
                 var languageCode = $.cookie("lang");
                 var text;
@@ -1762,8 +1797,10 @@
     }
 
     function initializePage() {
-        var id = (document.location.href).split("=")[1];
-        var url = '/api/grievance/' + id;
+        const params = new URLSearchParams(window.location.search);
+        const id = params.get("id");
+        const url = '/api/grievance/' + id;
+
         $("#ajaxProcessingModal").modal('show');
         CallAjax(url, constructDetails);
     }
@@ -1799,7 +1836,7 @@
 
     function getAppealMovement() {
         if($("#appealHistory").html().trim().length <= 0){
-            getJson("/api/grievance/forward/" + getUrlParameter('id'), setAppealHistory);
+            getJson("/api/grievance/forward/appealMovementHistory/" + getUrlParameter('id'), setAppealHistory);
         }
     }
 
@@ -2354,8 +2391,17 @@
 
     function sendToAppealOfficer() {
         var id = getUrlParameter('id');
-        var url = "/api/grievance/forward/appeal/officer/send/" + id;
-        ajaxPost(url, "json", "application/json", null, genericResponseOnSuccess);
+        var url = "/api/grievance/forward/appeal/officer/send";
+        var note = {};
+        var bodyContent = $("#sentToAppealOfficerNote").summernote("code");
+        var cleanText = $("#sentToAppealOfficerNote").summernote('code').replace(/<\/?[^>]+(>|$)/g, "");
+        if (cleanText == "") {
+            toastr.error("অনুগ্রহ করে আপিল কর্মকর্তা নিকট প্রেরণের কারণ লিখুন। ");
+            return;
+        }
+        note['note'] = bodyContent;
+        note['grievanceId'] = getUrlParameter('id');
+        ajaxPost(url, "json", "application/json", JSON.stringify(note), genericResponseOnSuccess);
     }
 
     function getFileList(fileuploadId) {
@@ -3547,7 +3593,47 @@
         return engNum;
     };
 
-    function goPreviousPage(){
-        window.location.href = "/viewAppealGrievances.do";
+    function goPreviousPage() {
+        var previousPage = document.referrer; // Get the previous page URL
+        var nextPage = null;
+
+        // Extract the current parameters (tab, page, size) from the current URL
+        var currentParams = new URLSearchParams(window.location.search);
+        var tab = currentParams.get('tab');
+        var page = currentParams.get('page');
+        var size = currentParams.get('size');
+
+        // Construct the query parameters if they exist
+        var queryParams = '';
+        if (tab || page || size) {
+            queryParams = '?';
+            if (tab) queryParams += 'tab=' + encodeURIComponent(tab);
+            if (page) queryParams += (queryParams.length > 1 ? '&' : '') + 'page=' + encodeURIComponent(page);
+            if (size) queryParams += (queryParams.length > 1 ? '&' : '') + 'size=' + encodeURIComponent(size);
+        }
+
+        // Check if the referrer exists and matches specific patterns
+        if (previousPage && (previousPage.includes("viewAppealGrievances.do") ||
+            previousPage.includes("viewMyGrievances.do") ||
+            previousPage.includes("dashboardMobile.do") ||
+            previousPage.includes("dashboard.do"))) {
+
+            // // Extract the path after the third '/' and navigate
+            // nextPage = previousPage.split("/").slice(3).join("/");
+
+            // Extract the path from referrer
+            var referrerUrl = new URL(previousPage); // Create URL object from referrer
+            nextPage = referrerUrl.pathname; // Get the path of the referrer (e.g., "/dashboard.do")
+
+            // Append the query params only for 'dashboard.do'
+            if (nextPage.includes("dashboard.do")) {
+                window.location.href = referrerUrl.origin + nextPage + queryParams; // Ensure the full URL with hostname
+            } else {
+                window.location.href = referrerUrl.origin + nextPage; // Keep others as they are without appending query params
+            }
+        } else {
+            // Fallback if referrer doesn't match or is undefined
+            window.location.href = "/viewAppealGrievances.do";
+        }
     }
 </script>
