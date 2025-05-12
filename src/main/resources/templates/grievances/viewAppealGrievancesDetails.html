@@ -938,6 +938,40 @@
         </div>
     </div>
 
+    <div aria-hidden="true" class="modal fade bs-modal-lg" id="modalSendToAppealOfficer" role="basic" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button aria-hidden="true" class="close" data-dismiss="modal" type="button"></button>
+                    <h4 class="modal-title">আপীল কর্মকর্তা এর নিকট প্রেরণ </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="control-label">আপিল কর্মকর্তার নিকট প্রেরণের কারণ লিপিবদ্ধ
+                                        করুন:</label>
+                                    <div class="summernote" id="sentToAppealOfficerNote" style="display: none;"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="clearfix">&nbsp;</div>
+                    </div>
+                    <!--</form>-->
+                </div>
+                <div class="modal-footer">
+                    <button class="btn dark btn-outline btn-primary btn-action" onclick="sendToAppealOfficer();"
+                            type="button">প্রেরণ করুন
+                    </button>
+                    <button class="btn dark btn-outline" data-dismiss="modal" type="button">বাতিল</button>
+                </div>
+            </div>
+            <!-- /.modal-content -->
+        </div>
+        <!-- /.modal-dialog -->
+    </div>
+
     <div class="modal fade bs-modal-lg" id="modalAskForHearing" tabindex="-1" role="basic" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -1596,6 +1630,7 @@
             $("#actionButton").removeClass("hidden");
             $select = $("#actionButtonMenus");
             $select.html("");
+            console.log(data.menuOptions)
             $.each(data.menuOptions.grievanceMenus, function(key, val) {
                 var languageCode = $.cookie("lang");
                 var text;
@@ -2356,8 +2391,17 @@
 
     function sendToAppealOfficer() {
         var id = getUrlParameter('id');
-        var url = "/api/grievance/forward/appeal/officer/send/" + id;
-        ajaxPost(url, "json", "application/json", null, genericResponseOnSuccess);
+        var url = "/api/grievance/forward/appeal/officer/send";
+        var note = {};
+        var bodyContent = $("#sentToAppealOfficerNote").summernote("code");
+        var cleanText = $("#sentToAppealOfficerNote").summernote('code').replace(/<\/?[^>]+(>|$)/g, "");
+        if (cleanText == "") {
+            toastr.error("অনুগ্রহ করে আপিল কর্মকর্তা নিকট প্রেরণের কারণ লিখুন। ");
+            return;
+        }
+        note['note'] = bodyContent;
+        note['grievanceId'] = getUrlParameter('id');
+        ajaxPost(url, "json", "application/json", JSON.stringify(note), genericResponseOnSuccess);
     }
 
     function getFileList(fileuploadId) {
