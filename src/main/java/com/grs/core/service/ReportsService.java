@@ -26,6 +26,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -672,6 +674,52 @@ public class ReportsService {
         } else {
             // Fetch report for a single office
             List<GrievanceAndAppealMonthlyReportDTO> reportDTOS =getCustomReport(5, officeId, fromYear, fromMonth, toYear, toMonth);
+
+            // Set the serial number (sl) after sorting
+            long serialNumber = 1;
+            for (GrievanceAndAppealMonthlyReportDTO dto : reportDTOS) {
+                dto.setSl(serialNumber);
+                if (dto.getMonthlyGrievanceReport() != null) {
+                    dto.getMonthlyGrievanceReport().setSl(serialNumber);
+                }
+                if (dto.getMonthlyAppealReport() != null) {
+                    dto.getMonthlyAppealReport().setSl(serialNumber);
+                }
+                serialNumber++;
+            }
+
+            return reportDTOS;
+        }
+    }
+
+    public List<GrievanceAndAppealMonthlyReportDTO> getTimeBasedReport(Long officeId, Long layerLevel, Long officeOrigin, Integer fromYear, Integer fromMonth, Integer toYear, Integer toMonth) {
+        if (officeId.equals(9999L)) { // Assuming 9999 is the ID for "সকল অফিস"
+            List<Office> offices = this.officeService.findByOfficeOriginId(officeOrigin, true, false); // Assuming the method is called without an officeOriginId for all offices
+            List<GrievanceAndAppealMonthlyReportDTO> reportDTOS = getMultipleOfficesMergedReport(offices, fromYear, fromMonth, toYear, toMonth);
+
+            // Sort the list based on the rate of monthlyGrievanceReport in descending order
+            Collections.sort(reportDTOS, Comparator.comparingDouble(dto -> {
+                MonthlyReportDTO monthlyGrievanceReport = ((GrievanceAndAppealMonthlyReportDTO) dto).getMonthlyGrievanceReport();
+                return monthlyGrievanceReport != null ? monthlyGrievanceReport.getRate() : 0.0;
+            }).reversed());
+
+            // Set the serial number (sl) after sorting
+            long serialNumber = 1;
+            for (GrievanceAndAppealMonthlyReportDTO dto : reportDTOS) {
+                dto.setSl(serialNumber);
+                if (dto.getMonthlyGrievanceReport() != null) {
+                    dto.getMonthlyGrievanceReport().setSl(serialNumber);
+                }
+                if (dto.getMonthlyAppealReport() != null) {
+                    dto.getMonthlyAppealReport().setSl(serialNumber);
+                }
+                serialNumber++;
+            }
+
+            return reportDTOS;
+        } else {
+            Office office = officeService.getOffice(officeId);
+            List<GrievanceAndAppealMonthlyReportDTO> reportDTOS = getMultipleOfficesMergedReport(Collections.singletonList(office),fromYear, fromMonth, toYear, toMonth);
 
             // Set the serial number (sl) after sorting
             long serialNumber = 1;
