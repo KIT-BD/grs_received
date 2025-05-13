@@ -23,7 +23,7 @@ public class Constant {
 
     public static final String tempFilesDirectoryName = "temporary";
     public static final long GRIEVANCE_EXPIRATION_TIME = 30L;
-    public static final long GRIEVANCE_EXTENDED_EXPIRATION_TIME = 40L;
+    public static final long GRIEVANCE_EXTENDED_EXPIRATION_TIME = 30L;
     public static final long APPEAL_EXPIRATION_TIME = 30L;
     public static final long INVESTIGATION_ADDITIONAL_DAYS = 10L;
     public static final String inboxForwardingSeen = "Inbox Forwarding Seen Updated.";
