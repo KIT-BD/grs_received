@@ -26,6 +26,7 @@ import lombok.Synchronized;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -621,24 +622,43 @@ public class GrievanceDAO {
     }
 
     public Page<GrievanceAdminDTO> getGrievanceAdminSearch(Long officeId, String referenceNumber, Pageable pageable) {
-        return this.grievanceRepo.findAll(this.getGrievanceAdminSpecification(officeId, referenceNumber), pageable).map(this::convertToGrievanceAdminDTO);
+        List<Grievance> grievanceList = grievanceRepo.findGrievancesByTrackingNumberAndOfficeId(referenceNumber, officeId);
+
+        if (grievanceList == null || grievanceList.isEmpty()) {
+            return new PageImpl<>(Collections.emptyList(), pageable, 0);
+        }
+
+        List<GrievanceAdminDTO> dtoList = grievanceList.stream()
+                .map(this::convertToGrievanceAdminDTO)
+                .collect(Collectors.toList());
+
+        int start = pageable.getOffset();
+        int end = Math.min(start + pageable.getPageSize(), dtoList.size());
+
+        List<GrievanceAdminDTO> pagedList = dtoList.subList(start, end);
+
+        return new PageImpl<>(pagedList, pageable, dtoList.size());
     }
 
     private GrievanceAdminDTO convertToGrievanceAdminDTO(Grievance source) {
         return new GrievanceAdminDTO(source);
     }
 
-    public Specification<Grievance> getGrievanceAdminSpecification(Long officeId, String referenceNumber) {
+//    public Page<GrievanceAdminDTO> getGrievanceAdminSearch(Long officeId, String referenceNumber, Pageable pageable) {
+//        return this.grievanceRepo.findAll(this.getGrievanceAdminSpecification(officeId, referenceNumber), pageable).map(this::convertToGrievanceAdminDTO);
+//    }
 
-        return (root, query, builder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (officeId != null) {
-                predicates.add(builder.equal(root.get("officeId"), officeId));
-            }
-            if (referenceNumber != null) {
-                predicates.add(builder.like(root.get("trackingNumber"), "%"+referenceNumber.trim().toUpperCase()+"%"));
-            }
-            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
-        };
-    }
+//    public Specification<Grievance> getGrievanceAdminSpecification(Long officeId, String referenceNumber) {
+//
+//        return (root, query, builder) -> {
+//            List<Predicate> predicates = new ArrayList<>();
+//            if (officeId != null) {
+//                predicates.add(builder.equal(root.get("officeId"), officeId));
+//            }
+//            if (referenceNumber != null) {
+//                predicates.add(builder.like(root.get("trackingNumber"), "%"+referenceNumber.trim().toUpperCase()+"%"));
+//            }
+//            return builder.and(predicates.toArray(new Predicate[predicates.size()]));
+//        };
+//    }
 }

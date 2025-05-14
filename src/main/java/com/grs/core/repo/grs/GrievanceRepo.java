@@ -42,6 +42,13 @@ public interface GrievanceRepo extends JpaRepository<Grievance, Long> {
             "OR g.trackingNumber = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('0', :trx), '০', '0'), '১', '1'), '২', '2'), '৩', '3'), '৪', '4'), '৫', '5'), '৬', '6'), '৭', '7'), '৮', '8'), '৯', '9')")
     List<Grievance> findGrievancesByTrackingNumber(@Param("trx") String trx);
 
+    @Query("SELECT g FROM Grievance g WHERE g.officeId = :officeId AND (" +
+            "g.trackingNumber = :trx " +
+            "OR g.trackingNumber = CONCAT('0', :trx) " +
+            "OR g.trackingNumber = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(:trx, '০', '0'), '১', '1'), '২', '2'), '৩', '3'), '৪', '4'), '৫', '5'), '৬', '6'), '৭', '7'), '৮', '8'), '৯', '9') " +
+            "OR g.trackingNumber = REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(CONCAT('0', :trx), '০', '0'), '১', '1'), '২', '2'), '৩', '3'), '৪', '4'), '৫', '5'), '৬', '6'), '৭', '7'), '৮', '8'), '৯', '9'))")
+    List<Grievance> findGrievancesByTrackingNumberAndOfficeId(@Param("trx") String trx, @Param("officeId") Long officeId);
+
     // Find grievances by complainant's user id
     List<Grievance> findGrievancesByComplainantId(Long id);
 
